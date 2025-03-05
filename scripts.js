@@ -1,5 +1,4 @@
 const reports = [
-  // Personal Finance (example)
   { 
     category: "Personal Finance", 
     title: "The Need for Financial Planning", 
@@ -12,7 +11,6 @@ const reports = [
     content: "Strategies for managing overwhelming debt.",
     tags: ["debt", "cash-flow", "beginner", "all-ages", "individual"]
   },
-  // Retirement Planning - The Retirement Need
   { 
     category: "Retirement Planning", 
     subcategory: "The Retirement Need", 
@@ -61,7 +59,6 @@ const reports = [
     content: "Life expectancy stats for planning.",
     tags: ["retirement", "over-60", "intermediate", "individual"]
   },
-  // Added "How" reports with "One Pager" tag
   { 
     category: "Retirement Planning", 
     subcategory: "Individual Retirement Plans", 
@@ -108,11 +105,23 @@ const modalTitle = document.getElementById('modal-title');
 const modalContent = document.getElementById('modal-content');
 const modalClose = document.getElementById('modal-close');
 const savePdfBtn = document.getElementById('save-pdf-btn');
+const presentationTab = document.getElementById('presentation-tab');
+const presentationCount = document.getElementById('presentation-count');
 
 let selectedCategory = 'all';
 let selectedSubcategory = null;
 let viewMode = 'grid';
 let lastSearchTerm = '';
+let presentationReports = [];
+
+function updatePresentationCount() {
+  presentationCount.textContent = presentationReports.length;
+  if (presentationReports.length > 0) {
+    presentationCount.classList.add('active');
+  } else {
+    presentationCount.classList.remove('active');
+  }
+}
 
 function renderSubfolders(category) {
   subfolderContainer.innerHTML = '';
@@ -159,10 +168,14 @@ function renderReports() {
       card.setAttribute('data-content', report.content);
       const matchCount = selectedTags.filter(tag => report.tags.includes(tag)).length;
       card.setAttribute('data-match-count', matchCount);
+      const isSelected = presentationReports.includes(report.title);
       card.innerHTML = `
         <div class="report-card-content">
-          <h3>${report.title}${matchCount >= Math.max(2, selectedTags.length - 1) ? ' <span class="top-pick">Top Pick</span>' : ''}</h3>
-          ${viewMode === 'grid' ? `<p>${plainContent.substring(0, 100)}...</p>` : ''}
+          <div>
+            <h3>${report.title}${matchCount >= Math.max(2, selectedTags.length - 1) ? ' <span class="top-pick">Top Pick</span>' : ''}</h3>
+            ${viewMode === 'grid' ? `<p>${plainContent.substring(0, 100)}...</p>` : ''}
+          </div>
+          <input type="checkbox" class="presentation-checkbox" ${isSelected ? 'checked' : ''}>
         </div>
       `;
       reportGrid.appendChild(card);
@@ -177,6 +190,26 @@ function renderReports() {
   reportGrid.classList.remove('grid-view', 'list-view');
   reportGrid.classList.add(`${viewMode}-view`);
   backButton.style.display = selectedSubcategory ? 'block' : 'none';
+
+  // Add event listeners to checkboxes
+  document.querySelectorAll('.presentation-checkbox').forEach(checkbox => {
+    checkbox.addEventListener('change', (e) => {
+      const card = e.target.closest('.report-card');
+      const title = card.getAttribute('data-title');
+      if (e.target.checked) {
+        if (!presentationReports.includes(title)) {
+          presentationReports.push(title);
+          updatePresentationCount();
+        }
+      } else {
+        const index = presentationReports.indexOf(title);
+        if (index !== -1) {
+          presentationReports.splice(index, 1);
+          updatePresentationCount();
+        }
+      }
+    });
+  });
 }
 
 categoryFilter.addEventListener('click', (e) => {
@@ -237,7 +270,7 @@ listViewBtn.addEventListener('click', () => {
 
 reportGrid.addEventListener('click', (e) => {
   const card = e.target.closest('.report-card');
-  if (card) {
+  if (card && !e.target.classList.contains('presentation-checkbox')) {
     modalTitle.textContent = card.getAttribute('data-title');
     let content = card.getAttribute('data-content');
     if (lastSearchTerm) {
@@ -287,3 +320,4 @@ document.querySelectorAll('#tag-filters input[type="checkbox"]').forEach(checkbo
 
 // Initial render
 renderReports();
+updatePresentationCount();
