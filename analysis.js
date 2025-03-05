@@ -19,6 +19,8 @@ let accountCount = { c1: 1, c2: 1 }; // Track number of accounts per client
 
 // DOM elements
 const analysisList = document.getElementById('analysis-list');
+const tabButtons = document.querySelectorAll('.tab-btn');
+const tabContents = document.querySelectorAll('.tab-content');
 const recalculateBtn = document.getElementById('recalculate-btn');
 const exportGraphBtn = document.getElementById('export-graph-btn');
 const chartCanvas = document.getElementById('analysis-chart');
@@ -27,6 +29,7 @@ let chartInstance = null;
 // Initialize on page load
 document.addEventListener('DOMContentLoaded', () => {
   updateGraph(); // Initial graph render with placeholder data
+  setupTabSwitching(); // Set up tab functionality
 });
 
 // Handle analysis selection (placeholder for future expansion)
@@ -40,6 +43,20 @@ analysisList.addEventListener('click', (e) => {
     updateGraph();
   }
 });
+
+// Tab switching functionality
+function setupTabSwitching() {
+  tabButtons.forEach(button => {
+    button.addEventListener('click', () => {
+      tabButtons.forEach(btn => btn.classList.remove('active'));
+      button.classList.add('active');
+
+      tabContents.forEach(content => {
+        content.style.display = content.id === button.dataset.tab ? 'block' : 'none';
+      });
+    });
+  });
+}
 
 // Toggle Client 2 inputs based on marital status
 document.getElementById('is-married').addEventListener('change', (e) => {
