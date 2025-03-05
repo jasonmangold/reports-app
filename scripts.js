@@ -93,6 +93,15 @@ const subfolders = {
   ]
 };
 
+// Initialize Fuse.js for fuzzy search
+const fuse = new Fuse(reports, {
+  keys: ['title', 'content'],
+  includeScore: true,
+  threshold: 0.4, // Lower = stricter, higher = looser (0.4 balances forgiveness and relevance)
+  ignoreLocation: true, // Match anywhere in the string
+  minMatchCharLength: 2 // Require at least 2 chars for a match
+});
+
 const reportGrid = document.getElementById('report-grid');
 const subfolderContainer = document.getElementById('subfolder-container');
 const backButton = document.getElementById('back-button');
@@ -149,30 +158,37 @@ function renderSubfolders(category) {
 
 function renderReports() {
   reportGrid.innerHTML = '';
-  const searchTerm = searchInput.value.toLowerCase();
+  const searchTerm = searchInput.value.trim();
   const selectedTags = Array.from(document.querySelectorAll('#tag-filters input:checked')).map(input => input.value);
+  const isOnePagerFilter = selectedTags.includes('one-pager');
   
   lastSearchTerm = searchTerm;
-  reports.forEach(report => {
+  
+  let filteredReports = reports;
+  
+  // Apply fuzzy search if there's a search term
+  if (searchTerm) {
+    const fuseResults = fuse.search(searchTerm);
+    filteredReports = fuseResults.map(result => result.item);
+  }
+
+  filteredReports.forEach(report => {
     const plainContent = report.content.replace(/<[^>]+>/g, '');
     const matchesCategory = selectedCategory === 'all' || report.category === selectedCategory;
     const matchesSubcategory = !selectedSubcategory || (report.subcategory && report.subcategory === selectedSubcategory);
-    const matchesSearch = !searchTerm || report.title.toLowerCase().includes(searchTerm) || plainContent.toLowerCase().includes(searchTerm);
-    const matchesTags = selectedTags.length === 0 || selectedTags.some(tag => report.tags.includes(tag));
+    const matchesTags = !isOnePagerFilter || (report.tags && report.tags.includes('one-pager'));
     
-    if (matchesCategory && matchesSubcategory && matchesSearch && matchesTags) {
+    if (matchesCategory && matchesSubcategory && matchesTags) {
       const card = document.createElement('div');
       card.classList.add('report-card');
       card.classList.add(`${viewMode}-view`);
       card.setAttribute('data-title', report.title);
       card.setAttribute('data-content', report.content);
-      const matchCount = selectedTags.filter(tag => report.tags.includes(tag)).length;
-      card.setAttribute('data-match-count', matchCount);
       const isSelected = presentationReports.includes(report.title);
       card.innerHTML = `
         <div class="report-card-content">
           <div>
-            <h3>${report.title}${matchCount >= Math.max(2, selectedTags.length - 1) ? ' <span class="top-pick">Top Pick</span>' : ''}</h3>
+            <h3>${report.title}</h3>
             ${viewMode === 'grid' ? `<p>${plainContent.substring(0, 100)}...</p>` : ''}
           </div>
           <input type="checkbox" class="presentation-checkbox" ${isSelected ? 'checked' : ''}>
@@ -181,11 +197,6 @@ function renderReports() {
       reportGrid.appendChild(card);
     }
   });
-
-  const cards = Array.from(reportGrid.children);
-  cards.sort((a, b) => b.getAttribute('data-match-count') - a.getAttribute('data-match-count'));
-  reportGrid.innerHTML = '';
-  cards.forEach(card => reportGrid.appendChild(card));
 
   reportGrid.classList.remove('grid-view', 'list-view');
   reportGrid.classList.add(`${viewMode}-view`);
