@@ -358,6 +358,27 @@ nav ul li a:hover {
   cursor: pointer;
 }
 
+.card-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.share-btn {
+  background: #3b82f6;
+  color: #fff;
+  border: none;
+  padding: 5px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background 0.2s;
+}
+
+.share-btn:hover {
+  background: #2563eb;
+}
+
 .modal {
   display: none;
   position: fixed;
