@@ -19,6 +19,7 @@ let accountCount = { c1: 1, c2: 1 }; // Track number of accounts per client
 
 // DOM elements
 const analysisList = document.getElementById('analysis-list');
+const analysisTopics = document.querySelector('.analysis-topics');
 const tabButtons = document.querySelectorAll('.tab-btn');
 const tabContents = document.querySelectorAll('.tab-content');
 const recalculateBtn = document.getElementById('recalculate-btn');
@@ -28,21 +29,33 @@ let chartInstance = null;
 
 // Initialize on page load
 document.addEventListener('DOMContentLoaded', () => {
-  updateGraph(); // Initial graph render with placeholder data
+  populateAnalysisTopics(); // Populate topics horizontally
+  updateGraph(); // Initial graph render
   setupTabSwitching(); // Set up tab functionality
 });
 
-// Handle analysis selection (placeholder for future expansion)
-analysisList.addEventListener('click', (e) => {
-  e.preventDefault();
-  const target = e.target;
-  if (target.tagName === 'A') {
-    analysisList.querySelectorAll('a').forEach(a => a.classList.remove('active'));
-    target.classList.add('active');
-    // Future: Switch inputs based on analysis
-    updateGraph();
-  }
-});
+// Populate analysis topics horizontally
+function populateAnalysisTopics() {
+  analysisTopics.innerHTML = '';
+  analysisList.querySelectorAll('a').forEach(link => {
+    const btn = document.createElement('button');
+    btn.classList.add('topic-btn');
+    btn.textContent = link.textContent;
+    btn.dataset.analysis = link.dataset.analysis;
+    if (link.classList.contains('active')) btn.classList.add('active');
+    analysisTopics.appendChild(btn);
+  });
+
+  // Handle topic selection
+  document.querySelectorAll('.topic-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.topic-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      // Future: Update inputs based on selected analysis
+      updateGraph();
+    });
+  });
+}
 
 // Tab switching functionality
 function setupTabSwitching() {
