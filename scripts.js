@@ -141,10 +141,15 @@ let lastSearchTerm = '';
 let presentationReports = [];
 
 function updatePresentationCount() {
+  const previousCount = parseInt(presentationCount.textContent) || 0;
   presentationCount.textContent = presentationReports.length;
-  if (presentationReports.length > 0) {
+  
+  // Only trigger animation if count increases from 0 to 1 or higher
+  if (presentationReports.length > 0 && previousCount === 0) {
+    presentationCount.classList.remove('active'); // Reset animation
+    void presentationCount.offsetWidth; // Trigger reflow to restart animation
     presentationCount.classList.add('active');
-  } else {
+  } else if (presentationReports.length === 0) {
     presentationCount.classList.remove('active');
   }
 }
@@ -235,6 +240,26 @@ function renderReports() {
   reportGrid.classList.remove('grid-view', 'list-view');
   reportGrid.classList.add(`${viewMode}-view`);
   updateBreadcrumb();
+
+  // Add event listeners to checkboxes within renderReports
+  document.querySelectorAll('.presentation-checkbox').forEach(checkbox => {
+    checkbox.addEventListener('change', (e) => {
+      const card = e.target.closest('.report-card');
+      const title = card.getAttribute('data-title');
+      if (e.target.checked) {
+        if (!presentationReports.includes(title)) {
+          presentationReports.push(title);
+          updatePresentationCount();
+        }
+      } else {
+        const index = presentationReports.indexOf(title);
+        if (index !== -1) {
+          presentationReports.splice(index, 1);
+          updatePresentationCount();
+        }
+      }
+    });
+  });
 }
 
 categoryFilter.addEventListener('click', (e) => {
@@ -353,25 +378,6 @@ modalSavePdfBtn.addEventListener('click', () => {
     })
     .from(element)
     .save();
-});
-
-document.querySelectorAll('.presentation-checkbox').forEach(checkbox => {
-  checkbox.addEventListener('change', (e) => {
-    const card = e.target.closest('.report-card');
-    const title = card.getAttribute('data-title');
-    if (e.target.checked) {
-      if (!presentationReports.includes(title)) {
-        presentationReports.push(title);
-        updatePresentationCount();
-      }
-    } else {
-      const index = presentationReports.indexOf(title);
-      if (index !== -1) {
-        presentationReports.splice(index, 1);
-        updatePresentationCount();
-      }
-    }
-  });
 });
 
 document.querySelectorAll('#tag-filters input[type="checkbox"]').forEach(checkbox => {
