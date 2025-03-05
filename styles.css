@@ -328,32 +328,34 @@ nav ul li a:hover {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  width: 100%;
 }
 
 .report-card.list-view .report-card-content {
   padding: 0;
+  height: 100%;
 }
 
 .report-card h3 {
   font-size: 16px;
   font-weight: 600;
   color: #1e293b;
-  margin-bottom: 8px;
+  margin: 0;
 }
 
 .report-card.list-view h3 {
-  margin: 0;
   font-size: 14px;
 }
 
 .report-card p {
   font-size: 14px;
   color: #64748b;
-  margin-bottom: 12px;
+  margin: 5px 0 0 0;
 }
 
-.report-card input[type="checkbox"] {
+.report-card .presentation-checkbox {
   margin-left: 10px;
+  cursor: pointer;
 }
 
 .modal {
