@@ -9,7 +9,7 @@ const reports = [
     category: "Personal Cash Flow", 
     title: "Up to Your Neck in Debt?", 
     content: "Strategies for managing overwhelming debt.",
-    tags: ["debt", "cash-flow", "beginner", "all-ages", "individual"]
+    tags: ["debt", "cash-flow", "beginner", "all-ages", "individual", "topic-debt"]
   },
   { 
     category: "Retirement Planning", 
@@ -36,49 +36,74 @@ const reports = [
       <p>Developing a successful retirement plan involves carefully considering a wide range of issues and potential problems. Finding solutions to these questions often requires both personal education and the guidance of knowledgeable individuals, from many professional disciplines. The key is to begin planning as early as possible.</p>
       <p><em>Presented by Jason Mangold</em></p>
     `,
-    tags: ["retirement", "beginner", "30-45", "46-60", "over-60", "individual", "general"]
+    tags: ["retirement", "beginner", "30-45", "46-60", "over-60", "individual", "general", "topic-retirement"]
   },
   { 
     category: "Retirement Planning", 
     subcategory: "The Retirement Need", 
     title: "Evaluating Early Retirement Offers", 
     content: "Guide to assessing early retirement options.",
-    tags: ["retirement", "early-retirement", "30-45", "intermediate", "individual"]
+    tags: ["retirement", "early-retirement", "30-45", "intermediate", "individual", "topic-retirement"]
   },
   { 
     category: "Retirement Planning", 
     subcategory: "The Retirement Need", 
     title: "Do You Desire Retirement Peace of Mind?", 
     content: "Steps to achieve retirement peace.",
-    tags: ["retirement", "beginner", "all-ages", "individual"]
+    tags: ["retirement", "beginner", "all-ages", "individual", "topic-retirement"]
   },
   { 
     category: "Retirement Planning", 
     subcategory: "The Retirement Need", 
     title: "Average Life Expectancy at Age 65", 
     content: "Life expectancy stats for planning.",
-    tags: ["retirement", "over-60", "intermediate", "individual"]
+    tags: ["retirement", "over-60", "intermediate", "individual", "topic-retirement"]
   },
   { 
     category: "Retirement Planning", 
     subcategory: "Individual Retirement Plans", 
     title: "How a Roth IRA Works", 
     content: "Explains the mechanics of a Roth IRA.",
-    tags: ["retirement", "investments", "30-45", "46-60", "individual", "intermediate", "one-pager"]
+    tags: ["retirement", "investments", "30-45", "46-60", "individual", "intermediate", "one-pager", "topic-retirement"]
   },
   { 
     category: "Retirement Planning", 
     subcategory: "Retirement Income Sources", 
     title: "How a Reverse Mortgage Works", 
     content: "Details how reverse mortgages provide income.",
-    tags: ["retirement", "income", "over-60", "individual", "intermediate", "one-pager"]
+    tags: ["retirement", "income", "over-60", "individual", "intermediate", "one-pager", "topic-retirement"]
   },
   { 
     category: "Retirement Planning", 
     subcategory: "Employer Sponsored Plans", 
     title: "How a 401(k) Cash or Deferred Plan Works", 
     content: "Overview of 401(k) mechanics.",
-    tags: ["retirement", "investments", "30-45", "46-60", "individual", "business-owner", "intermediate", "one-pager"]
+    tags: ["retirement", "investments", "30-45", "46-60", "individual", "business-owner", "intermediate", "one-pager", "topic-retirement"]
+  },
+  // Added sample reports with new topics
+  { 
+    category: "Protecting Your Finances", 
+    title: "Life Insurance Basics", 
+    content: "Introduction to life insurance options.",
+    tags: ["insurance", "beginner", "all-ages", "individual", "topic-life-insurance"]
+  },
+  { 
+    category: "Education Funding", 
+    title: "Saving for College 101", 
+    content: "Strategies for college savings.",
+    tags: ["education", "beginner", "all-ages", "individual", "topic-college"]
+  },
+  { 
+    category: "Disability", 
+    title: "Understanding Disability Income Insurance", 
+    content: "Overview of disability insurance benefits.",
+    tags: ["disability", "intermediate", "all-ages", "individual", "topic-disability"]
+  },
+  { 
+    category: "Long-Term Care", 
+    title: "Planning for Long-Term Care Needs", 
+    content: "Guide to long-term care options.",
+    tags: ["long-term-care", "over-60", "intermediate", "individual", "topic-long-term-care"]
   }
 ];
 
@@ -92,15 +117,6 @@ const subfolders = {
     { name: "Health Care Planning in Retirement", description: "Health care in retirement." }
   ]
 };
-
-// Initialize Fuse.js for fuzzy search
-const fuse = new Fuse(reports, {
-  keys: ['title', 'content'],
-  includeScore: true,
-  threshold: 0.4, // Lower = stricter, higher = looser (0.4 balances forgiveness and relevance)
-  ignoreLocation: true, // Match anywhere in the string
-  minMatchCharLength: 2 // Require at least 2 chars for a match
-});
 
 const reportGrid = document.getElementById('report-grid');
 const subfolderContainer = document.getElementById('subfolder-container');
@@ -158,27 +174,22 @@ function renderSubfolders(category) {
 
 function renderReports() {
   reportGrid.innerHTML = '';
-  const searchTerm = searchInput.value.trim();
+  const searchTerm = searchInput.value.toLowerCase().trim();
   const selectedTags = Array.from(document.querySelectorAll('#tag-filters input:checked')).map(input => input.value);
   const isOnePagerFilter = selectedTags.includes('one-pager');
+  const selectedTopics = selectedTags.filter(tag => tag.startsWith('topic-'));
   
   lastSearchTerm = searchTerm;
   
-  let filteredReports = reports;
-  
-  // Apply fuzzy search if there's a search term
-  if (searchTerm) {
-    const fuseResults = fuse.search(searchTerm);
-    filteredReports = fuseResults.map(result => result.item);
-  }
-
-  filteredReports.forEach(report => {
+  reports.forEach(report => {
     const plainContent = report.content.replace(/<[^>]+>/g, '');
     const matchesCategory = selectedCategory === 'all' || report.category === selectedCategory;
     const matchesSubcategory = !selectedSubcategory || (report.subcategory && report.subcategory === selectedSubcategory);
-    const matchesTags = !isOnePagerFilter || (report.tags && report.tags.includes('one-pager'));
+    const matchesSearch = !searchTerm || report.title.toLowerCase().includes(searchTerm) || plainContent.toLowerCase().includes(searchTerm);
+    const matchesOnePager = !isOnePagerFilter || (report.tags && report.tags.includes('one-pager'));
+    const matchesTopic = selectedTopics.length === 0 || (report.tags && selectedTopics.some(topic => report.tags.includes(topic)));
     
-    if (matchesCategory && matchesSubcategory && matchesTags) {
+    if (matchesCategory && matchesSubcategory && matchesSearch && matchesOnePager && matchesTopic) {
       const card = document.createElement('div');
       card.classList.add('report-card');
       card.classList.add(`${viewMode}-view`);
