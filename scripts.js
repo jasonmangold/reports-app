@@ -80,7 +80,6 @@ const reports = [
     content: "Overview of 401(k) mechanics.",
     tags: ["retirement", "investments", "30-45", "46-60", "individual", "business-owner", "intermediate", "one-pager", "topic-retirement"]
   },
-  // Added sample reports with new topics
   { 
     category: "Protecting Your Finances", 
     title: "Life Insurance Basics", 
@@ -148,6 +147,16 @@ function updatePresentationCount() {
   }
 }
 
+function generateSocialMediaPost(title, content) {
+  const plainContent = content.replace(/<[^>]+>/g, '');
+  if (title === "The Need for Retirement Planning") {
+    return "Retirement isn't just rocking on the porch anymore—longer lives mean planning for income, health, and more. Start early! #RetirementPlanning";
+  }
+  // Fallback for other reports
+  const summary = plainContent.substring(0, 100).trim() + '...';
+  return `${title}: ${summary} #FinancialPlanning`;
+}
+
 function renderSubfolders(category) {
   subfolderContainer.innerHTML = '';
   if (subfolders[category]) {
@@ -202,7 +211,10 @@ function renderReports() {
             <h3>${report.title}</h3>
             ${viewMode === 'grid' ? `<p>${plainContent.substring(0, 100)}...</p>` : ''}
           </div>
-          <input type="checkbox" class="presentation-checkbox" ${isSelected ? 'checked' : ''}>
+          <div class="card-actions">
+            <input type="checkbox" class="presentation-checkbox" ${isSelected ? 'checked' : ''}>
+            <button class="share-btn" title="Share on Social Media"><i class="fas fa-share-alt"></i></button>
+          </div>
         </div>
       `;
       reportGrid.appendChild(card);
@@ -230,6 +242,17 @@ function renderReports() {
           updatePresentationCount();
         }
       }
+    });
+  });
+
+  // Add event listeners to share buttons
+  document.querySelectorAll('.share-btn').forEach(button => {
+    button.addEventListener('click', (e) => {
+      const card = e.target.closest('.report-card');
+      const title = card.getAttribute('data-title');
+      const content = card.getAttribute('data-content');
+      const post = generateSocialMediaPost(title, content);
+      alert(`Generated Social Media Post:\n\n${post}\n\nCharacter count: ${post.length}`);
     });
   });
 }
@@ -292,7 +315,7 @@ listViewBtn.addEventListener('click', () => {
 
 reportGrid.addEventListener('click', (e) => {
   const card = e.target.closest('.report-card');
-  if (card && !e.target.classList.contains('presentation-checkbox')) {
+  if (card && !e.target.classList.contains('presentation-checkbox') && !e.target.classList.contains('share-btn') && !e.target.closest('.share-btn')) {
     modalTitle.textContent = card.getAttribute('data-title');
     let content = card.getAttribute('data-content');
     if (lastSearchTerm) {
