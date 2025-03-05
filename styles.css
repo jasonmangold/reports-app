@@ -143,30 +143,40 @@ nav ul li a:hover {
 .tag-filters {
   background: #ffffff;
   border-radius: 12px;
-  padding: 15px;
+  padding: 10px 15px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
   margin-bottom: 20px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 15px;
 }
 
 .tag-filters h3 {
   font-size: 16px;
   font-weight: 600;
   color: #3b82f6;
-  margin-bottom: 10px;
+  margin: 0;
+  flex-shrink: 0;
 }
 
 .filter-group {
-  margin-bottom: 15px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
 }
 
 .filter-group label {
-  display: block;
-  margin: 5px 0;
+  margin: 0;
   color: #475569;
+  display: flex;
+  align-items: center;
+  gap: 5px;
 }
 
 .filter-group input[type="checkbox"] {
-  margin-right: 5px;
+  margin: 0;
 }
 
 .top-pick {
@@ -238,6 +248,22 @@ nav ul li a:hover {
   color: #fff;
 }
 
+.breadcrumb {
+  font-size: 14px;
+  color: #64748b;
+  margin-bottom: 20px;
+}
+
+.breadcrumb span {
+  cursor: pointer;
+  color: #3b82f6;
+  transition: color 0.2s;
+}
+
+.breadcrumb span:hover {
+  color: #2563eb;
+}
+
 .subfolder-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
@@ -271,22 +297,6 @@ nav ul li a:hover {
   font-size: 16px;
   font-weight: 600;
   color: #1e293b;
-}
-
-.back-button {
-  background: #3b82f6;
-  color: #fff;
-  border: none;
-  padding: 8px 16px;
-  border-radius: 8px;
-  cursor: pointer;
-  font-weight: 600;
-  margin-bottom: 20px;
-  transition: background 0.2s;
-}
-
-.back-button:hover {
-  background: #2563eb;
 }
 
 .report-grid.grid-view {
@@ -419,7 +429,7 @@ nav ul li a:hover {
 }
 
 .modal-actions {
-  display: none; /* Hidden by default */
+  display: none;
   align-items: center;
   gap: 10px;
 }
@@ -606,4 +616,16 @@ body.dark-mode .save-pdf-top-btn {
 
 body.dark-mode .save-pdf-top-btn:hover {
   background: #2563eb;
+}
+
+body.dark-mode .breadcrumb {
+  color: #94a3b8;
+}
+
+body.dark-mode .breadcrumb span {
+  color: #60a5fa;
+}
+
+body.dark-mode .breadcrumb span:hover {
+  color: #2563eb;
 }
