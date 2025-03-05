@@ -39,6 +39,7 @@ nav ul {
 
 nav ul li {
   margin: 0 20px;
+  position: relative;
 }
 
 nav ul li a {
@@ -51,6 +52,34 @@ nav ul li a {
 nav ul li a.active,
 nav ul li a:hover {
   color: #3b82f6;
+}
+
+.count-badge {
+  position: absolute;
+  top: -10px;
+  right: -10px;
+  background: #ef4444;
+  color: #fff;
+  font-size: 12px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.3s, transform 0.3s;
+}
+
+.count-badge.active {
+  opacity: 1;
+  animation: pulse 0.5s ease-in-out;
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.2); }
+  100% { transform: scale(1); }
 }
 
 .icons i {
@@ -279,6 +308,7 @@ nav ul li a:hover {
   overflow: hidden;
   transition: transform 0.2s, box-shadow 0.2s;
   cursor: pointer;
+  position: relative;
 }
 
 .report-card.grid-view:hover {
@@ -295,6 +325,9 @@ nav ul li a:hover {
 
 .report-card-content {
   padding: 15px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
 .report-card.list-view .report-card-content {
@@ -317,6 +350,10 @@ nav ul li a:hover {
   font-size: 14px;
   color: #64748b;
   margin-bottom: 12px;
+}
+
+.report-card input[type="checkbox"] {
+  margin-left: 10px;
 }
 
 .modal {
