@@ -1,22 +1,30 @@
 const reports = [
   // Personal Finance (example)
-  { category: "Personal Finance", title: "The Need for Financial Planning", content: "Explains the importance of financial planning." },
-  { category: "Personal Cash Flow", title: "Up to Your Neck in Debt?", content: "Strategies for managing overwhelming debt." },
+  { 
+    category: "Personal Finance", 
+    title: "The Need for Financial Planning", 
+    content: "Explains the importance of financial planning.",
+    tags: ["finance", "beginner", "all-ages", "individual"]
+  },
+  { 
+    category: "Personal Cash Flow", 
+    title: "Up to Your Neck in Debt?", 
+    content: "Strategies for managing overwhelming debt.",
+    tags: ["debt", "cash-flow", "beginner", "all-ages", "individual"]
+  },
   // Retirement Planning - The Retirement Need
-  {
-    category: "Retirement Planning",
-    subcategory: "The Retirement Need",
-    title: "The Need for Retirement Planning",
+  { 
+    category: "Retirement Planning", 
+    subcategory: "The Retirement Need", 
+    title: "The Need for Retirement Planning", 
     content: `
       <p>Traditionally, retirement in America has been defined in terms of its relationship to participation in the active work force. An individual would work full-time until a certain age, and then leave employment to spend a few years quietly rocking on the front porch. Declining health often made retirement short and unpleasant. Retirement planning, as such, typically focused on saving enough to guarantee minimal survival for a relatively brief period of time.</p>
       <p>More recently, however, many individuals are beginning to recognize that for a number of reasons, this traditional view of retirement is no longer accurate. Some individuals, for example, are voluntarily choosing to retire early, in their 40s or 50s. Others, because they enjoy working, choose to remain employed well past the traditional retirement age of 65. And, many retirees do more than just rock on the front porch. Retirement is now often defined by activities such as travel, returning to school, volunteer work, or the pursuit of favorite hobbies or sports.</p>
       <p>This changed the face of retirement, however, with all of its possibilities, does not happen automatically. Many of the issues associated with retirement, such as ill health, and the need to provide income, still exist. With proper planning, however, these needs can be met.</p>
-
       <h3>Longer Lives</h3>
       <p>The single most important factor in this changed retirement picture is the fact that we now live much longer than before. A child born in 1900, for example, had an average life expectancy of 47.3 years. For a child born in 2020, however, average life expectancy had increased to 77.0 years. The following graph<sup>1</sup> illustrates this change.</p>
       <p><em>[Graph Placeholder: Average U.S. Life Expectancy (1900 - 2020)]</em></p>
       <p class="footnote"><sup>1</sup> Source: National Vital Statistics Reports, Volume 71, Number 1 - United States Life Tables, 2020, Table 19. August 8, 2022.</p>
-
       <h3>Common Retirement Planning Issues</h3>
       <p>Planning for a much longer life span involves addressing problems not faced by earlier generations. Some of the key issues include the following:</p>
       <ul>
@@ -26,16 +34,55 @@ const reports = [
         <li><strong>Housing:</strong> This question involves not only the size and type of home (condo, house, shared housing, assisted living), but also its location. Such factors as climate and proximity to close family members and medical care are often important. Completely paying off a home loan can reduce monthly income needs. A reverse mortgage may provide additional monthly income.</li>
         <li><strong>Lifestyle:</strong> Some individuals, accustomed to a busy work life, find it difficult to enjoy the freedom offered by retirement. Planning ahead can make this transition easier.</li>
       </ul>
-
       <h3>Seek Professional Guidance</h3>
       <p>Developing a successful retirement plan involves carefully considering a wide range of issues and potential problems. Finding solutions to these questions often requires both personal education and the guidance of knowledgeable individuals, from many professional disciplines. The key is to begin planning as early as possible.</p>
       <p><em>Presented by Jason Mangold</em></p>
-    `
+    `,
+    tags: ["retirement", "beginner", "30-45", "46-60", "over-60", "individual", "general"]
   },
-  { category: "Retirement Planning", subcategory: "The Retirement Need", title: "Evaluating Early Retirement Offers", content: "Guide to assessing early retirement options." },
-  { category: "Retirement Planning", subcategory: "The Retirement Need", title: "Do You Desire Retirement Peace of Mind?", content: "Steps to achieve retirement peace." },
-  { category: "Retirement Planning", subcategory: "The Retirement Need", title: "Average Life Expectancy at Age 65", content: "Life expectancy stats for planning." },
-  // Add more reports as needed
+  { 
+    category: "Retirement Planning", 
+    subcategory: "The Retirement Need", 
+    title: "Evaluating Early Retirement Offers", 
+    content: "Guide to assessing early retirement options.",
+    tags: ["retirement", "early-retirement", "30-45", "intermediate", "individual"]
+  },
+  { 
+    category: "Retirement Planning", 
+    subcategory: "The Retirement Need", 
+    title: "Do You Desire Retirement Peace of Mind?", 
+    content: "Steps to achieve retirement peace.",
+    tags: ["retirement", "beginner", "all-ages", "individual"]
+  },
+  { 
+    category: "Retirement Planning", 
+    subcategory: "The Retirement Need", 
+    title: "Average Life Expectancy at Age 65", 
+    content: "Life expectancy stats for planning.",
+    tags: ["retirement", "over-60", "intermediate", "individual"]
+  },
+  // Added "How" reports with "One Pager" tag
+  { 
+    category: "Retirement Planning", 
+    subcategory: "Individual Retirement Plans", 
+    title: "How a Roth IRA Works", 
+    content: "Explains the mechanics of a Roth IRA.",
+    tags: ["retirement", "investments", "30-45", "46-60", "individual", "intermediate", "one-pager"]
+  },
+  { 
+    category: "Retirement Planning", 
+    subcategory: "Retirement Income Sources", 
+    title: "How a Reverse Mortgage Works", 
+    content: "Details how reverse mortgages provide income.",
+    tags: ["retirement", "income", "over-60", "individual", "intermediate", "one-pager"]
+  },
+  { 
+    category: "Retirement Planning", 
+    subcategory: "Employer Sponsored Plans", 
+    title: "How a 401(k) Cash or Deferred Plan Works", 
+    content: "Overview of 401(k) mechanics.",
+    tags: ["retirement", "investments", "30-45", "46-60", "individual", "business-owner", "intermediate", "one-pager"]
+  }
 ];
 
 const subfolders = {
@@ -94,27 +141,39 @@ function renderSubfolders(category) {
 function renderReports() {
   reportGrid.innerHTML = '';
   const searchTerm = searchInput.value.toLowerCase();
-  lastSearchTerm = searchTerm; // Store for modal highlighting
+  const selectedTags = Array.from(document.querySelectorAll('#tag-filters input:checked')).map(input => input.value);
+  
+  lastSearchTerm = searchTerm;
   reports.forEach(report => {
     const plainContent = report.content.replace(/<[^>]+>/g, '');
     const matchesCategory = selectedCategory === 'all' || report.category === selectedCategory;
     const matchesSubcategory = !selectedSubcategory || (report.subcategory && report.subcategory === selectedSubcategory);
     const matchesSearch = !searchTerm || report.title.toLowerCase().includes(searchTerm) || plainContent.toLowerCase().includes(searchTerm);
-    if (matchesCategory && matchesSubcategory && matchesSearch) {
+    const matchesTags = selectedTags.length === 0 || selectedTags.some(tag => report.tags.includes(tag));
+    
+    if (matchesCategory && matchesSubcategory && matchesSearch && matchesTags) {
       const card = document.createElement('div');
       card.classList.add('report-card');
       card.classList.add(`${viewMode}-view`);
       card.setAttribute('data-title', report.title);
       card.setAttribute('data-content', report.content);
+      const matchCount = selectedTags.filter(tag => report.tags.includes(tag)).length;
+      card.setAttribute('data-match-count', matchCount);
       card.innerHTML = `
         <div class="report-card-content">
-          <h3>${report.title}</h3>
+          <h3>${report.title}${matchCount >= Math.max(2, selectedTags.length - 1) ? ' <span class="top-pick">Top Pick</span>' : ''}</h3>
           ${viewMode === 'grid' ? `<p>${plainContent.substring(0, 100)}...</p>` : ''}
         </div>
       `;
       reportGrid.appendChild(card);
     }
   });
+
+  const cards = Array.from(reportGrid.children);
+  cards.sort((a, b) => b.getAttribute('data-match-count') - a.getAttribute('data-match-count'));
+  reportGrid.innerHTML = '';
+  cards.forEach(card => reportGrid.appendChild(card));
+
   reportGrid.classList.remove('grid-view', 'list-view');
   reportGrid.classList.add(`${viewMode}-view`);
   backButton.style.display = selectedSubcategory ? 'block' : 'none';
@@ -182,14 +241,11 @@ reportGrid.addEventListener('click', (e) => {
     modalTitle.textContent = card.getAttribute('data-title');
     let content = card.getAttribute('data-content');
     if (lastSearchTerm) {
-      // Case-insensitive regex to highlight search term
       const regex = new RegExp(`(${lastSearchTerm})`, 'gi');
       content = content.replace(regex, '<span class="highlight">$1</span>');
     }
     modalContent.innerHTML = content;
     modal.style.display = 'flex';
-
-    // Scroll to the first highlighted term if it exists
     if (lastSearchTerm) {
       const firstHighlight = modalContent.querySelector('.highlight');
       if (firstHighlight) {
@@ -221,6 +277,12 @@ savePdfBtn.addEventListener('click', () => {
     })
     .from(element)
     .save();
+});
+
+document.querySelectorAll('#tag-filters input[type="checkbox"]').forEach(checkbox => {
+  checkbox.addEventListener('change', () => {
+    renderReports();
+  });
 });
 
 // Initial render
