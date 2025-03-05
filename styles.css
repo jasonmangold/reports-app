@@ -326,41 +326,32 @@ nav ul li a:hover {
 .report-card-content {
   padding: 15px;
   display: flex;
-  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
   width: 100%;
 }
 
 .report-card.list-view .report-card-content {
   padding: 0;
   height: 100%;
-  flex-direction: row;
-  justify-content: space-between;
-  align-items: center;
 }
 
-.title-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 8px;
-}
-
-.report-title {
+.report-card h3 {
   font-size: 16px;
   font-weight: 600;
   color: #1e293b;
-  margin: 0;
-  cursor: pointer;
+  margin-bottom: 8px;
 }
 
-.report-card.list-view .report-title {
+.report-card.list-view h3 {
+  margin: 0;
   font-size: 14px;
 }
 
 .report-card p {
   font-size: 14px;
   color: #64748b;
-  margin: 0;
+  margin-bottom: 12px;
 }
 
 .report-card .presentation-checkbox {
@@ -372,42 +363,6 @@ nav ul li a:hover {
   display: flex;
   align-items: center;
   gap: 10px;
-}
-
-.title-actions {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-}
-
-.share-icon-btn {
-  background: none;
-  border: none;
-  color: #3b82f6;
-  font-size: 16px;
-  cursor: pointer;
-  padding: 0;
-  transition: color 0.2s;
-}
-
-.share-icon-btn:hover {
-  color: #2563eb;
-}
-
-.save-pdf-top-btn {
-  background: #3b82f6;
-  color: #fff;
-  border: none;
-  padding: 4px 8px;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 12px;
-  font-weight: 600;
-  transition: background 0.2s;
-}
-
-.save-pdf-top-btn:hover {
-  background: #2563eb;
 }
 
 .modal {
@@ -450,10 +405,53 @@ nav ul li a:hover {
   padding-bottom: 10px;
 }
 
+.modal-title-row {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
 .modal-header h2 {
   font-size: 24px;
   font-weight: 700;
   color: #1e293b;
+  margin: 0;
+}
+
+.modal-actions {
+  display: none; /* Hidden by default */
+  align-items: center;
+  gap: 10px;
+}
+
+.share-icon-btn {
+  background: none;
+  border: none;
+  color: #3b82f6;
+  font-size: 18px;
+  cursor: pointer;
+  padding: 0;
+  transition: color 0.2s;
+}
+
+.share-icon-btn:hover {
+  color: #2563eb;
+}
+
+.save-pdf-top-btn {
+  background: #3b82f6;
+  color: #fff;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  transition: background 0.2s;
+}
+
+.save-pdf-top-btn:hover {
+  background: #2563eb;
 }
 
 .modal-header .close {
