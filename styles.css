@@ -626,6 +626,83 @@ body.dark-mode .breadcrumb span {
   color: #60a5fa;
 }
 
+.analysis-page {
+  display: flex;
+  padding: 20px;
+}
+.analysis-workspace {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: calc(100vh - 90px); /* Adjust for header */
+}
+.client-inputs, .graph-outputs {
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  padding: 15px;
+  margin-bottom: 20px;
+}
+.client-inputs {
+  flex: 0 0 30%;
+  overflow-y: auto;
+}
+.graph-outputs {
+  flex: 0 0 70%;
+}
+.input-section {
+  margin-bottom: 15px;
+}
+.input-section h4 {
+  font-size: 16px;
+  font-weight: 600;
+  color: #3b82f6;
+  margin-bottom: 10px;
+}
+.client-inputs label {
+  display: block;
+  margin: 5px 0;
+  color: #475569;
+}
+.client-inputs input {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+.add-account-btn {
+  background: #3b82f6;
+  color: #fff;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 600;
+  margin-top: 10px;
+}
+.add-account-btn:hover {
+  background: #2563eb;
+}
+.account {
+  border: 1px solid #ddd;
+  padding: 10px;
+  margin-bottom: 10px;
+  border-radius: 4px;
+}
+#recalculate-btn, #export-graph-btn {
+  background: #3b82f6;
+  color: #fff;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  margin-top: 10px;
+}
+#recalculate-btn:hover, #export-graph-btn:hover {
+  background: #2563eb;
+}
+
 body.dark-mode .breadcrumb span:hover {
   color: #2563eb;
 }
