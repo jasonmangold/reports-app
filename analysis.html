@@ -1,1 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Analysis - Advisys</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <link rel="stylesheet" href="styles.css">
+  <!-- Add Chart.js for interactive graphs -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+  <header>
+    <div class="logo">Advisys</div>
+    <nav>
+      <ul>
+        <li><a href="home.html">Home</a></li>
+        <li><a href="index.html">Reports</a></li>
+        <li><a href="analysis.html" class="active">Analysis</a></li>
+        <li><a href="#" id="presentation-tab">Presentation <span id="presentation-count" class="count-badge">0</span></a></li>
+        <li><a href="#">Calculators</a></li>
+        <li><a href="#">Search</a></li>
+        <li><a href="#">Profile</a></li>
+      </ul>
+    </nav>
+    <div class="icons">
+      <i class="fas fa-bell"></i>
+      <i class="fas fa-question-circle"></i>
+      <i class="fas fa-moon dark-mode-toggle"></i>
+    </div>
+  </header>
 
+  <div class="analysis-page">
+    <div class="sidebar">
+      <h3>Analyses</h3>
+      <ul id="analysis-list">
+        <li><a href="#" data-analysis="summary" class="active">Summary</a></li>
+        <li><a href="#" data-analysis="education-funding">Education Funding</a></li>
+        <li><a href="#" data-analysis="survivor-needs">Survivor Needs</a></li>
+        <li><a href="#" data-analysis="retirement-accumulation">Retirement Accumulation</a></li>
+        <li><a href="#" data-analysis="retirement-distribution">Retirement Distribution</a></li>
+        <li><a href="#" data-analysis="social-security">Social Security</a></li>
+        <li><a href="#" data-analysis="disability-income-needs">Disability Income Needs</a></li>
+        <li><a href="#" data-analysis="critical-illness">Critical Illness</a></li>
+        <li><a href="#" data-analysis="long-term-care-needs">Long-Term Care Needs</a></li>
+        <li><a href="#" data-analysis="estate-analysis">Estate Analysis</a></li>
+        <li><a href="#" data-analysis="accumulation-funding">Accumulation Funding</a></li>
+        <li><a href="#" data-analysis="asset-allocation">Asset Allocation</a></li>
+        <li><a href="#" data-analysis="charitable-remainder-trust">Charitable Remainder Trust</a></li>
+        <li><a href="#" data-analysis="personal-finance">Personal Finance</a></li>
+        <li><a href="#" data-analysis="debt-repayment">Debt Repayment</a></li>
+        <li><a href="#" data-analysis="business-continuation">Business Continuation</a></li>
+        <li><a href="#" data-analysis="key-employee">Key Employee</a></li>
+      </ul>
+    </div>
+
+    <div class="main-content">
+      <div class="analysis-workspace">
+        <div class="client-inputs">
+          <h3>Client Inputs</h3>
+          <form id="client-input-form">
+            <!-- Dynamic inputs will be populated via JavaScript -->
+            <div id="input-fields"></div>
+            <button type="button" id="recalculate-btn">Recalculate</button>
+          </form>
+        </div>
+        <div class="graph-outputs">
+          <h3>Analysis Outputs</h3>
+          <canvas id="analysis-chart"></canvas>
+          <button id="export-graph-btn">Export Graph</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="analysis.js"></script>
+</body>
+</html>
