@@ -129,6 +129,8 @@ const modalTitle = document.getElementById('modal-title');
 const modalContent = document.getElementById('modal-content');
 const modalClose = document.getElementById('modal-close');
 const savePdfBtn = document.getElementById('save-pdf-btn');
+const modalShareBtn = document.getElementById('modal-share-btn');
+const modalSavePdfBtn = document.getElementById('modal-save-pdf-btn');
 const presentationTab = document.getElementById('presentation-tab');
 const presentationCount = document.getElementById('presentation-count');
 
@@ -154,22 +156,6 @@ function generateSocialMediaPost(title, content) {
   }
   const summary = plainContent.substring(0, 100).trim() + '...';
   return `${title}: ${summary} #FinancialPlanning`;
-}
-
-function saveReportAsPDF(title, content) {
-  const element = document.createElement('div');
-  element.innerHTML = `<h2>${title}</h2>${content}`;
-  element.style.padding = '20px';
-  html2pdf()
-    .set({
-      margin: 1,
-      filename: `${title}.pdf`,
-      image: { type: 'jpeg', quality: 0.95 },
-      html2canvas: { scale: 2 },
-      jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
-    })
-    .from(element)
-    .save();
 }
 
 function renderSubfolders(category) {
@@ -222,13 +208,7 @@ function renderReports() {
       const isSelected = presentationReports.includes(report.title);
       card.innerHTML = `
         <div class="report-card-content">
-          <div class="title-row">
-            <h3 class="report-title">${report.title}</h3>
-            <div class="title-actions" style="display: none;">
-              <button class="share-icon-btn" title="Share on Social Media"><i class="fas fa-share-alt"></i></button>
-              <button class="save-pdf-top-btn" title="Save PDF">Save PDF</button>
-            </div>
-          </div>
+          <h3>${report.title}</h3>
           ${viewMode === 'grid' ? `<p>${plainContent.substring(0, 100)}...</p>` : ''}
           <div class="card-actions">
             <input type="checkbox" class="presentation-checkbox" ${isSelected ? 'checked' : ''}>
@@ -260,52 +240,6 @@ function renderReports() {
           updatePresentationCount();
         }
       }
-    });
-  });
-
-  // Add event listeners to titles to show/hide buttons
-  document.querySelectorAll('.report-title').forEach(title => {
-    title.addEventListener('click', (e) => {
-      const card = e.target.closest('.report-card');
-      const actions = card.querySelector('.title-actions');
-      actions.style.display = actions.style.display === 'none' ? 'flex' : 'none';
-      
-      // Open modal
-      modalTitle.textContent = card.getAttribute('data-title');
-      let content = card.getAttribute('data-content');
-      if (lastSearchTerm) {
-        const regex = new RegExp(`(${lastSearchTerm})`, 'gi');
-        content = content.replace(regex, '<span class="highlight">$1</span>');
-      }
-      modalContent.innerHTML = content;
-      modal.style.display = 'flex';
-      if (lastSearchTerm) {
-        const firstHighlight = modalContent.querySelector('.highlight');
-        if (firstHighlight) {
-          firstHighlight.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        }
-      }
-    });
-  });
-
-  // Add event listeners to share buttons
-  document.querySelectorAll('.share-icon-btn').forEach(button => {
-    button.addEventListener('click', (e) => {
-      const card = e.target.closest('.report-card');
-      const title = card.getAttribute('data-title');
-      const content = card.getAttribute('data-content');
-      const post = generateSocialMediaPost(title, content);
-      alert(`Generated Social Media Post:\n\n${post}\n\nCharacter count: ${post.length}`);
-    });
-  });
-
-  // Add event listeners to top Save PDF buttons
-  document.querySelectorAll('.save-pdf-top-btn').forEach(button => {
-    button.addEventListener('click', (e) => {
-      const card = e.target.closest('.report-card');
-      const title = card.getAttribute('data-title');
-      const content = card.getAttribute('data-content');
-      saveReportAsPDF(title, content);
     });
   });
 }
@@ -366,17 +300,61 @@ listViewBtn.addEventListener('click', () => {
   renderReports();
 });
 
+reportGrid.addEventListener('click', (e) => {
+  const card = e.target.closest('.report-card');
+  if (card && !e.target.classList.contains('presentation-checkbox')) {
+    modalTitle.textContent = card.getAttribute('data-title');
+    let content = card.getAttribute('data-content');
+    if (lastSearchTerm) {
+      const regex = new RegExp(`(${lastSearchTerm})`, 'gi');
+      content = content.replace(regex, '<span class="highlight">$1</span>');
+    }
+    modalContent.innerHTML = content;
+    modal.style.display = 'flex';
+    document.querySelector('.modal-actions').style.display = 'flex'; // Show buttons when modal opens
+    if (lastSearchTerm) {
+      const firstHighlight = modalContent.querySelector('.highlight');
+      if (firstHighlight) {
+        firstHighlight.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    }
+  }
+});
+
 modalClose.addEventListener('click', () => {
   modal.style.display = 'none';
+  document.querySelector('.modal-actions').style.display = 'none'; // Hide buttons when modal closes
 });
 
 window.addEventListener('click', (e) => {
   if (e.target === modal) {
     modal.style.display = 'none';
+    document.querySelector('.modal-actions').style.display = 'none'; // Hide buttons when modal closes
   }
 });
 
 savePdfBtn.addEventListener('click', () => {
+  const element = document.querySelector('.modal-content');
+  html2pdf()
+    .set({
+      margin: 1,
+      filename: `${modalTitle.textContent}.pdf`,
+      image: { type: 'jpeg', quality: 0.95 },
+      html2canvas: { scale: 2 },
+      jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
+    })
+    .from(element)
+    .save();
+});
+
+modalShareBtn.addEventListener('click', () => {
+  const title = modalTitle.textContent;
+  const content = modalContent.innerHTML;
+  const post = generateSocialMediaPost(title, content);
+  alert(`Generated Social Media Post:\n\n${post}\n\nCharacter count: ${post.length}`);
+});
+
+modalSavePdfBtn.addEventListener('click', () => {
   const element = document.querySelector('.modal-content');
   html2pdf()
     .set({
