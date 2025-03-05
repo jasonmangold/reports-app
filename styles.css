@@ -326,31 +326,41 @@ nav ul li a:hover {
 .report-card-content {
   padding: 15px;
   display: flex;
-  justify-content: space-between;
-  align-items: center;
+  flex-direction: column;
   width: 100%;
 }
 
 .report-card.list-view .report-card-content {
   padding: 0;
   height: 100%;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
 }
 
-.report-card h3 {
+.title-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.report-title {
   font-size: 16px;
   font-weight: 600;
   color: #1e293b;
   margin: 0;
+  cursor: pointer;
 }
 
-.report-card.list-view h3 {
+.report-card.list-view .report-title {
   font-size: 14px;
 }
 
 .report-card p {
   font-size: 14px;
   color: #64748b;
-  margin: 5px 0 0 0;
+  margin: 0;
 }
 
 .report-card .presentation-checkbox {
@@ -364,18 +374,39 @@ nav ul li a:hover {
   gap: 10px;
 }
 
-.share-btn {
+.title-actions {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.share-icon-btn {
+  background: none;
+  border: none;
+  color: #3b82f6;
+  font-size: 16px;
+  cursor: pointer;
+  padding: 0;
+  transition: color 0.2s;
+}
+
+.share-icon-btn:hover {
+  color: #2563eb;
+}
+
+.save-pdf-top-btn {
   background: #3b82f6;
   color: #fff;
   border: none;
-  padding: 5px 10px;
+  padding: 4px 8px;
   border-radius: 4px;
   cursor: pointer;
-  font-size: 14px;
+  font-size: 12px;
+  font-weight: 600;
   transition: background 0.2s;
 }
 
-.share-btn:hover {
+.save-pdf-top-btn:hover {
   background: #2563eb;
 }
 
@@ -561,4 +592,20 @@ body.dark-mode .modal-body th {
 body.dark-mode .modal-body .highlight {
   background-color: #60a5fa;
   color: #fff;
+}
+
+body.dark-mode .share-icon-btn {
+  color: #60a5fa;
+}
+
+body.dark-mode .share-icon-btn:hover {
+  color: #2563eb;
+}
+
+body.dark-mode .save-pdf-top-btn {
+  background: #60a5fa;
+}
+
+body.dark-mode .save-pdf-top-btn:hover {
+  background: #2563eb;
 }
