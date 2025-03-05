@@ -119,7 +119,7 @@ const subfolders = {
 
 const reportGrid = document.getElementById('report-grid');
 const subfolderContainer = document.getElementById('subfolder-container');
-const backButton = document.getElementById('back-button');
+const breadcrumb = document.getElementById('breadcrumb');
 const categoryFilter = document.getElementById('category-filter');
 const searchInput = document.getElementById('search-input');
 const gridViewBtn = document.getElementById('grid-view-btn');
@@ -158,6 +158,19 @@ function generateSocialMediaPost(title, content) {
   return `${title}: ${summary} #FinancialPlanning`;
 }
 
+function updateBreadcrumb() {
+  if (selectedSubcategory) {
+    breadcrumb.innerHTML = `<span class="breadcrumb-category">${selectedCategory}</span> --> ${selectedSubcategory}`;
+    breadcrumb.style.display = 'block';
+    document.querySelector('.breadcrumb-category').addEventListener('click', () => {
+      selectedSubcategory = null;
+      renderSubfolders(selectedCategory);
+    });
+  } else {
+    breadcrumb.style.display = 'none';
+  }
+}
+
 function renderSubfolders(category) {
   subfolderContainer.innerHTML = '';
   if (subfolders[category]) {
@@ -173,11 +186,11 @@ function renderSubfolders(category) {
     });
     subfolderContainer.style.display = 'grid';
     reportGrid.style.display = 'none';
-    backButton.style.display = 'none';
+    updateBreadcrumb();
   } else {
     subfolderContainer.style.display = 'none';
     reportGrid.style.display = 'grid';
-    backButton.style.display = 'none';
+    updateBreadcrumb();
     renderReports();
   }
 }
@@ -221,27 +234,7 @@ function renderReports() {
 
   reportGrid.classList.remove('grid-view', 'list-view');
   reportGrid.classList.add(`${viewMode}-view`);
-  backButton.style.display = selectedSubcategory ? 'block' : 'none';
-
-  // Add event listeners to checkboxes
-  document.querySelectorAll('.presentation-checkbox').forEach(checkbox => {
-    checkbox.addEventListener('change', (e) => {
-      const card = e.target.closest('.report-card');
-      const title = card.getAttribute('data-title');
-      if (e.target.checked) {
-        if (!presentationReports.includes(title)) {
-          presentationReports.push(title);
-          updatePresentationCount();
-        }
-      } else {
-        const index = presentationReports.indexOf(title);
-        if (index !== -1) {
-          presentationReports.splice(index, 1);
-          updatePresentationCount();
-        }
-      }
-    });
-  });
+  updateBreadcrumb();
 }
 
 categoryFilter.addEventListener('click', (e) => {
@@ -269,16 +262,10 @@ subfolderContainer.addEventListener('click', (e) => {
   }
 });
 
-backButton.addEventListener('click', () => {
-  selectedSubcategory = null;
-  renderSubfolders(selectedCategory);
-});
-
 searchInput.addEventListener('input', () => {
   if (selectedCategory === 'Retirement Planning' && !selectedSubcategory) {
     subfolderContainer.style.display = 'grid';
     reportGrid.style.display = 'none';
-    backButton.style.display = 'none';
   } else {
     subfolderContainer.style.display = 'none';
     reportGrid.style.display = 'grid';
@@ -311,7 +298,7 @@ reportGrid.addEventListener('click', (e) => {
     }
     modalContent.innerHTML = content;
     modal.style.display = 'flex';
-    document.querySelector('.modal-actions').style.display = 'flex'; // Show buttons when modal opens
+    document.querySelector('.modal-actions').style.display = 'flex';
     if (lastSearchTerm) {
       const firstHighlight = modalContent.querySelector('.highlight');
       if (firstHighlight) {
@@ -323,13 +310,13 @@ reportGrid.addEventListener('click', (e) => {
 
 modalClose.addEventListener('click', () => {
   modal.style.display = 'none';
-  document.querySelector('.modal-actions').style.display = 'none'; // Hide buttons when modal closes
+  document.querySelector('.modal-actions').style.display = 'none';
 });
 
 window.addEventListener('click', (e) => {
   if (e.target === modal) {
     modal.style.display = 'none';
-    document.querySelector('.modal-actions').style.display = 'none'; // Hide buttons when modal closes
+    document.querySelector('.modal-actions').style.display = 'none';
   }
 });
 
@@ -366,6 +353,25 @@ modalSavePdfBtn.addEventListener('click', () => {
     })
     .from(element)
     .save();
+});
+
+document.querySelectorAll('.presentation-checkbox').forEach(checkbox => {
+  checkbox.addEventListener('change', (e) => {
+    const card = e.target.closest('.report-card');
+    const title = card.getAttribute('data-title');
+    if (e.target.checked) {
+      if (!presentationReports.includes(title)) {
+        presentationReports.push(title);
+        updatePresentationCount();
+      }
+    } else {
+      const index = presentationReports.indexOf(title);
+      if (index !== -1) {
+        presentationReports.splice(index, 1);
+        updatePresentationCount();
+      }
+    }
+  });
 });
 
 document.querySelectorAll('#tag-filters input[type="checkbox"]').forEach(checkbox => {
