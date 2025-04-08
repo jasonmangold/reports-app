@@ -58,75 +58,77 @@
     <div class="analysis-workspace">
       <div class="client-inputs">
         <h3>Client Inputs</h3>
-        <div class="input-tabs">
-          <button class="tab-btn active" data-tab="personal">Personal</button>
-          <button class="tab-btn" data-tab="income-needs">Income Needs</button>
-          <button class="tab-btn" data-tab="income-sources">Income Sources</button>
-          <button class="tab-btn" data-tab="capital">Capital</button>
-          <button class="tab-btn" data-tab="assumptions">Assumptions</button>
+        <div class="input-container">
+          <div class="input-tabs">
+            <button class="tab-btn active" data-tab="personal">Personal</button>
+            <button class="tab-btn" data-tab="income-needs">Income Needs</button>
+            <button class="tab-btn" data-tab="income-sources">Income Sources</button>
+            <button class="tab-btn" data-tab="capital">Capital</button>
+            <button class="tab-btn" data-tab="assumptions">Assumptions</button>
+          </div>
+          <form id="client-input-form" class="input-content">
+            <div class="tab-content" id="personal" style="display: block;">
+              <label>Marital Status: <input type="checkbox" id="is-married"></label>
+              <div class="client">
+                <h5>Client 1</h5>
+                <label>Name: <input type="text" id="c1-name" placeholder="John Doe"></label>
+                <label>Date of Birth: <input type="date" id="c1-dob"></label>
+                <label>Retirement Age: <input type="number" id="c1-retirement-age" min="1" max="120" placeholder="65"></label>
+              </div>
+              <div class="client" id="client2-section" style="display: none;">
+                <h5>Client 2</h5>
+                <label>Name: <input type="text" id="c2-name" placeholder="Jane Doe"></label>
+                <label>Date of Birth: <input type="date" id="c2-dob"></label>
+                <label>Retirement Age: <input type="number" id="c2-retirement-age" min="1" max="120" placeholder="65"></label>
+              </div>
+            </div>
+            <div class="tab-content" id="income-needs" style="display: none;">
+              <label>Monthly Income Needs ($): <input type="number" id="monthly-income" min="0" step="100" placeholder="5000"></label>
+            </div>
+            <div class="tab-content" id="income-sources" style="display: none;">
+              <div class="client">
+                <h5>Client 1</h5>
+                <label>Employment Income ($/yr): <input type="number" id="c1-employment" min="0" step="1000" placeholder="50000"></label>
+                <label>Social Security ($/yr): <input type="number" id="c1-social-security" min="0" step="1000" placeholder="20000"></label>
+                <label>Other Income ($/yr): <input type="number" id="c1-other-income" min="0" step="1000" placeholder="10000"></label>
+              </div>
+              <div class="client" id="client2-income-section" style="display: none;">
+                <h5>Client 2</h5>
+                <label>Employment Income ($/yr): <input type="number" id="c2-employment" min="0" step="1000" placeholder="40000"></label>
+                <label>Social Security ($/yr): <input type="number" id="c2-social-security" min="0" step="1000" placeholder="18000"></label>
+                <label>Other Income ($/yr): <input type="number" id="c2-other-income" min="0" step="1000" placeholder="8000"></label>
+              </div>
+            </div>
+            <div class="tab-content" id="capital" style="display: none;">
+              <div id="c1-accounts">
+                <h5>Client 1 Accounts</h5>
+                <div class="account">
+                  <label>Balance ($): <input type="number" id="c1-account-0-balance" min="0" step="1000" placeholder="100000"></label>
+                  <label>Contribution ($/yr): <input type="number" id="c1-account-0-contribution" min="0" step="1000" placeholder="10000"></label>
+                  <label>Employer Match (%): <input type="number" id="c1-account-0-employer-match" min="0" max="100" step="0.1" placeholder="3"></label>
+                  <label>ROR (%): <input type="number" id="c1-account-0-ror" min="0" max="100" step="0.1" placeholder="6"></label>
+                </div>
+                <button type="button" class="add-account-btn" data-client="c1">Add Account</button>
+              </div>
+              <div id="c2-accounts" style="display: none;">
+                <h5>Client 2 Accounts</h5>
+                <div class="account">
+                  <label>Balance ($): <input type="number" id="c2-account-0-balance" min="0" step="1000" placeholder="80000"></label>
+                  <label>Contribution ($/yr): <input type="number" id="c2-account-0-contribution" min="0" step="1000" placeholder="8000"></label>
+                  <label>Employer Match (%): <input type="number" id="c2-account-0-employer-match" min="0" max="100" step="0.1" placeholder="2"></label>
+                  <label>ROR (%): <input type="number" id="c2-account-0-ror" min="0" max="100" step="0.1" placeholder="5"></label>
+                </div>
+                <button type="button" class="add-account-btn" data-client="c2">Add Account</button>
+              </div>
+            </div>
+            <div class="tab-content" id="assumptions" style="display: none;">
+              <label>Mortality Age: <input type="number" id="mortality-age" min="1" max="120" placeholder="90"></label>
+              <label>Inflation (%): <input type="number" id="inflation" min="0" max="100" step="0.1" placeholder="2"></label>
+              <label>ROR During Retirement (%): <input type="number" id="ror-retirement" min="0" max="100" step="0.1" placeholder="4"></label>
+            </div>
+            <button type="button" id="recalculate-btn">Recalculate</button>
+          </form>
         </div>
-        <form id="client-input-form">
-          <div class="tab-content" id="personal" style="display: block;">
-            <label>Marital Status: <input type="checkbox" id="is-married"></label>
-            <div class="client">
-              <h5>Client 1</h5>
-              <label>Name: <input type="text" id="c1-name" placeholder="John Doe"></label>
-              <label>Date of Birth: <input type="date" id="c1-dob"></label>
-              <label>Retirement Age: <input type="number" id="c1-retirement-age" min="1" max="120" placeholder="65"></label>
-            </div>
-            <div class="client" id="client2-section" style="display: none;">
-              <h5>Client 2</h5>
-              <label>Name: <input type="text" id="c2-name" placeholder="Jane Doe"></label>
-              <label>Date of Birth: <input type="date" id="c2-dob"></label>
-              <label>Retirement Age: <input type="number" id="c2-retirement-age" min="1" max="120" placeholder="65"></label>
-            </div>
-          </div>
-          <div class="tab-content" id="income-needs" style="display: none;">
-            <label>Monthly Income Needs ($): <input type="number" id="monthly-income" min="0" step="100" placeholder="5000"></label>
-          </div>
-          <div class="tab-content" id="income-sources" style="display: none;">
-            <div class="client">
-              <h5>Client 1</h5>
-              <label>Employment Income ($/yr): <input type="number" id="c1-employment" min="0" step="1000" placeholder="50000"></label>
-              <label>Social Security ($/yr): <input type="number" id="c1-social-security" min="0" step="1000" placeholder="20000"></label>
-              <label>Other Income ($/yr): <input type="number" id="c1-other-income" min="0" step="1000" placeholder="10000"></label>
-            </div>
-            <div class="client" id="client2-income-section" style="display: none;">
-              <h5>Client 2</h5>
-              <label>Employment Income ($/yr): <input type="number" id="c2-employment" min="0" step="1000" placeholder="40000"></label>
-              <label>Social Security ($/yr): <input type="number" id="c2-social-security" min="0" step="1000" placeholder="18000"></label>
-              <label>Other Income ($/yr): <input type="number" id="c2-other-income" min="0" step="1000" placeholder="8000"></label>
-            </div>
-          </div>
-          <div class="tab-content" id="capital" style="display: none;">
-            <div id="c1-accounts">
-              <h5>Client 1 Accounts</h5>
-              <div class="account">
-                <label>Balance ($): <input type="number" id="c1-account-0-balance" min="0" step="1000" placeholder="100000"></label>
-                <label>Contribution ($/yr): <input type="number" id="c1-account-0-contribution" min="0" step="1000" placeholder="10000"></label>
-                <label>Employer Match (%): <input type="number" id="c1-account-0-employer-match" min="0" max="100" step="0.1" placeholder="3"></label>
-                <label>ROR (%): <input type="number" id="c1-account-0-ror" min="0" max="100" step="0.1" placeholder="6"></label>
-              </div>
-              <button type="button" class="add-account-btn" data-client="c1">Add Account</button>
-            </div>
-            <div id="c2-accounts" style="display: none;">
-              <h5>Client 2 Accounts</h5>
-              <div class="account">
-                <label>Balance ($): <input type="number" id="c2-account-0-balance" min="0" step="1000" placeholder="80000"></label>
-                <label>Contribution ($/yr): <input type="number" id="c2-account-0-contribution" min="0" step="1000" placeholder="8000"></label>
-                <label>Employer Match (%): <input type="number" id="c2-account-0-employer-match" min="0" max="100" step="0.1" placeholder="2"></label>
-                <label>ROR (%): <input type="number" id="c2-account-0-ror" min="0" max="100" step="0.1" placeholder="5"></label>
-              </div>
-              <button type="button" class="add-account-btn" data-client="c2">Add Account</button>
-            </div>
-          </div>
-          <div class="tab-content" id="assumptions" style="display: none;">
-            <label>Mortality Age: <input type="number" id="mortality-age" min="1" max="120" placeholder="90"></label>
-            <label>Inflation (%): <input type="number" id="inflation" min="0" max="100" step="0.1" placeholder="2"></label>
-            <label>ROR During Retirement (%): <input type="number" id="ror-retirement" min="0" max="100" step="0.1" placeholder="4"></label>
-          </div>
-          <button type="button" id="recalculate-btn">Recalculate</button>
-        </form>
       </div>
       <div class="graph-outputs">
         <h3>Analysis Outputs</h3>
