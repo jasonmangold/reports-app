@@ -3,20 +3,332 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Reports - Advisys</title>
+  <title>Financial Advisor App</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-  <link rel="stylesheet" href="styles.css">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #f8fafc;
+      padding-top: 70px;
+      color: #1e293b;
+    }
+
+    /* Header Styles */
+    header {
+      position: fixed;
+      top: 0;
+      width: 100%;
+      background: linear-gradient(135deg, #ffffff, #f1f5f9);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+      display: flex;
+      align-items: center;
+      padding: 15px 30px;
+      z-index: 1000;
+    }
+
+    .logo {
+      font-size: 24px;
+      font-weight: 700;
+      background: linear-gradient(90deg, #3b82f6, #60a5fa);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    nav ul {
+      list-style: none;
+      display: flex;
+      margin-left: 40px;
+    }
+
+    nav ul li {
+      margin: 0 20px;
+    }
+
+    nav ul li a {
+      text-decoration: none;
+      color: #64748b;
+      font-weight: 600;
+      transition: color 0.2s;
+    }
+
+    nav ul li a.active,
+    nav ul li a:hover {
+      color: #3b82f6;
+    }
+
+    .icons i {
+      margin-left: 20px;
+      cursor: pointer;
+      font-size: 20px;
+      color: #64748b;
+      transition: color 0.2s;
+    }
+
+    .icons i:hover {
+      color: #3b82f6;
+    }
+
+    /* Search Bar Styles */
+    .search-bar {
+      position: relative;
+      margin: 20px auto;
+      max-width: 800px;
+    }
+
+    .search-bar input {
+      width: 100%;
+      padding: 14px 40px 14px 20px;
+      font-size: 16px;
+      border: none;
+      border-radius: 12px;
+      background: #ffffff;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+      outline: none;
+      transition: box-shadow 0.2s;
+    }
+
+    .search-bar input:focus {
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    }
+
+    .search-bar i {
+      position: absolute;
+      right: 15px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #64748b;
+    }
+
+    /* Grid Styles */
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 25px;
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 0 20px;
+    }
+
+    /* Card Styles */
+    .card {
+      background: #ffffff;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+      overflow: hidden;
+      transition: transform 0.2s, box-shadow 0.2s;
+      cursor: pointer;
+      min-height: 300px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+    }
+
+    .card img {
+      width: 100%;
+      height: 140px;
+      object-fit: cover;
+      flex-shrink: 0;
+    }
+
+    .card-content {
+      padding: 15px;
+      flex-grow: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .card h3 {
+      font-size: 16px;
+      font-weight: 600;
+      color: #1e293b;
+      margin-bottom: 8px;
+    }
+
+    .card p {
+      font-size: 14px;
+      color: #64748b;
+      margin-bottom: 12px;
+      flex-grow: 1;
+    }
+
+    .card button {
+      background: linear-gradient(90deg, #3b82f6, #60a5fa);
+      color: #fff;
+      padding: 8px 16px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: background 0.2s;
+      align-self: flex-start;
+    }
+
+    .card button:hover {
+      background: linear-gradient(90deg, #2563eb, #3b82f6);
+    }
+
+    /* Section Headings */
+    h2 {
+      font-size: 20px;
+      font-weight: 600;
+      color: #1e293b;
+      margin: 20px 0;
+      text-align: center;
+    }
+
+    /* Client Inputs Section */
+    .client-inputs {
+      display: flex;
+      max-width: 1400px;
+      margin: 40px auto;
+      padding: 0 20px;
+      gap: 20px;
+    }
+
+    .tabs {
+      width: 200px;
+      background: #ffffff;
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    }
+
+    .tabs ul {
+      list-style: none;
+    }
+
+    .tabs ul li {
+      padding: 15px;
+      font-size: 16px;
+      font-weight: 600;
+      color: #64748b;
+      cursor: pointer;
+      transition: background 0.2s, color 0.2s;
+      border-radius: 8px;
+    }
+
+    .tabs ul li.active,
+    .tabs ul li:hover {
+      background: #3b82f6;
+      color: #ffffff;
+    }
+
+    .input-content {
+      flex: 1;
+      background: #ffffff;
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    }
+
+    .input-content h3 {
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 15px;
+    }
+
+    .input-content .tab-pane {
+      display: none;
+    }
+
+    .input-content .tab-pane.active {
+      display: block;
+    }
+
+    .input-content label {
+      display: block;
+      font-size: 14px;
+      color: #1e293b;
+      margin-bottom: 5px;
+    }
+
+    .input-content input {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 15px;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      font-size: 14px;
+    }
+
+    /* Analysis Outputs Section */
+    .analysis-outputs {
+      width: 400px;
+      background: #ffffff;
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    }
+
+    .analysis-outputs h3 {
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 15px;
+    }
+
+    .analysis-outputs p {
+      font-size: 14px;
+      color: #64748b;
+      margin-bottom: 10px;
+    }
+
+    /* Dark Mode Styles */
+    body.dark-mode {
+      background: #1e293b;
+      color: #f1f5f9;
+    }
+
+    body.dark-mode header,
+    body.dark-mode .card,
+    body.dark-mode .tabs,
+    body.dark-mode .input-content,
+    body.dark-mode .analysis-outputs {
+      background: #334155;
+    }
+
+    body.dark-mode .search-bar input {
+      background: #475569;
+      color: #f1f5f9;
+    }
+
+    body.dark-mode .card h3,
+    body.dark-mode h2,
+    body.dark-mode .input-content h3,
+    body.dark-mode .analysis-outputs h3 {
+      color: #f1f5f9;
+    }
+
+    body.dark-mode .card p,
+    body.dark-mode .input-content label,
+    body.dark-mode .analysis-outputs p {
+      color: #94a3b8;
+    }
+
+    body.dark-mode .tabs ul li {
+      color: #94a3b8;
+    }
+  </style>
 </head>
 <body>
+  <!-- Header with navigation -->
   <header>
     <div class="logo">Advisys</div>
     <nav>
       <ul>
-        <li><a href="home.html">Home</a></li>
-        <li><a href="index.html" class="active">Reports</a></li>
-        <li><a href="analysis.html">Analysis</a></li>
-        <li><a href="#" id="presentation-tab">Presentation <span id="presentation-count" class="count-badge">0</span></a></li>
+        <li><a href="index.html" class="active">Home</a></li>
+        <li><a href="Reports.html">Reports</a></li>
         <li><a href="#">Calculators</a></li>
         <li><a href="#">Search</a></li>
         <li><a href="#">Profile</a></li>
@@ -29,82 +341,138 @@
     </div>
   </header>
 
-  <div class="reports-page">
-    <div class="sidebar">
-      <h3>Categories</h3>
-      <ul id="category-filter">
-        <li><a href="#" data-category="all" class="active">All</a></li>
-        <li><a href="#" data-category="Personal Finance">Personal Finance</a></li>
-        <li><a href="#" data-category="Personal Cash Flow">Personal Cash Flow</a></li>
-        <li><a href="#" data-category="Health and Medical">Health and Medical</a></li>
-        <li><a href="#" data-category="Employee Benefits">Employee Benefits</a></li>
-        <li><a href="#" data-category="Long-Term Care">Long-Term Care</a></li>
-        <li><a href="#" data-category="Disability">Disability</a></li>
-        <li><a href="#" data-category="Income Taxes">Income Taxes</a></li>
-        <li><a href="#" data-category="Home Ownership">Home Ownership</a></li>
-        <li><a href="#" data-category="Investments">Investments</a></li>
-        <li><a href="#" data-category="Retirement Planning">Retirement Planning</a></li>
-        <li><a href="#" data-category="Education Funding">Education Funding</a></li>
-        <li><a href="#" data-category="Protecting Your Finances">Protecting Your Finances</a></li>
-        <li><a href="#" data-category="Social Security and Other Government Programs">Social Security and Other Government Programs</a></li>
-        <li><a href="#" data-category="Estate Planning">Estate Planning</a></li>
-        <li><a href="#" data-category="Business Planning">Business Planning</a></li>
-        <li><a href="#" data-category="Charitable Planning">Charitable Planning</a></li>
-        <li><a href="#" data-category="Advisor Support">Advisor Support</a></li>
-      </ul>
-    </div>
-
-    <div class="main-content">
-      <div class="tag-filters" id="tag-filters">
-        <h3>Filter Reports</h3>
-        <div class="filter-group">
-          <label>Format:</label>
-          <label><input type="checkbox" value="one-pager"> One Pagers</label>
-        </div>
-        <div class="filter-group">
-          <label>Topic:</label>
-          <label><input type="checkbox" value="topic-retirement"> Retirement</label>
-          <label><input type="checkbox" value="topic-life-insurance"> Life Insurance</label>
-          <label><input type="checkbox" value="topic-college"> College</label>
-          <label><input type="checkbox" value="topic-disability"> Disability</label>
-          <label><input type="checkbox" value="topic-long-term-care"> Long-Term Care</label>
-          <label><input type="checkbox" value="topic-debt"> Debt</label>
-        </div>
-      </div>
+  <!-- Main content -->
+  <main>
+    <!-- Dashboard section (unchanged) -->
+    <section class="dashboard">
       <div class="search-bar">
-        <input type="text" id="search-input" placeholder="Search reports...">
+        <input type="text" placeholder="Search for reports, calculators, or ask a question">
         <i class="fas fa-search"></i>
       </div>
-      <div class="view-toggle">
-        <button id="grid-view-btn" class="active">Grid</button>
-        <button id="list-view-btn">List</button>
-      </div>
-      <div id="breadcrumb" class="breadcrumb" style="display: none;"></div>
-      <div id="subfolder-container" class="subfolder-grid" style="display: none;"></div>
-      <div id="report-grid" class="report-grid grid-view"></div>
-    </div>
-  </div>
-
-  <div class="modal" id="report-modal">
-    <div class="modal-content">
-      <div class="modal-header">
-        <div class="modal-title-row">
-          <h2 id="modal-title"></h2>
-          <div class="modal-actions">
-            <button id="modal-share-btn" class="share-icon-btn" title="Share on Social Media"><i class="fas fa-share-alt"></i></button>
-            <button id="modal-save-pdf-btn" class="save-pdf-top-btn" title="Save PDF">Save PDF</button>
+      <div class="featured-reports">
+        <h2>Featured Reports</h2>
+        <div class="grid">
+          <div class="card">
+            <img src="https://via.placeholder.com/280x140" alt="Report Thumbnail">
+            <div class="card-content">
+              <h3>Retirement Planning Guide</h3>
+              <p>Learn how to plan for a secure retirement with our comprehensive guide.</p>
+              <button>Read More</button>
+            </div>
+          </div>
+          <div class="card">
+            <img src="https://via.placeholder.com/280x140" alt="Report Thumbnail">
+            <div class="card-content">
+              <h3>Investment Strategies for 2023</h3>
+              <p>Discover the latest investment trends and strategies for the upcoming year.</p>
+              <button>Read More</button>
+            </div>
+          </div>
+          <div class="card">
+            <img src="https://via.placeholder.com/280x140" alt="Report Thumbnail">
+            <div class="card-content">
+              <h3>Tax Optimization Tips</h3>
+              <p>Maximize your tax savings with these expert strategies and tips.</p>
+              <button>Read More</button>
+            </div>
           </div>
         </div>
-        <span class="close" id="modal-close">×</span>
       </div>
-      <div class="modal-body" id="modal-content"></div>
-      <div class="modal-footer">
-        <button class="save-pdf-btn" id="save-pdf-btn">Save PDF</button>
+      <div class="popular-calculators">
+        <h2>Popular Calculators</h2>
+        <div class="grid">
+          <div class="card">
+            <img src="https://via.placeholder.com/280x140" alt="Calculator Thumbnail">
+            <div class="card-content">
+              <h3>Retirement Savings Calculator</h3>
+              <p>Estimate how much you need to save for a comfortable retirement.</p>
+              <button>Use Calculator</button>
+            </div>
+          </div>
+          <div class="card">
+            <img src="https://via.placeholder.com/280x140" alt="Calculator Thumbnail">
+            <div class="card-content">
+              <h3>Mortgage Calculator</h3>
+              <p>Calculate your monthly mortgage payments with ease.</p>
+              <button>Use Calculator</button>
+            </div>
+          </div>
+          <div class="card">
+            <img src="https://via.placeholder.com/280x140" alt="Calculator Thumbnail">
+            <div class="card-content">
+              <h3>Investment Return Calculator</h3>
+              <p>See how your investments will grow over time with compound interest.</p>
+              <button>Use Calculator</button>
+            </div>
+          </div>
+        </div>
       </div>
-    </div>
-  </div>
+    </section>
 
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-  <script src="scripts.js"></script>
+    <!-- Client Inputs and Analysis Outputs Section -->
+    <section class="client-inputs">
+      <div class="tabs">
+        <ul>
+          <li class="active" data-tab="personal">Personal Info</li>
+          <li data-tab="financial">Financial Details</li>
+          <li data-tab="goals">Goals</li>
+        </ul>
+      </div>
+      <div class="input-content">
+        <div class="tab-pane active" id="personal">
+          <h3>Personal Information</h3>
+          <label for="name">Name</label>
+          <input type="text" id="name" placeholder="Enter your name">
+          <label for="age">Age</label>
+          <input type="number" id="age" placeholder="Enter your age">
+        </div>
+        <div class="tab-pane" id="financial">
+          <h3>Financial Details</h3>
+          <label for="income">Annual Income</label>
+          <input type="number" id="income" placeholder="Enter your income">
+          <label for="savings">Current Savings</label>
+          <input type="number" id="savings" placeholder="Enter your savings">
+        </div>
+        <div class="tab-pane" id="goals">
+          <h3>Financial Goals</h3>
+          <label for="retirement">Retirement Age</label>
+          <input type="number" id="retirement" placeholder="Enter retirement age">
+          <label for="goal">Savings Goal</label>
+          <input type="number" id="goal" placeholder="Enter savings goal">
+        </div>
+      </div>
+      <div class="analysis-outputs">
+        <h3>Analysis Outputs</h3>
+        <p>Monthly Savings Needed: $X</p>
+        <p>Projected Retirement Fund: $Y</p>
+        <p>Risk Level: Moderate</p>
+      </div>
+    </section>
+  </main>
+
+  <!-- JavaScript for dark mode and tab switching -->
+  <script>
+    // Dark mode toggle
+    document.querySelector('.dark-mode-toggle').addEventListener('click', () => {
+      document.body.classList.toggle('dark-mode');
+    });
+
+    // Tab switching
+    const tabs = document.querySelectorAll('.tabs li');
+    const tabPanes = document.querySelectorAll('.tab-pane');
+
+    tabs.forEach(tab => {
+      tab.addEventListener('click', () => {
+        // Remove active class from all tabs and panes
+        tabs.forEach(t => t.classList.remove('active'));
+        tabPanes.forEach(pane => pane.classList.remove('active'));
+
+        // Add active class to clicked tab and corresponding pane
+        tab.classList.add('active');
+        const tabId = tab.getAttribute('data-tab');
+        document.getElementById(tabId).classList.add('active');
+      });
+    });
+  </script>
 </body>
 </html>
