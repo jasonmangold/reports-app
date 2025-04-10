@@ -629,7 +629,7 @@ body.dark-mode .breadcrumb span {
 /* Analysis Page Layout */
 .analysis-page {
   padding: 0 20px 20px;
-  height: calc(100vh - 70px); /* Adjust for header */
+  height: calc(100vh - 70px);
   display: flex;
   flex-direction: column;
 }
@@ -637,17 +637,17 @@ body.dark-mode .breadcrumb span {
 .analysis-topics {
   background: #ffffff;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-  padding: 8px; /* Reduced padding */
-  margin: 10px 0 15px; /* Reduced bottom margin */
+  padding: 8px;
+  margin: 10px 0 15px;
   display: flex;
   flex-wrap: wrap;
-  gap: 5px; /* Reduced gap between topics */
+  gap: 5px;
 }
 
 .topic-btn {
   background: none;
   border: none;
-  padding: 6px 12px; /* Reduced padding */
+  padding: 6px 12px;
   font-size: 14px;
   font-weight: 600;
   color: #64748b;
@@ -667,13 +667,13 @@ body.dark-mode .breadcrumb span {
 .analysis-workspace {
   display: flex;
   flex: 1;
-  gap: 15px; /* Reduced gap between sections */
+  gap: 15px;
   width: 100%;
 }
 
 .client-inputs {
-  flex: 1; /* Equalized with graph-outputs */
-  min-width: 400px; /* Ensures sufficient space for inputs */
+  flex: 1;
+  min-width: 400px;
   background: #ffffff;
   border-radius: 12px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
@@ -689,55 +689,74 @@ body.dark-mode .breadcrumb span {
 }
 
 .input-tabs {
-  width: 130px; /* Slightly reduced width */
+  width: 130px;
   display: flex;
   flex-direction: column;
-  gap: 8px; /* Reduced gap between tabs */
-  margin-right: 10px; /* Reduced margin */
+  gap: 8px;
+  margin-right: 10px;
+  background: #f1f5f9; /* Added background to distinguish tabs */
+  padding: 10px;
+  border-radius: 8px 0 0 8px; /* Rounded left corners */
 }
 
 .tab-btn {
-  background: none;
-  border: none;
-  padding: 8px 12px; /* Adjusted padding */
+  background: #ffffff; /* White background for individual tabs */
+  border: 1px solid #ddd; /* Border to define tabs */
+  border-radius: 4px;
+  padding: 10px 12px; /* Slightly increased padding */
   font-size: 14px;
   font-weight: 600;
   color: #64748b;
   cursor: pointer;
   text-align: left;
-  transition: color 0.2s, background 0.2s;
+  transition: background 0.2s, color 0.2s, border-color 0.2s;
 }
 
 .tab-btn.active {
-  color: #3b82f6;
-  background: #eff6ff;
-  border-left: 3px solid #3b82f6;
+  background: #3b82f6; /* Blue background for active tab */
+  color: #ffffff;
+  border-color: #3b82f6;
 }
 
 .tab-btn:hover {
+  background: #e0e7ff; /* Light blue hover state */
   color: #3b82f6;
 }
 
 .input-content {
   flex: 1;
   padding: 10px;
+  background: #ffffff; /* Ensure content area matches */
+  border: 1px solid #ddd; /* Border to define content area */
+  border-radius: 0 8px 8px 0; /* Rounded right corners */
 }
 
 .tab-content {
-  padding: 8px 0; /* Reduced padding */
+  padding: 8px 0;
 }
 
 .client-inputs label {
-  display: block;
-  margin: 8px 0; /* Increased spacing between labels for readability */
+  display: flex;
+  align-items: center;
+  margin: 8px 0;
   color: #475569;
 }
 
-.client-inputs input {
+.client-inputs input[type="text"],
+.client-inputs input[type="number"],
+.client-inputs input[type="date"] {
   width: 100%;
   padding: 8px;
   border: 1px solid #ddd;
   border-radius: 4px;
+}
+
+.client-inputs input[type="checkbox"] {
+  margin-right: 8px;
+}
+
+.report-list label {
+  font-size: 14px;
 }
 
 .add-account-btn {
@@ -757,8 +776,8 @@ body.dark-mode .breadcrumb span {
 
 .account {
   border: 1px solid #ddd;
-  padding: 8px; /* Reduced padding */
-  margin-bottom: 8px; /* Reduced margin */
+  padding: 8px;
+  margin-bottom: 8px;
   border-radius: 4px;
 }
 
@@ -766,7 +785,7 @@ body.dark-mode .breadcrumb span {
   background: #3b82f6;
   color: #fff;
   border: none;
-  padding: 8px 16px; /* Adjusted padding */
+  padding: 8px 16px;
   border-radius: 8px;
   cursor: pointer;
   font-weight: 600;
@@ -778,8 +797,8 @@ body.dark-mode .breadcrumb span {
 }
 
 .graph-outputs {
-  flex: 1; /* Equalized with client-inputs */
-  min-width: 400px; /* Ensures sufficient space for graph */
+  flex: 1;
+  min-width: 400px;
   background: #ffffff;
   border-radius: 12px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
@@ -840,25 +859,39 @@ body.dark-mode .graph-outputs {
   background: #334155;
 }
 
+body.dark-mode .input-tabs {
+  background: #475569;
+}
+
 body.dark-mode .tab-btn {
+  background: #334155;
   color: #94a3b8;
+  border-color: #64748b;
 }
 
 body.dark-mode .tab-btn.active {
-  color: #60a5fa;
-  background: #475569;
-  border-left-color: #60a5fa;
+  background: #60a5fa;
+  color: #ffffff;
+  border-color: #60a5fa;
 }
 
 body.dark-mode .tab-btn:hover {
+  background: #4b5e7a;
   color: #60a5fa;
+}
+
+body.dark-mode .input-content {
+  background: #334155;
+  border-color: #64748b;
 }
 
 body.dark-mode .client-inputs label {
   color: #94a3b8;
 }
 
-body.dark-mode .client-inputs input {
+body.dark-mode .client-inputs input[type="text"],
+body.dark-mode .client-inputs input[type="number"],
+body.dark-mode .client-inputs input[type="date"] {
   background: #475569;
   color: #f1f5f9;
   border-color: #64748b;
