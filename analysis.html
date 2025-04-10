@@ -65,6 +65,7 @@
             <button class="tab-btn" data-tab="income-sources">Income Sources</button>
             <button class="tab-btn" data-tab="capital">Capital</button>
             <button class="tab-btn" data-tab="assumptions">Assumptions</button>
+            <button class="tab-btn" data-tab="reports">Reports</button>
           </div>
           <form id="client-input-form" class="input-content">
             <div class="tab-content" id="personal" style="display: block;">
@@ -126,6 +127,16 @@
               <label>Inflation (%): <input type="number" id="inflation" min="0" max="100" step="0.1" placeholder="2"></label>
               <label>ROR During Retirement (%): <input type="number" id="ror-retirement" min="0" max="100" step="0.1" placeholder="4"></label>
             </div>
+            <div class="tab-content" id="reports" style="display: none;">
+              <div class="report-list">
+                <label><input type="checkbox" class="report-checkbox" data-report="retirement-analysis"> Retirement Analysis</label>
+                <label><input type="checkbox" class="report-checkbox" data-report="social-security-optimizer"> Social Security Optimizer</label>
+                <label><input type="checkbox" class="report-checkbox" data-report="capital-available"> Capital Available for Retirement</label>
+                <label><input type="checkbox" class="report-checkbox" data-report="alternatives-retirement"> Alternatives to Achieving Retirement Goals</label>
+                <label><input type="checkbox" class="report-checkbox" data-report="retirement-timeline"> Retirement Timeline</label>
+                <label><input type="checkbox" class="report-checkbox" data-report="retirement-fact-finder"> Retirement Analysis Fact Finder</label>
+              </div>
+            </div>
             <button type="button" id="recalculate-btn">Recalculate</button>
           </form>
         </div>
@@ -139,5 +150,32 @@
   </div>
 
   <script src="analysis.js"></script>
+  <script>
+    // Tab switching functionality (if not already in analysis.js)
+    document.querySelectorAll('.tab-btn').forEach(button => {
+      button.addEventListener('click', () => {
+        document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+        button.classList.add('active');
+        document.querySelectorAll('.tab-content').forEach(content => content.style.display = 'none');
+        document.getElementById(button.getAttribute('data-tab')).style.display = 'block';
+      });
+    });
+
+    // Report checkbox functionality
+    const presentationCount = document.getElementById('presentation-count');
+    let count = 0;
+
+    document.querySelectorAll('.report-checkbox').forEach(checkbox => {
+      checkbox.addEventListener('change', () => {
+        if (checkbox.checked) {
+          count++;
+        } else {
+          count--;
+        }
+        presentationCount.textContent = count;
+        presentationCount.classList.toggle('active', count > 0);
+      });
+    });
+  </script>
 </body>
 </html>
