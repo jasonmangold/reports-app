@@ -626,94 +626,25 @@ body.dark-mode .breadcrumb span {
   color: #60a5fa;
 }
 
+/* Analysis Page Layout */
 .analysis-page {
-  display: flex;
-  padding: 20px;
-}
-.analysis-workspace {
+  padding: 0 20px 20px;
+  height: calc(100vh - 70px); /* Adjust for header */
   display: flex;
   flex-direction: column;
-  width: 100%;
-  height: calc(100vh - 90px); /* Adjust for header */
 }
-.client-inputs, .graph-outputs {
+
+.analysis-topics {
   background: #ffffff;
-  border-radius: 12px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-  padding: 15px;
-  margin-bottom: 20px;
-}
-.client-inputs {
-  flex: 0 0 30%;
-  overflow-y: auto;
-}
-.graph-outputs {
-  flex: 0 0 70%;
-}
-.input-section {
-  margin-bottom: 15px;
-}
-.input-section h4 {
-  font-size: 16px;
-  font-weight: 600;
-  color: #3b82f6;
-  margin-bottom: 10px;
-}
-.client-inputs label {
-  display: block;
-  margin: 5px 0;
-  color: #475569;
-}
-.client-inputs input {
-  width: 100%;
-  padding: 8px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-}
-.add-account-btn {
-  background: #3b82f6;
-  color: #fff;
-  border: none;
-  padding: 6px 12px;
-  border-radius: 4px;
-  cursor: pointer;
-  font-weight: 600;
-  margin-top: 10px;
-}
-.add-account-btn:hover {
-  background: #2563eb;
-}
-.account {
-  border: 1px solid #ddd;
   padding: 10px;
-  margin-bottom: 10px;
-  border-radius: 4px;
-}
-#recalculate-btn, #export-graph-btn {
-  background: #3b82f6;
-  color: #fff;
-  border: none;
-  padding: 10px 20px;
-  border-radius: 8px;
-  cursor: pointer;
-  font-weight: 600;
-  margin-top: 10px;
-}
-#recalculate-btn:hover, #export-graph-btn:hover {
-  background: #2563eb;
-}
-
-body.dark-mode .breadcrumb span:hover {
-  color: #2563eb;
-}
-.input-tabs {
+  margin: 10px 0 20px;
   display: flex;
+  flex-wrap: wrap;
   gap: 10px;
-  margin-bottom: 15px;
-  border-bottom: 2px solid #ddd;
 }
 
-.tab-btn {
+.topic-btn {
   background: none;
   border: none;
   padding: 8px 16px;
@@ -724,23 +655,134 @@ body.dark-mode .breadcrumb span:hover {
   transition: color 0.2s, background 0.2s;
 }
 
-.tab-btn.active {
+.topic-btn.active {
   color: #3b82f6;
   border-bottom: 2px solid #3b82f6;
+}
+
+.topic-btn:hover {
+  color: #3b82f6;
+}
+
+.analysis-workspace {
+  display: flex;
+  flex: 1;
+  gap: 20px;
+  width: 100%;
+}
+
+.client-inputs {
+  flex: 2; /* Takes more space than outputs */
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  padding: 15px;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+}
+
+.input-container {
+  display: flex;
+  flex: 1;
+}
+
+.input-tabs {
+  width: 150px; /* Fixed width for vertical tabs */
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-right: 15px;
+}
+
+.tab-btn {
+  background: none;
+  border: none;
+  padding: 10px 15px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #64748b;
+  cursor: pointer;
+  text-align: left;
+  transition: color 0.2s, background 0.2s;
+}
+
+.tab-btn.active {
+  color: #3b82f6;
+  background: #eff6ff;
+  border-left: 3px solid #3b82f6;
 }
 
 .tab-btn:hover {
   color: #3b82f6;
 }
 
+.input-content {
+  flex: 1; /* Takes remaining space in input-container */
+  padding: 10px;
+}
+
 .tab-content {
   padding: 10px 0;
 }
 
-.client-inputs {
-  flex: 0 0 auto; /* Remove fixed height to fit content */
-  max-height: 300px; /* Optional: cap height if needed */
-  overflow-y: auto; /* Scroll if content overflows */
+.client-inputs label {
+  display: block;
+  margin: 5px 0;
+  color: #475569;
+}
+
+.client-inputs input {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.add-account-btn {
+  background: #3b82f6;
+  color: #fff;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 600;
+  margin-top: 10px;
+}
+
+.add-account-btn:hover {
+  background: #2563eb;
+}
+
+.account {
+  border: 1px solid #ddd;
+  padding: 10px;
+  margin-bottom: 10px;
+  border-radius: 4px;
+}
+
+#recalculate-btn, #export-graph-btn {
+  background: #3b82f6;
+  color: #fff;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  margin-top: 10px;
+}
+
+#recalculate-btn:hover, #export-graph-btn:hover {
+  background: #2563eb;
+}
+
+.graph-outputs {
+  flex: 1; /* Takes less space than inputs */
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  padding: 15px;
+  overflow-y: auto;
 }
 
 /* Dropdown for Analysis tab */
@@ -775,110 +817,7 @@ body.dark-mode .breadcrumb span:hover {
   color: #3b82f6;
 }
 
-/* Horizontal topics */
-.analysis-topics {
-  background: #ffffff;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-  padding: 10px;
-  margin: 10px 20px 20px;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-}
-
-.topic-btn {
-  background: none;
-  border: none;
-  padding: 8px 16px;
-  font-size: 14px;
-  font-weight: 600;
-  color: #64748b;
-  cursor: pointer;
-  transition: color 0.2s, background 0.2s;
-}
-
-.topic-btn.active {
-  color: #3b82f6;
-  border-bottom: 2px solid #3b82f6;
-}
-
-.topic-btn:hover {
-  color: #3b82f6;
-}
-
-/* Split workspace */
-.analysis-page {
-  padding: 0 20px 20px;
-  height: calc(100vh - 70px); /* Adjust for header */
-  display: flex;
-  flex-direction: column;
-}
-
-.analysis-workspace {
-  display: flex;
-  flex: 1;
-  gap: 20px;
-}
-
-.client-inputs {
-  width: 350px; /* Fixed width for inputs */
-  background: #ffffff;
-  border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-  padding: 15px;
-  display: flex;
-  flex-direction: column;
-}
-
-.graph-outputs {
-  flex: 1;
-  background: #ffffff;
-  border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-  padding: 15px;
-}
-
-/* Vertical tabs */
-.input-tabs {
-  width: 120px;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  margin-right: 15px;
-}
-
-.tab-btn {
-  background: none;
-  border: none;
-  padding: 10px 15px;
-  font-size: 14px;
-  font-weight: 600;
-  color: #64748b;
-  cursor: pointer;
-  text-align: left;
-  transition: color 0.2s, background 0.2s;
-}
-
-.tab-btn.active {
-  color: #3b82f6;
-  background: #eff6ff;
-  border-left: 3px solid #3b82f6;
-}
-
-.tab-btn:hover {
-  color: #3b82f6;
-}
-
-.client-inputs form {
-  display: flex;
-  flex: 1;
-}
-
-.tab-content {
-  flex: 1;
-  padding: 10px;
-}
-
+/* Dark Mode Adjustments */
 body.dark-mode .dropdown-content,
 body.dark-mode .analysis-topics,
 body.dark-mode .topic-btn.active {
@@ -892,4 +831,33 @@ body.dark-mode .topic-btn {
 body.dark-mode .topic-btn:hover,
 body.dark-mode .topic-btn.active {
   color: #60a5fa;
+}
+
+body.dark-mode .client-inputs,
+body.dark-mode .graph-outputs {
+  background: #334155;
+}
+
+body.dark-mode .tab-btn {
+  color: #94a3b8;
+}
+
+body.dark-mode .tab-btn.active {
+  color: #60a5fa;
+  background: #475569;
+  border-left-color: #60a5fa;
+}
+
+body.dark-mode .tab-btn:hover {
+  color: #60a5fa;
+}
+
+body.dark-mode .client-inputs label {
+  color: #94a3b8;
+}
+
+body.dark-mode .client-inputs input {
+  background: #475569;
+  color: #f1f5f9;
+  border-color: #64748b;
 }
