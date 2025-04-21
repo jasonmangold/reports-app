@@ -12,6 +12,9 @@
 <body>
   <header>
     <div class="logo">Advisys</div>
+    <div class="client-file">
+      <span id="client-file-name">No Client Selected</span>
+    </div>
     <nav>
       <ul>
         <li><a href="home.html">Home</a></li>
@@ -38,7 +41,7 @@
             <a href="#" data-analysis="key-employee">Key Employee</a>
           </div>
         </li>
-        <li><a href="#" id="presentation-tab">Presentation <span id="presentation-count" class="count-badge">0</span></a></li>
+        <li><a href="presentation.html" id="presentation-tab">Presentation <span id="presentation-count" class="count-badge">0</span></a></li>
         <li><a href="#">Calculators</a></li>
         <li><a href="#">Search</a></li>
         <li><a href="#">Profile</a></li>
@@ -149,7 +152,6 @@
     </div>
   </div>
 
-  <script src="analysis.js"></script>
   <script>
     // Tab switching functionality (if not already in analysis.js)
     document.querySelectorAll('.tab-btn').forEach(button => {
@@ -175,6 +177,23 @@
         presentationCount.textContent = count;
         presentationCount.classList.toggle('active', count > 0);
       });
+    });
+
+    // Client file name functionality
+    const clientFileName = document.getElementById('client-file-name');
+    const c1NameInput = document.getElementById('c1-name');
+
+    // Load from localStorage if available
+    const storedClientName = localStorage.getItem('clientFileName');
+    if (storedClientName) {
+      clientFileName.textContent = storedClientName;
+    }
+
+    // Update client file name when c1-name changes
+    c1NameInput.addEventListener('input', () => {
+      const newName = c1NameInput.value || 'No Client Selected';
+      clientFileName.textContent = newName;
+      localStorage.setItem('clientFileName', newName);
     });
   </script>
 </body>
