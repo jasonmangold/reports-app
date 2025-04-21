@@ -152,18 +152,9 @@
     </div>
   </div>
 
+  <script src="analysis.js"></script>
   <script>
-    // Tab switching functionality (if not already in analysis.js)
-    document.querySelectorAll('.tab-btn').forEach(button => {
-      button.addEventListener('click', () => {
-        document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-        button.classList.add('active');
-        document.querySelectorAll('.tab-content').forEach(content => content.style.display = 'none');
-        document.getElementById(button.getAttribute('data-tab')).style.display = 'block';
-      });
-    });
-
-    // Report checkbox functionality
+    // Report checkbox functionality (for presentation tab count)
     const presentationCount = document.getElementById('presentation-count');
     let count = 0;
 
@@ -177,23 +168,6 @@
         presentationCount.textContent = count;
         presentationCount.classList.toggle('active', count > 0);
       });
-    });
-
-    // Client file name functionality
-    const clientFileName = document.getElementById('client-file-name');
-    const c1NameInput = document.getElementById('c1-name');
-
-    // Load from localStorage if available
-    const storedClientName = localStorage.getItem('clientFileName');
-    if (storedClientName) {
-      clientFileName.textContent = storedClientName;
-    }
-
-    // Update client file name when c1-name changes
-    c1NameInput.addEventListener('input', () => {
-      const newName = c1NameInput.value || 'No Client Selected';
-      clientFileName.textContent = newName;
-      localStorage.setItem('clientFileName', newName);
     });
   </script>
 </body>
