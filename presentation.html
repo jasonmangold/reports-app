@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Presentation - Advisys</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header>
+    <div class="logo">Advisys</div>
+    <nav>
+      <ul>
+        <li><a href="home.html">Home</a></li>
+        <li><a href="index.html">Reports</a></li>
+        <li class="dropdown">
+          <a href="analysis.html">Analysis</a>
+          <div class="dropdown-content" id="analysis-list">
+            <a href="#" data-analysis="summary">Summary</a>
+            <a href="#" data-analysis="education-funding">Education Funding</a>
+            <a href="#" data-analysis="survivor-needs">Survivor Needs</a>
+            <a href="#" data-analysis="retirement-accumulation">Retirement Accumulation</a>
+            <a href="#" data-analysis="retirement-distribution">Retirement Distribution</a>
+            <a href="#" data-analysis="social-security">Social Security</a>
+            <a href="#" data-analysis="disability-income-needs">Disability Income Needs</a>
+            <a href="#" data-analysis="critical-illness">Critical Illness</a>
+            <a href="#" data-analysis="long-term-care-needs">Long-Term Care Needs</a>
+            <a href="#" data-analysis="estate-analysis">Estate Analysis</a>
+            <a href="#" data-analysis="accumulation-funding">Accumulation Funding</a>
+            <a href="#" data-analysis="asset-allocation">Asset Allocation</a>
+            <a href="#" data-analysis="charitable-remainder-trust">Charitable Remainder Trust</a>
+            <a href="#" data-analysis="personal-finance">Personal Finance</a>
+            <a href="#" data-analysis="debt-repayment">Debt Repayment</a>
+            <a href="#" data-analysis="business-continuation">Business Continuation</a>
+            <a href="#" data-analysis="key-employee">Key Employee</a>
+          </div>
+        </li>
+        <li><a href="presentation.html" id="presentation-tab" class="active">Presentation <span id="presentation-count" class="count-badge">0</span></a></li>
+        <li><a href="#">Calculators</a></li>
+        <li><a href="#">Search</a></li>
+        <li><a href="#">Profile</a></li>
+      </ul>
+    </nav>
+    <div class="icons">
+      <i class="fas fa-bell"></i>
+      <i class="fas fa-question-circle"></i>
+      <i class="fas fa-moon dark-mode-toggle"></i>
+    </div>
+  </header>
+
+  <div class="presentation-page">
+    <h2>Presentation Builder</h2>
+    <div class="presentation-workspace">
+      <div class="selected-reports">
+        <h3>Selected Reports</h3>
+        <div id="report-list" class="report-list">
+          <!-- Populated dynamically via JavaScript -->
+        </div>
+      </div>
+      <div class="presentation-options">
+        <h3>Presentation Options</h3>
+        <div class="option-section">
+          <label>Include Table of Contents: <input type="checkbox" id="include-toc"></label>
+          <label>Include Page Numbers: <input type="checkbox" id="include-page-numbers"></label>
+          <label>Theme:
+            <select id="theme">
+              <option value="light">Light</option>
+              <option value="dark">Dark</option>
+              <option value="corporate">Corporate</option>
+            </select>
+          </label>
+        </div>
+        <h3>Client Information</h3>
+        <div class="option-section">
+          <label>Client Name: <input type="text" id="client-name" placeholder="John Doe"></label>
+          <label>Advisor Name: <input type="text" id="advisor-name" placeholder="Jane Smith"></label>
+          <label>Company Name: <input type="text" id="company-name" placeholder="Advisys Financial"></label>
+        </div>
+        <h3>Title Page</h3>
+        <div class="option-section">
+          <label>Title: <input type="text" id="title" placeholder="Retirement Planning Presentation"></label>
+          <label>Subtitle: <input type="text" id="subtitle" placeholder="Prepared for John Doe"></label>
+          <label>Date: <input type="date" id="presentation-date"></label>
+          <label>Logo URL: <input type="url" id="logo-url" placeholder="https://example.com/logo.png"></label>
+        </div>
+        <button type="button" id="save-presentation-btn">Save Presentation</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Initialize report list from localStorage
+    const reportList = document.getElementById('report-list');
+    const presentationCount = document.getElementById('presentation-count');
+    let selectedReports = JSON.parse(localStorage.getItem('selectedReports')) || [];
+
+    function renderReports() {
+      reportList.innerHTML = '';
+      selectedReports.forEach((report, index) => {
+        const reportItem = document.createElement('div');
+        reportItem.className = 'report-item';
+        reportItem.draggable = true;
+        reportItem.dataset.index = index;
+        reportItem.innerHTML = `
+          <span>${report}</span>
+          <button class="remove-report-btn" data-index="${index}"><i class="fas fa-trash"></i></button>
+        `;
+        reportList.appendChild(reportItem);
+      });
+      updateCountBadge();
+    }
+
+    function updateCountBadge() {
+      presentationCount.textContent = selectedReports.length;
+      presentationCount.classList.toggle('active', selectedReports.length > 0);
+    }
+
+    // Drag and Drop
+    reportList.addEventListener('dragstart', (e) => {
+      if (e.target.classList.contains('report-item')) {
+        e.target.classList.add('dragging');
+        e.dataTransfer.setData('text/plain', e.target.dataset.index);
+      }
+    });
+
+    reportList.addEventListener('dragend', (e) => {
+      if (e.target.classList.contains('report-item')) {
+        e.target.classList.remove('dragging');
+      }
+    });
+
+    reportList.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      const draggingItem = document.querySelector('.dragging');
+      const afterElement = getDragAfterElement(reportList, e.clientY);
+      if (afterElement == null) {
+        reportList.appendChild(draggingItem);
+      } else {
+        reportList.insertBefore(draggingItem, afterElement);
+      }
+    });
+
+    reportList.addEventListener('drop', (e) => {
+      e.preventDefault();
+      const index = e.dataTransfer.getData('text/plain');
+      const newOrder = Array.from(reportList.children).map(item => selectedReports[item.dataset.index]);
+      selectedReports = newOrder;
+      localStorage.setItem('selectedReports', JSON.stringify(selectedReports));
+      renderReports();
+    });
+
+    function getDragAfterElement(container, y) {
+      const draggableElements = [...container.querySelectorAll('.report-item:not(.dragging)')];
+      return draggableElements.reduce((closest, child) => {
+        const box = child.getBoundingClientRect();
+        const offset = y - box.top - box.height / 2;
+        if (offset < 0 && offset > closest.offset) {
+          return { offset: offset, element: child };
+        } else {
+          return closest;
+        }
+      }, { offset: Number.NEGATIVE_INFINITY }).element;
+    }
+
+    // Remove report
+    reportList.addEventListener('click', (e) => {
+      if (e.target.closest('.remove-report-btn')) {
+        const index = e.target.closest('.remove-report-btn').dataset.index;
+        selectedReports.splice(index, 1);
+        localStorage.setItem('selectedReports', JSON.stringify(selectedReports));
+        renderReports();
+      }
+    });
+
+    // Initialize
+    renderReports();
+
+    // Dark mode toggle (consistent with analysis.html)
+    document.querySelector('.dark-mode-toggle').addEventListener('click', () => {
+      document.body.classList.toggle('dark-mode');
+    });
+  </script>
+</body>
+</html>
