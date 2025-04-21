@@ -38,7 +38,7 @@
             <a href="#" data-analysis="key-employee">Key Employee</a>
           </div>
         </li>
-        <li><a href="#" id="presentation-tab">Presentation <span id="presentation-count" class="count-badge">0</span></a></li>
+        <li><a href="presentation.html" id="presentation-tab">Presentation <span id="presentation-count" class="count-badge">0</span></a></li>
         <li><a href="#">Calculators</a></li>
         <li><a href="#">Search</a></li>
         <li><a href="#">Profile</a></li>
@@ -129,12 +129,12 @@
             </div>
             <div class="tab-content" id="reports" style="display: none;">
               <div class="report-list">
-                <label><input type="checkbox" class="report-checkbox" data-report="retirement-analysis"> Retirement Analysis</label>
-                <label><input type="checkbox" class="report-checkbox" data-report="social-security-optimizer"> Social Security Optimizer</label>
-                <label><input type="checkbox" class="report-checkbox" data-report="capital-available"> Capital Available for Retirement</label>
-                <label><input type="checkbox" class="report-checkbox" data-report="alternatives-retirement"> Alternatives to Achieving Retirement Goals</label>
-                <label><input type="checkbox" class="report-checkbox" data-report="retirement-timeline"> Retirement Timeline</label>
-                <label><input type="checkbox" class="report-checkbox" data-report="retirement-fact-finder"> Retirement Analysis Fact Finder</label>
+                <label><input type="checkbox" class="report-checkbox" data-report="Retirement Analysis"> Retirement Analysis</label>
+                <label><input type="checkbox" class="report-checkbox" data-report="Social Security Optimizer"> Social Security Optimizer</label>
+                <label><input type="checkbox" class="report-checkbox" data-report="Capital Available for Retirement"> Capital Available for Retirement</label>
+                <label><input type="checkbox" class="report-checkbox" data-report="Alternatives to Achieving Retirement Goals"> Alternatives to Achieving Retirement Goals</label>
+                <label><input type="checkbox" class="report-checkbox" data-report="Retirement Timeline"> Retirement Timeline</label>
+                <label><input type="checkbox" class="report-checkbox" data-report="Retirement Analysis Fact Finder"> Retirement Analysis Fact Finder</label>
               </div>
             </div>
             <button type="button" id="recalculate-btn">Recalculate</button>
@@ -149,9 +149,8 @@
     </div>
   </div>
 
-  <script src="analysis.js"></script>
   <script>
-    // Tab switching functionality (if not already in analysis.js)
+    // Tab switching functionality
     document.querySelectorAll('.tab-btn').forEach(button => {
       button.addEventListener('click', () => {
         document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
@@ -161,20 +160,41 @@
       });
     });
 
-    // Report checkbox functionality
+    // Report checkbox functionality with localStorage
     const presentationCount = document.getElementById('presentation-count');
-    let count = 0;
+    let selectedReports = JSON.parse(localStorage.getItem('selectedReports')) || [];
+
+    function updateCountBadge() {
+      presentationCount.textContent = selectedReports.length;
+      presentationCount.classList.toggle('active', selectedReports.length > 0);
+    }
 
     document.querySelectorAll('.report-checkbox').forEach(checkbox => {
+      // Restore checked state from localStorage
+      if (selectedReports.includes(checkbox.dataset.report)) {
+        checkbox.checked = true;
+      }
+
       checkbox.addEventListener('change', () => {
+        const report = checkbox.dataset.report;
         if (checkbox.checked) {
-          count++;
+          if (!selectedReports.includes(report)) {
+            selectedReports.push(report);
+          }
         } else {
-          count--;
+          selectedReports = selectedReports.filter(r => r !== report);
         }
-        presentationCount.textContent = count;
-        presentationCount.classList.toggle('active', count > 0);
+        localStorage.setItem('selectedReports', JSON.stringify(selectedReports));
+        updateCountBadge();
       });
+    });
+
+    // Initialize badge
+    updateCountBadge();
+
+    // Dark mode toggle
+    document.querySelector('.dark-mode-toggle').addEventListener('click', () => {
+      document.body.classList.toggle('dark-mode');
     });
   </script>
 </body>
