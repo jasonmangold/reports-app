@@ -921,3 +921,39 @@ body.dark-mode .client-inputs input[type="date"] {
   color: #f1f5f9;
   border-color: #64748b;
 }
+/* Asset Styles */
+.asset {
+  border: 1px solid #ddd;
+  padding: 8px;
+  margin-bottom: 8px;
+  border-radius: 4px;
+}
+
+.add-asset-btn {
+  background: #3b82f6;
+  color: #fff;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 600;
+  margin-top: 10px;
+}
+
+.add-asset-btn:hover {
+  background: #2563eb;
+}
+
+/* Dark Mode Adjustments */
+body.dark-mode .asset {
+  border-color: #64748b;
+  background: #334155;
+}
+
+body.dark-mode .add-asset-btn {
+  background: #60a5fa;
+}
+
+body.dark-mode .add-asset-btn:hover {
+  background: #2563eb;
+}
