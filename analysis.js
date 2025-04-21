@@ -25,6 +25,7 @@ const tabContents = document.querySelectorAll('.tab-content');
 const recalculateBtn = document.getElementById('recalculate-btn');
 const exportGraphBtn = document.getElementById('export-graph-btn');
 const chartCanvas = document.getElementById('analysis-chart');
+const clientFileName = document.getElementById('client-file-name');
 let chartInstance = null;
 
 // Initialize on page load
@@ -32,6 +33,7 @@ document.addEventListener('DOMContentLoaded', () => {
   populateAnalysisTopics(); // Populate topics horizontally
   updateGraph(); // Initial graph render
   setupTabSwitching(); // Set up tab functionality
+  updateClientFileName(); // Initialize client file name
 });
 
 // Populate analysis topics horizontally
@@ -71,12 +73,23 @@ function setupTabSwitching() {
   });
 }
 
+// Update client file name display
+function updateClientFileName() {
+  let name = clientData.client1.personal.name || 'No Client Selected';
+  if (clientData.isMarried && clientData.client2.personal.name) {
+    name = `${clientData.client1.personal.name} & ${clientData.client2.personal.name}`;
+  }
+  clientFileName.textContent = name;
+  localStorage.setItem('clientFileName', name);
+}
+
 // Toggle Client 2 inputs based on marital status
 document.getElementById('is-married').addEventListener('change', (e) => {
   clientData.isMarried = e.target.checked;
   document.getElementById('client2-section').style.display = e.target.checked ? 'block' : 'none';
   document.getElementById('client2-income-section').style.display = e.target.checked ? 'block' : 'none';
   document.getElementById('c2-accounts').style.display = e.target.checked ? 'block' : 'none';
+  updateClientFileName(); // Update name when marital status changes
   updateGraph();
 });
 
@@ -138,6 +151,11 @@ function updateClientData(e) {
     clientData.assumptions.inflation = value;
   } else if (input.id === 'ror-retirement') {
     clientData.assumptions.rorRetirement = value;
+  }
+
+  // Update client file name when names change
+  if (input.id === 'c1-name' || input.id === 'c2-name') {
+    updateClientFileName();
   }
 
   updateGraph();
