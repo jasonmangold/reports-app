@@ -1,690 +1,361 @@
-* {
+/* General styles */
+body {
+  font-family: Arial, sans-serif;
   margin: 0;
-  padding: 0;
+  padding: 20px;
+  background-color: #f4f4f4;
+  color: #333;
+}
+
+h1, h2, h3, h4, h5 {
+  margin: 0.5em 0;
+}
+
+button {
+  cursor: pointer;
+  padding: 8px 16px;
+  border: none;
+  border-radius: 4px;
+  background-color: #007bff;
+  color: white;
+  transition: background-color 0.3s;
+}
+
+button:hover {
+  background-color: #0056b3;
+}
+
+input, select {
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  width: 100%;
   box-sizing: border-box;
 }
 
-body {
-  font-family: 'Inter', sans-serif;
-  background-color: #f8fafc;
-  padding-top: 70px;
-  color: #1e293b;
-}
-
-header {
-  position: fixed;
-  top: 0;
-  width: 100%;
-  background: linear-gradient(135deg, #ffffff, #f1f5f9);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-  display: flex;
-  align-items: center;
-  padding: 15px 30px;
-  z-index: 1000;
-}
-
-/* Client File Styles */
-.client-file {
-  margin-left: 20px;
-  font-size: 16px;
-  font-weight: 600;
-  color: #1e293b;
-  display: flex;
-  align-items: center;
-}
-
-#client-file-name {
-  padding: 4px 8px;
-  border-radius: 4px;
-  background: #eff6ff;
-  color: #3b82f6;
-}
-
-/* Dark Mode Adjustments */
-body.dark-mode {
-  background: #1e293b;
-  color: #f1f5f9;
-}
-
-body.dark-mode header,
-body.dark-mode .sidebar,
-body.dark-mode .subfolder,
-body.dark-mode .report-card,
-body.dark-mode .modal-content,
-body.dark-mode .client-inputs,
-body.dark-mode .graph-outputs,
-body.dark-mode .analysis-topics,
-body.dark-mode .input-content,
-body.dark-mode .input-tabs,
-body.dark-mode .tab-btn,
-body.dark-mode .topic-btn.active {
-  background: #334155;
-}
-
-body.dark-mode .client-file {
-  color: #f1f5f9;
-}
-
-body.dark-mode #client-file-name {
-  background: #4b5e7a;
-  color: #60a5fa;
-}
-
-body.dark-mode .client-inputs label,
-body.dark-mode .topic-btn,
-body.dark-mode .tab-btn {
-  color: #94a3b8;
-}
-
-body.dark-mode .client-inputs input[type="text"],
-body.dark-mode .client-inputs input[type="number"],
-body.dark-mode .client-inputs input[type="date"] {
-  background: #475569;
-  color: #f1f5f9;
-  border-color: #64748b;
-}
-
-body.dark-mode .tab-btn.active {
-  background: #60a5fa;
-  color: #ffffff;
-  border-color: #60a5fa;
-}
-
-body.dark-mode .topic-btn:hover,
-body.dark-mode .tab-btn:hover {
-  background: #4b5e7a;
-  color: #60a5fa;
-}
-
-/* High Contrast Mode */
-body.high-contrast {
-  background: #000;
-  color: #fff;
-}
-
-body.high-contrast header,
-body.high-contrast .client-inputs,
-body.high-contrast .graph-outputs,
-body.high-contrast .analysis-topics,
-body.high-contrast .input-content,
-body.high-contrast .input-tabs,
-body.high-contrast .tab-btn {
-  background: #000;
-  color: #fff;
-  border-color: #fff;
-}
-
-body.high-contrast .client-inputs input[type="text"],
-body.high-contrast .client-inputs input[type="number"],
-body.high-contrast .client-inputs input[type="date"] {
-  background: #fff;
-  color: #000;
-  border-color: #fff;
-}
-
-body.high-contrast .tab-btn.active,
-body.high-contrast .topic-btn.active,
-body.high-contrast .add-account-btn,
-body.high-contrast .add-asset-btn,
-body.high-contrast #recalculate-btn,
-body.high-contrast #export-graph-btn,
-body.high-contrast #export-pdf-btn,
-body.high-contrast .data-controls button,
-body.high-contrast .modal-content,
-body.high-contrast .save-pdf-btn {
-  background: #fff;
-  color: #000;
-}
-
-body.high-contrast .client-inputs label,
-body.high-contrast .topic-btn,
-body.high-contrast .tab-btn {
-  color: #fff;
-}
-
-.logo {
-  font-size: 24px;
-  font-weight: 700;
-  background: linear-gradient(90deg, #3b82f6, #60a5fa);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-}
-
-nav ul {
-  list-style: none;
-  display: flex;
-  margin-left: 40px;
-}
-
-nav ul li {
-  margin: 0 20px;
-  position: relative;
-}
-
-nav ul li a {
-  text-decoration: none;
-  color: #64748b;
-  font-weight: 600;
-  transition: color 0.2s;
-}
-
-nav ul li a.active,
-nav ul li a:hover {
-  color: #3b82f6;
-}
-
-.count-badge {
-  position: absolute;
-  top: -10px;
-  right: -10px;
-  background: #ef4444;
-  color: #fff;
-  font-size: 12px;
-  width: 18px;
-  height: 18px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  opacity: 0;
-  transition: opacity 0.3s, transform 0.3s;
-}
-
-.count-badge.active {
-  opacity: 1;
-  animation: pulse 0.5s ease-in-out;
-}
-
-@keyframes pulse {
-  0% { transform: scale(1); }
-  50% { transform: scale(1.2); }
-  100% { transform: scale(1); }
-}
-
-.icons i {
-  margin-left: 20px;
-  cursor: pointer;
-  font-size: 20px;
-  color: #64748b;
-  transition: color 0.2s;
-}
-
-.icons i:hover {
-  color: #3b82f6;
-}
-
-/* Input Group for Sticky Labels */
+/* Input group for sticky labels */
 .input-group {
   position: relative;
-  margin: 8px 0;
+  margin: 10px 0;
 }
 
 .input-group label {
   position: absolute;
-  top: 8px;
+  top: 50%;
   left: 10px;
-  color: #64748b;
-  font-size: 14px;
-  transition: all 0.2s;
+  transform: translateY(-50%);
+  color: #666;
+  transition: all 0.2s ease;
   pointer-events: none;
+  background-color: transparent;
+  padding: 0 5px;
 }
 
 .input-group input:focus + label,
-.input-group input:not(:placeholder-shown) + label {
+.input-group input.has-value + label {
   top: -10px;
-  left: 8px;
-  font-size: 12px;
-  color: #3b82f6;
-  background: #fff;
-  padding: 0 4px;
+  font-size: 0.8em;
+  color: #007bff;
+  background-color: #f4f4f4;
 }
 
-body.dark-mode .input-group label {
-  color: #94a3b8;
+.input-group input:focus {
+  border-color: #007bff;
+  outline: none;
 }
 
-body.dark-mode .input-group input:focus + label,
-body.dark-mode .input-group input:not(:placeholder-shown) + label {
-  color: #60a5fa;
-  background: #334155;
-}
-
-body.high-contrast .input-group label {
-  color: #fff;
-}
-
-body.high-contrast .input-group input:focus + label,
-body.high-contrast .input-group input:not(:placeholder-shown) + label {
-  color: #000;
-  background: #fff;
-}
-
-/* Input Validation */
-.invalid {
-  border-color: #ef4444 !important;
+.input-group input.invalid {
+  border-color: #dc3545;
 }
 
 .error-message {
-  color: #ef4444;
-  font-size: 12px;
-  margin-top: 2px;
+  color: #dc3545;
+  font-size: 0.8em;
+  margin-top: 5px;
+  display: block;
 }
 
-body.dark-mode .error-message {
-  color: #f87171;
+/* Analysis topics */
+.analysis-topics {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
 }
 
-body.high-contrast .error-message {
-  color: #fff;
-  background: #000;
+.topic-btn {
+  padding: 10px 20px;
+  background-color: #e9ecef;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s;
 }
 
-/* Help Icon */
+.topic-btn.active,
+.topic-btn:hover {
+  background-color: #007bff;
+  color: white;
+}
+
+/* Mobile select for analysis topics */
+.analysis-topics-mobile {
+  width: 100%;
+  padding: 10px;
+  font-size: 1em;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+  background-color: white;
+  display: none;
+}
+
+/* Tabs */
+.input-tabs {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  width: 200px;
+  float: left;
+}
+
+.tab-btn {
+  padding: 10px;
+  background-color: #e9ecef;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  text-align: left;
+  transition: background-color 0.3s;
+}
+
+.tab-btn.active,
+.tab-btn:hover {
+  background-color: #007bff;
+  color: white;
+}
+
+.tab-content {
+  margin-left: 220px;
+  padding: 20px;
+  background-color: white;
+  border-radius: 4px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+/* Client sections */
+.client {
+  background-color: #e9ecef;
+  padding: 15px;
+  border-radius: 4px;
+  margin-bottom: 10px;
+}
+
+/* Account and asset sections */
+.account, .asset {
+  background-color: #dee2e6;
+  padding: 10px;
+  border-radius: 4px;
+  margin-bottom: 10px;
+}
+
+/* Chart */
+#analysis-chart {
+  max-width: 800px;
+  margin: 20px 0;
+}
+
+.pulse {
+  animation: pulse 0.5s;
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.02); }
+  100% { transform: scale(1); }
+}
+
+/* Animations for tab content */
+.animate {
+  animation: fadeIn 0.3s;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Controls */
+.data-controls {
+  margin-bottom: 20px;
+}
+
+.data-controls button {
+  margin-right: 10px;
+}
+
+#client-file-name {
+  font-weight: bold;
+  margin-bottom: 10px;
+  display: block;
+}
+
+#presentation-count {
+  display: inline-block;
+  padding: 5px 10px;
+  background-color: #6c757d;
+  color: white;
+  border-radius: 12px;
+  font-size: 0.9em;
+}
+
+#presentation-count.active {
+  background-color: #28a745;
+}
+
+/* Report list */
+.report-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.report-list label {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+/* Presentation reports */
+#presentation-reports li {
+  padding: 10?\px;
+  background-color: #e9ecef;
+  margin-bottom: 5px;
+  cursor: move;
+  border-radius: 4px;
+}
+
+/* Modal */
+dialog {
+  border: none;
+  border-radius: 4px;
+  padding: 20px;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
+
+dialog::backdrop {
+  background-color: rgba(0,0,0,0.5);
+}
+
+dialog .close,
+dialog .save-pdf-btn {
+  margin-top: 10px;
+}
+
+/* Help icon */
 .help-icon {
   display: inline-block;
   width: 16px;
   height: 16px;
   line-height: 16px;
   text-align: center;
-  background: #3b82f6;
-  color: #fff;
+  background-color: #6c757d;
+  color: white;
   border-radius: 50%;
   margin-left: 5px;
   cursor: help;
-  font-size: 12px;
 }
 
-body.dark-mode .help-icon {
-  background: #60a5fa;
+/* Use default button */
+.use-default-btn {
+  background-color: #6c757d;
+  font-size: 0.8em;
+  padding: 5px 10px;
+  margin-left: 10px;
 }
 
-body.high-contrast .help-icon {
-  background: #fff;
-  color: #000;
+.use-default-btn:hover {
+  background-color: #5a6268;
 }
 
-/* Animations */
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(-10px); }
-  to { opacity: 1; transform: translateY(0); }
+/* Dark mode */
+body.dark-mode {
+  background-color: #333;
+  color: #f4f4f4;
 }
 
-@keyframes chartPulse {
-  0% { opacity: 1; }
-  50% { opacity: 0.8; }
-  100% { opacity: 1; }
+body.dark-mode .tab-content,
+body.dark-mode .input-group input:focus + label,
+body.dark-mode .input-group input.has-value + label {
+  background-color: #444;
 }
 
-.tab-content.animate {
-  animation: fadeIn 0.3s;
-}
-
-#analysis-chart.pulse {
-  animation: chartPulse 0.5s;
-}
-
-/* Analysis Page Layout */
-.analysis-page {
-  padding: 0 20px 20px;
-  height: calc(100vh - 70px);
-  display: flex;
-  flex-direction: column;
-}
-
-.analysis-topics {
-  background: #ffffff;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-  padding: 8px;
-  margin: 10px 0 15px;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 5px;
-}
-
-@media (max-width: 768px) {
-  .analysis-topics {
-    display: none;
-  }
-  .analysis-topics-mobile {
-    display: block;
-    width: 100%;
-    margin: 10px 0;
-  }
-  .analysis-topics-mobile select {
-    width: 100%;
-    padding: 8px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    font-size: 14px;
-  }
-}
-
-.topic-btn {
-  background: none;
-  border: none;
-  padding: 6px 12px;
-  font-size: 14px;
-  font-weight: 600;
-  color: #64748b;
-  cursor: pointer;
-  transition: color 0.2s, background 0.2s;
-}
-
-.topic-btn.active {
-  color: #3b82f6;
-  border-bottom: 2px solid #3b82f6;
-}
-
-.topic-btn:hover,
-.tab-btn:hover,
-.add-account-btn:hover,
-.add-asset-btn:hover,
-#recalculate-btn:hover,
-#export-graph-btn:hover,
-#export-pdf-btn:hover,
-.data-controls button:hover {
-  background: #e0e7ff;
-  color: #3b82f6;
-}
-
-.analysis-workspace {
-  display: flex;
-  flex: 1;
-  gap: 15px;
-  width: 100%;
-}
-
-@media (max-width: 768px) {
-  .analysis-workspace {
-    flex-direction: column;
-  }
-  .client-inputs,
-  .graph-outputs {
-    min-width: 100%;
-  }
-}
-
-.client-inputs {
-  flex: 1;
-  min-width: 400px;
-  background: #ffffff;
-  border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-  padding: 15px;
-  display: flex;
-  flex-direction: column;
-  overflow-y: auto;
-}
-
-.input-container {
-  display: flex;
-  flex: 1;
-}
-
-.input-tabs {
-  width: 130px;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  margin-right: 10px;
-  background: #f1f5f9;
-  padding: 10px;
-  border-radius: 8px 0 0 8px;
-}
-
-.tab-btn {
-  background: #ffffff;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  padding: 10px 12px;
-  font-size: 14px;
-  font-weight: 600;
-  color: #64748b;
-  cursor: pointer;
-  text-align: left;
-  transition: background 0.2s, color 0.2s, border-color 0.2s;
-}
-
-.tab-btn.active {
-  background: #3b82f6;
-  color: #ffffff;
-  border-color: #3b82f6;
-}
-
-.tab-btn:focus,
-.topic-btn:focus,
-.add-account-btn:focus,
-.add-asset-btn:focus,
-#recalculate-btn:focus,
-#export-graph-btn:focus,
-#export-pdf-btn:focus,
-.data-controls button:focus {
-  outline: 2px solid #3b82f6;
-  outline-offset: 2px;
-}
-
-.input-content {
-  flex: 1;
-  padding: 10px;
-  background: #ffffff;
-  border: 1px solid #ddd;
-  border-radius: 0 8px 8px 0;
-}
-
-.tab-content {
-  padding: 8px 0;
-}
-
-.client-inputs label {
-  display: flex;
-  align-items: center;
-  margin: 8px 0;
-  color: #475569;
-}
-
-.client-inputs input[type="text"],
-.client-inputs input[type="number"],
-.client-inputs input[type="date"] {
-  width: 100%;
-  padding: 8px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-}
-
-.client-inputs input[type="checkbox"] {
-  margin-right: 8px;
-}
-
-.report-list label {
-  font-size: 14px;
-}
-
-.add-account-btn,
-.add-asset-btn,
-#recalculate-btn,
-#export-graph-btn,
-#export-pdf-btn,
-.data-controls button {
-  background: #3b82f6;
-  color: #fff;
-  border: none;
-  padding: 6px 12px;
-  border-radius: 4px;
-  cursor: pointer;
-  font-weight: 600;
-  margin: 5px;
-}
-
-.data-controls {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 5px;
-  margin-top: 10px;
-}
-
-.data-controls select {
-  padding: 6px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-}
-
-.account,
-.asset,
-.client {
-  background: #f9fafb;
-  border: 1px solid #ddd;
-  padding: 8px;
-  margin-bottom: 8px;
-  border-radius: 4px;
+body.dark-mode .client {
+  background-color: #555;
 }
 
 body.dark-mode .account,
-body.dark-mode .asset,
-body.dark-mode .client {
-  background: #1f2937;
-  border-color: #64748b;
+body.dark-mode .asset {
+  background-color: #666;
 }
 
-body.high-contrast .account,
-body.high-contrast .asset,
-body.high-contrast .client {
-  background: #000;
-  border-color: #fff;
+body.dark-mode .topic-btn,
+body.dark-mode .tab-btn {
+  background-color: #555;
 }
 
-.graph-outputs {
-  flex: 1;
-  min-width: 400px;
-  background: #ffffff;
-  border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-  padding: 15px;
-  overflow-y: auto;
+body.dark-mode .topic-btn.active,
+body.dark-mode .topic-btn:hover,
+body.dark-mode .tab-btn.active,
+body.dark-mode .tab-btn:hover {
+  background-color: #007bff;
 }
 
-.graph-controls {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  margin-bottom: 10px;
-}
-
-.graph-controls label {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  font-size: 14px;
-}
-
-.sr-only {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  border: 0;
-}
-
-/* Modal for Report Preview */
-dialog::backdrop {
-  background: rgba(0, 0, 0, 0.5);
-}
-
-.modal-content {
-  background: #ffffff;
-  border-radius: 12px;
-  width: 80%;
-  max-width: 900px;
-  padding: 20px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
-  max-height: 90vh;
-  overflow-y: auto;
-}
-
-.modal-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 20px;
-  border-bottom: 2px solid #3b82f6;
-  padding-bottom: 10px;
-}
-
-.modal-header h2 {
-  font-size: 24px;
-  font-weight: 700;
-  color: #1e293b;
-}
-
-.modal-header .close {
-  font-size: 24px;
-  color: #64748b;
-  cursor: pointer;
-}
-
-.modal-header .close:hover {
-  color: #3b82f6;
-}
-
-.modal-body {
-  font-size: 16px;
-  color: #475569;
-  line-height: 1.6;
-}
-
-.modal-footer {
-  display: flex;
-  justify-content: flex-end;
-  margin-top: 20px;
-}
-
-.save-pdf-btn {
-  background: #3b82f6;
+/* High contrast mode */
+body.high-contrast {
+  background-color: #000;
   color: #fff;
-  border: none;
-  padding: 10px 20px;
-  border-radius: 8px;
-  cursor: pointer;
-  font-weight: 600;
 }
 
-.save-pdf-btn:hover {
-  background: #2563eb;
+body.high-contrast .tab-content,
+body.high-contrast .input-group input:focus + label,
+body.high-contrast .input-group input.has-value + label {
+  background-color: #000;
 }
 
-/* Existing styles (reports, sidebar, etc.) remain unchanged */
-.reports-page, .sidebar, .tag-filters, .search-bar, .view-toggle, .breadcrumb,
-.subfolder-grid, .subfolder, .report-grid, .report-card, .card-actions,
-.modal-actions, .share-icon-btn, .save-pdf-top-btn, .modal-body h3,
-.modal-body p, .modal-body ul, .modal-body li, .modal-body table,
-.modal-body th, .modal-body td, .modal-body sup, .modal-body .footnote,
-.modal-body .highlight, .dropdown, .dropdown-content, .dropdown-content a {
-  /* Unchanged from original styles.css */
+body.high-contrast input,
+body.high-contrast select {
+  border: 2px solid #fff;
+  background-color: #000;
+  color: #fff;
 }
 
-/* Ensure existing dark mode and other styles are preserved */
-body.dark-mode .modal-content {
-  background: #334155;
+body.high-contrast button,
+body.high-contrast .topic-btn,
+body.high-contrast .tab-btn {
+  border: 2px solid #fff;
+  background-color: #000;
+  color: #fff;
 }
 
-body.dark-mode .modal-header h2 {
-  color: #f1f5f9;
+body.high-contrast .topic-btn.active,
+body.high-contrast .topic-btn:hover,
+body.high-contrast .tab-btn.active,
+body.high-contrast .tab-btn:hover {
+  background-color: #fff;
+  color: #000;
 }
 
-body.dark-mode .modal-body {
-  color: #94a3b8;
+body.high-contrast .client,
+body.high-contrast .account,
+body.high-contrast .asset {
+  background-color: #333;
+  border: 2px solid #fff;
 }
 
-body.dark-mode .modal-header {
-  border-bottom-color: #60a5fa;
+body.high-contrast .error-message {
+  color: #ff0;
 }
 
-body.dark-mode .save-pdf-btn {
-  background: #60a5fa;
-}
-
-body.dark-mode .save-pdf-btn:hover {
-  background: #2563eb;
+body.high-contrast .help-icon {
+  background-color: #fff;
+  color: #000;
 }
