@@ -456,17 +456,20 @@ function tabClickHandler() {
 // Event delegation for inputs and checkboxes
 function setupEventDelegation() {
   try {
-    let timeout;
+    let graphTimeout;
     document.addEventListener('input', (e) => {
       if (e.target.closest('#client-input-form')) {
-        clearTimeout(timeout);
-        timeout = setTimeout(() => updateClientData(e), 100); // Debounce input
+        updateClientData(e);
+        // Debounce graph update
+        clearTimeout(graphTimeout);
+        graphTimeout = setTimeout(() => updateGraph(), 500);
       }
     });
 
     document.addEventListener('change', (e) => {
       if (e.target.id === 'is-married') {
         toggleClient2(e);
+        updateGraph();
       } else if (e.target.classList.contains('report-checkbox')) {
         reportCount += e.target.checked ? 1 : -1;
         presentationCount.textContent = reportCount;
@@ -488,7 +491,6 @@ function toggleClient2(e) {
     const c2Assets = document.getElementById('c2-assets');
     if (c2Assets) c2Assets.style.display = e.target.checked ? 'block' : 'none';
     updateClientFileName();
-    updateGraph();
   } catch (error) {
     console.error('Error in toggleClient2:', error);
   }
@@ -636,8 +638,7 @@ function updateClientData(e) {
     }
 
     if (input.id === 'c1-name' || input.id === 'c2-name') updateClientFileName();
-    populateInputFields(); // Re-populate to sync fields
-    updateGraph();
+    // Removed populateInputFields to prevent focus loss
   } catch (error) {
     console.error('Error in updateClientData:', error);
   }
