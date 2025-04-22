@@ -33,8 +33,6 @@ let accountCount = { c1: 1, c2: 1 };
 let assetCount = { c1: 0, c2: 0 };
 let currentAnalysis = 'retirement-accumulation';
 let graphCache = {};
-let undoStack = [];
-let redoStack = [];
 let reportCount = 0;
 let showAllLabels = false;
 
@@ -51,13 +49,10 @@ const presentationCount = document.getElementById('presentation-count');
 const saveProfileBtn = document.getElementById('save-profile-btn');
 const loadProfileSelect = document.getElementById('load-profile-select');
 const resetFormBtn = document.getElementById('reset-form-btn');
-const undoBtn = document.getElementById('undo-btn');
-const redoBtn = document.getElementById('redo-btn');
 const startTourBtn = document.getElementById('start-tour-btn');
 const showAllLabelsBtn = document.getElementById('show-all-labels-btn');
 const toggleC1 = document.getElementById('toggle-c1');
 const toggleC2 = document.getElementById('toggle-c2');
-const toggleExpenses = document.getElementById('toggle-expenses');
 const reportPreviewModal = document.getElementById('report-preview-modal');
 const chartSummary = document.getElementById('chart-summary');
 const darkModeToggle = document.querySelector('.dark-mode-toggle');
@@ -467,7 +462,10 @@ function populateAnalysisTopics() {
     analysisTopics.innerHTML = '';
     const mobileSelect = document.createElement('select');
     mobileSelect.classList.add('analysis-topics-mobile');
-    mobileSelect.style.display = window.innerWidth <= 768 ? 'block' : 'none';
+    const isMobile = window.innerWidth <= 768;
+    mobileSelect.style.display = isMobile ? 'block' : 'none';
+    analysisTopics.style.display = isMobile ? 'none' : 'flex';
+
     const links = analysisList?.querySelectorAll('a') || [];
     links.forEach(link => {
       const btn = document.createElement('button');
@@ -511,8 +509,9 @@ function populateAnalysisTopics() {
     });
 
     window.addEventListener('resize', () => {
-      mobileSelect.style.display = window.innerWidth <= 768 ? 'block' : 'none';
-      analysisTopics.style.display = window.innerWidth <= 768 ? 'none' : 'flex';
+      const isNowMobile = window.innerWidth <= 768;
+      mobileSelect.style.display = isNowMobile ? 'block' : 'none';
+      analysisTopics.style.display = isNowMobile ? 'none' : 'flex';
     });
   } catch (error) {
     console.error('Error in populateAnalysisTopics:', error);
@@ -591,6 +590,7 @@ function setInputValue(id, value, ariaLabel, prop = 'value', isCurrency = false,
 
   input[prop] = formatValue(value);
   input.setAttribute('aria-label', ariaLabel);
+  if (input.value) input.classList.add('has-value');
 }
 
 // Populate input fields with clientData
@@ -664,19 +664,19 @@ function populateInputFields() {
             <label for="${client}-account-${index}-name">Account Name</label>
           </div>
           <div class="input-group">
-            <input type="number" id="${client}-account-${index}-balance" min="0" step="1000" placeholder="$0" aria-label="Client ${client === 'c1' ? 1 : 2} Account ${index + 1} Balance in dollars">
+            <input type="text" id="${client}-account-${index}-balance" min="0" step="1000" placeholder="$0" aria-label="Client ${client === 'c1' ? 1 : 2} Account ${index + 1} Balance in dollars">
             <label for="${client}-account-${index}-balance">Balance ($)</label>
           </div>
           <div class="input-group">
-            <input type="number" id="${client}-account-${index}-contribution" min="0" step="1000" placeholder="$0" aria-label="Client ${client === 'c1' ? 1 : 2} Account ${index + 1} Contribution per year">
+            <input type="text" id="${client}-account-${index}-contribution" min="0" step="1000" placeholder="$0" aria-label="Client ${client === 'c1' ? 1 : 2} Account ${index + 1} Contribution per year">
             <label for="${client}-account-${index}-contribution">Contribution ($/yr)</label>
           </div>
           <div class="input-group">
-            <input type="number" id="${client}-account-${index}-employer-match" min="0" max="100" step="0.1" placeholder="0%" aria-label="Client ${client === 'c1' ? 1 : 2} Account ${index + 1} Employer Match percentage">
+            <input type="text" id="${client}-account-${index}-employer-match" min="0" max="100" step="0.1" placeholder="0%" aria-label="Client ${client === 'c1' ? 1 : 2} Account ${index + 1} Employer Match percentage">
             <label for="${client}-account-${index}-employer-match">Employer Match (%)</label>
           </div>
           <div class="input-group">
-            <input type="number" id="${client}-account-${index}-ror" min="0" max="100" step="0.1" placeholder="0%" aria-label="Client ${client === 'c1' ? 1 : 2} Account ${index + 1} Rate of Return percentage">
+            <input type="text" id="${client}-account-${index}-ror" min="0" max="100" step="0.1" placeholder="0%" aria-label="Client ${client === 'c1' ? 1 : 2} Account ${index + 1} Rate of Return percentage">
             <label for="${client}-account-${index}-ror">ROR (%) <span class="help-icon" title="Expected annual growth rate">?</span></label>
             ${index === 0 && client === 'c1' ? '<button type="button" class="use-default-btn" data-id="' + client + '-account-' + index + '-ror" data-value="6">Use Default</button>' : ''}
           </div>
@@ -755,7 +755,6 @@ function toggleClient2(e) {
   if (client2IncomeSection) client2IncomeSection.style.display = isMarried ? 'block' : 'none';
   if (c2Accounts) c2Accounts.style.display = isMarried ? 'block' : 'none';
   if (c2Assets) c2Assets.style.display = isMarried ? 'block' : 'none';
-  saveState();
   updateGraph();
 }
 
@@ -798,7 +797,6 @@ function setupAddButtons() {
         const clientKey = client === 'c1' ? 'client1' : 'client2';
         clientData[clientKey].accounts.push({ name: "", balance: "", contribution: "", employerMatch: "", ror: "" });
         accountCount[client]++;
-        saveState();
         populateInputFields();
         updateGraph();
       });
@@ -811,7 +809,6 @@ function setupAddButtons() {
         const clientKey = client === 'c1' ? 'client1' : 'client2';
         clientData[clientKey].other.assets.push({ name: "", balance: "", ror: "", debt: "" });
         assetCount[client]++;
-        saveState();
         populateInputFields();
         updateGraph();
       });
@@ -828,6 +825,19 @@ function setupEventDelegation() {
     inputContent.addEventListener('input', (e) => {
       updateClientData(e);
       if (e.target.type !== 'number') updateGraph();
+      if (e.target.value) {
+        e.target.classList.add('has-value');
+      } else {
+        e.target.classList.remove('has-value');
+      }
+    });
+
+    inputContent.addEventListener('focus', (e) => {
+      e.target.classList.add('has-value');
+    });
+
+    inputContent.addEventListener('blur', (e) => {
+      if (!e.target.value) e.target.classList.remove('has-value');
     });
 
     inputContent.addEventListener('focusout', (e) => {
@@ -852,6 +862,7 @@ function setupEventDelegation() {
         const input = document.getElementById(id);
         if (input) {
           input.value = value;
+          input.classList.add('has-value');
           updateClientData({ target: input });
           updateGraph();
         }
@@ -865,7 +876,6 @@ function setupEventDelegation() {
         presentationCount.textContent = reportCount;
         presentationCount.classList.toggle('active', reportCount > 0);
         updatePresentationReports();
-        saveState();
       });
     });
   } catch (error) {
@@ -942,43 +952,11 @@ function updateClientData(e) {
       validateInput(target, 0, undefined, 'Value must be non-negative');
     }
 
-    saveState();
     updateClientFileName();
   } catch (error) {
     console.error('Error in updateClientData:', error);
   }
 }
-
-// Save state for undo/redo
-function saveState() {
-  undoStack.push(JSON.stringify(clientData));
-  redoStack = [];
-  undoBtn.disabled = undoStack.length <= 1;
-  redoBtn.disabled = true;
-}
-
-// Undo/redo handlers
-undoBtn.addEventListener('click', () => {
-  if (undoStack.length > 1) {
-    redoStack.push(undoStack.pop());
-    clientData = JSON.parse(undoStack[undoStack.length - 1]);
-    updateTabs(currentAnalysis);
-    updateGraph();
-    undoBtn.disabled = undoStack.length <= 1;
-    redoBtn.disabled = false;
-  }
-});
-
-redoBtn.addEventListener('click', () => {
-  if (redoStack.length > 0) {
-    undoStack.push(redoStack.pop());
-    clientData = JSON.parse(undoStack[undoStack.length - 1]);
-    updateTabs(currentAnalysis);
-    updateGraph();
-    undoBtn.disabled = false;
-    redoBtn.disabled = redoStack.length === 0;
-  }
-});
 
 // Save/load profiles
 saveProfileBtn.addEventListener('click', () => {
@@ -1006,7 +984,6 @@ loadProfileSelect.addEventListener('change', (e) => {
     clientData = JSON.parse(localStorage.getItem(key));
     updateTabs(currentAnalysis);
     updateGraph();
-    saveState();
   }
 });
 
@@ -1024,7 +1001,6 @@ resetFormBtn.addEventListener('click', () => {
     }));
     updateTabs(currentAnalysis);
     updateGraph();
-    saveState();
   }
 });
 
@@ -1067,7 +1043,7 @@ function setupGuidedTour() {
 
   tour.addStep({
     id: 'controls',
-    text: 'Save profiles, reset data, or undo/redo changes here.',
+    text: 'Save profiles, reset data, or start this tour again here.',
     attachTo: { element: '.data-controls', on: 'top' },
     buttons: [{ text: 'Back', action: tour.back }, { text: 'Finish', action: tour.complete }]
   });
@@ -1094,7 +1070,6 @@ function updatePresentationReports() {
     onEnd: () => {
       const newOrder = Array.from(container.children).map(li => li.dataset.report);
       clientData.reports = newOrder;
-      saveState();
     }
   });
 }
@@ -1110,8 +1085,7 @@ function updateGraph() {
       currentAnalysis,
       showAllLabels,
       toggleC1: toggleC1.checked,
-      toggleC2: toggleC2.checked,
-      toggleExpenses: toggleExpenses.checked
+      toggleC2: toggleC2.checked
     });
 
     if (graphCache[cacheKey]) {
@@ -1136,9 +1110,9 @@ function updateGraph() {
       datasets.push({
         label: clientData.client1.personal.name || 'Client 1',
         data: c1Data,
-        borderColor: '#3b82f6',
-        backgroundColor: 'rgba(59, 130, 246, 0.2)',
-        fill: false
+        backgroundColor: '#3b82f6',
+        borderColor: '#1e3a8a',
+        borderWidth: 1
       });
       maxValue = Math.max(maxValue, ...c1Data);
     }
@@ -1149,29 +1123,16 @@ function updateGraph() {
       datasets.push({
         label: clientData.client2.personal.name || 'Client 2',
         data: c2Data,
-        borderColor: '#10b981',
-        backgroundColor: 'rgba(16, 185, 129, 0.2)',
-        fill: false
+        backgroundColor: '#10b981',
+        borderColor: '#065f46',
+        borderWidth: 1
       });
       maxValue = Math.max(maxValue, ...c2Data);
     }
 
-    // Expenses (Personal Finance)
-    if (toggleExpenses.checked && currentAnalysis === 'personal-finance') {
-      const expenseData = calculateExpenses(years);
-      datasets.push({
-        label: 'Expenses',
-        data: expenseData,
-        borderColor: '#ef4444',
-        backgroundColor: 'rgba(239, 68, 68, 0.2)',
-        fill: false
-      });
-      maxValue = Math.max(maxValue, ...expenseData);
-    }
-
     // Chart configuration
     const config = {
-      type: 'line',
+      type: 'bar',
       data: { labels: displayLabels, datasets },
       options: {
         responsive: true,
@@ -1252,23 +1213,6 @@ function calculateClientData(clientKey, years) {
   return data;
 }
 
-// Calculate expenses (Personal Finance)
-function calculateExpenses(years) {
-  const data = [];
-  const expenses = parseFloat(clientData.savingsExpenses.householdExpenses) +
-                  parseFloat(clientData.savingsExpenses.taxes) +
-                  parseFloat(clientData.savingsExpenses.otherExpenses);
-  const inflation = parseFloat(clientData.assumptions.inflation) / 100 || 0;
-
-  let total = expenses;
-  for (let i = 0; i < years; i++) {
-    data.push(total);
-    total *= (1 + inflation);
-  }
-
-  return data;
-}
-
 // Update chart summary for screen readers
 function updateChartSummary() {
   const datasets = chartInstance?.data.datasets || [];
@@ -1283,7 +1227,7 @@ showAllLabelsBtn.addEventListener('click', () => {
   updateGraph();
 });
 
-[toggleC1, toggleC2, toggleExpenses].forEach(toggle => {
+[toggleC1, toggleC2].forEach(toggle => {
   toggle.addEventListener('change', updateGraph);
 });
 
@@ -1360,17 +1304,6 @@ darkModeToggle.addEventListener('click', () => {
 // High contrast toggle
 highContrastToggle.addEventListener('click', () => {
   document.body.classList.toggle('high-contrast');
-});
-
-// Keyboard shortcuts
-document.addEventListener('keydown', (e) => {
-  if (e.ctrlKey && e.key === 'z') {
-    e.preventDefault();
-    undoBtn.click();
-  } else if (e.ctrlKey && e.key === 'y') {
-    e.preventDefault
-        redoBtn.click();
-  }
 });
 
 // Error handling for invalid inputs
