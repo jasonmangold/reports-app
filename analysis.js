@@ -2,14 +2,12 @@ let clientData = {
   client1: {
     personal: { name: "", dob: "", retirementAge: "" },
     incomeSources: { employment: "", socialSecurity: "", other: "", interestDividends: "" },
-    capital: [{ name: "", balance: "", contribution: "", employerMatch: "", ror: "" }],
-    accounts: [] // For Personal Finance: name, balance, ror
+    accounts: [{ name: "", balance: "", contribution: "", employerMatch: "", ror: "" }],
   },
   client2: {
     personal: { name: "", dob: "", retirementAge: "" },
     incomeSources: { employment: "", socialSecurity: "", other: "", interestDividends: "" },
-    capital: [{ name: "", balance: "", contribution: "", employerMatch: "", ror: "" }],
-    accounts: []
+    accounts: [{ name: "", balance: "", contribution: "", employerMatch: "", ror: "" }],
   },
   isMarried: false,
   incomeNeeds: { monthly: "" },
@@ -41,7 +39,9 @@ const recalculateBtn = document.getElementById('recalculate-btn');
 const exportGraphBtn = document.getElementById('export-graph-btn');
 const chartCanvas = document.getElementById('analysis-chart');
 const clientFileName = document.getElementById('client-file-name');
+const presentationCount = document.getElementById('presentation-count');
 let chartInstance = null;
+let reportCount = 0;
 
 // Tab configurations
 const tabConfigs = {
@@ -82,6 +82,7 @@ const tabConfigs = {
       <div id="c1-accounts">
         <h5>Client 1 Accounts</h5>
         <div class="account">
+          <label>Account Name: <input type="text" id="c1-account-0-name" placeholder="401(k)"></label>
           <label>Balance ($): <input type="number" id="c1-account-0-balance" min="0" step="1000" placeholder="100000"></label>
           <label>Contribution ($/yr): <input type="number" id="c1-account-0-contribution" min="0" step="1000" placeholder="10000"></label>
           <label>Employer Match (%): <input type="number" id="c1-account-0-employer-match" min="0" max="100" step="0.1" placeholder="3"></label>
@@ -92,6 +93,7 @@ const tabConfigs = {
       <div id="c2-accounts" style="display: none;">
         <h5>Client 2 Accounts</h5>
         <div class="account">
+          <label>Account Name: <input type="text" id="c2-account-0-name" placeholder="IRA"></label>
           <label>Balance ($): <input type="number" id="c2-account-0-balance" min="0" step="1000" placeholder="80000"></label>
           <label>Contribution ($/yr): <input type="number" id="c2-account-0-contribution" min="0" step="1000" placeholder="8000"></label>
           <label>Employer Match (%): <input type="number" id="c2-account-0-employer-match" min="0" max="100" step="0.1" placeholder="2"></label>
@@ -209,9 +211,10 @@ const tabConfigs = {
 // Initialize on page load
 document.addEventListener('DOMContentLoaded', () => {
   populateAnalysisTopics();
-  updateGraph();
   updateTabs(currentAnalysis);
+  updateGraph();
   updateClientFileName();
+  setupEventDelegation();
 });
 
 // Populate analysis topics
@@ -251,8 +254,10 @@ function populateAnalysisTopics() {
 
 // Update tabs and content
 function updateTabs(analysis) {
+  // Clear existing content
   inputTabs.innerHTML = '';
   inputContent.innerHTML = '';
+
   const config = tabConfigs[analysis] || tabConfigs['retirement-accumulation'];
   
   config.forEach((tab, index) => {
@@ -271,22 +276,171 @@ function updateTabs(analysis) {
     inputContent.appendChild(contentDiv);
   });
 
+  // Populate input fields with clientData
+  populateInputFields();
+
+  // Update client file name and marital status
+  updateClientFileName();
+  const isMarriedInput = document.getElementById('is-married');
+  if (isMarriedInput) {
+    isMarriedInput.checked = clientData.isMarried;
+    toggleClient2({ target: isMarriedInput }); // Ensure Client 2 visibility
+  }
+
+  // Re-attach event listeners
   setupTabSwitching();
-  setupInputListeners();
   setupAddButtons();
-  document.getElementById('is-married').addEventListener('change', toggleClient2);
+}
+
+// Populate input fields with clientData
+function populateInputFields() {
+  console.log('Populating input fields with clientData:', clientData);
+
+  // Shared fields
+  setInputValue('c1-name', clientData.client1.personal.name, 'Client 1 Name');
+  setInputValue('c2-name', clientData.client2.personal.name, 'Client 2 Name');
+  setInputValue('c1-employment', clientData.client1.incomeSources.employment, 'Client 1 Employment');
+  setInputValue('c2-employment', clientData.client2.incomeSources.employment, 'Client 2 Employment');
+  setInputValue('other-income', clientData.client1.incomeSources.other, 'Other Income');
+  setInputValue('is-married', clientData.isMarried, 'Is Married', 'checked');
+
+  // Retirement Accumulation specific
+  setInputValue('c1-dob', clientData.client1.personal.dob, 'Client 1 DOB');
+  setInputValue('c2-dob', clientData.client2.personal.dob, 'Client 2 DOB');
+  setInputValue('c1-retirement-age', clientData.client1.personal.retirementAge, 'Client 1 Retirement Age');
+  setInputValue('c2-retirement-age', clientData.client2.personal.retirementAge, 'Client 2 Retirement Age');
+  setInputValue('c1-social-security', clientData.client1.incomeSources.socialSecurity, 'Client 1 Social Security');
+  setInputValue('c2-social-security', clientData.client2.incomeSources.socialSecurity, 'Client 2 Social Security');
+  setInputValue('monthly-income', clientData.incomeNeeds.monthly, 'Monthly Income');
+  setInputValue('mortality-age', clientData.assumptions.mortalityAge, 'Mortality Age');
+  setInputValue('inflation', clientData.assumptions.inflation, 'Inflation');
+  setInputValue('ror-retirement', clientData.assumptions.rorRetirement, 'ROR Retirement');
+
+  // Personal Finance specific
+  setInputValue('interest-dividends', clientData.client1.incomeSources.interestDividends, 'Interest and Dividends');
+  setInputValue('household-expenses', clientData.savingsExpenses.householdExpenses, 'Household Expenses');
+  setInputValue('taxes', clientData.savingsExpenses.taxes, 'Taxes');
+  setInputValue('other-expenses', clientData.savingsExpenses.otherExpenses, 'Other Expenses');
+  setInputValue('monthly-savings', clientData.savingsExpenses.monthlySavings, 'Monthly Savings');
+  setInputValue('analysis-date', clientData.assumptions.analysisDate, 'Analysis Date');
+  setInputValue('cash', clientData.other.cash, 'Cash');
+  setInputValue('residence-mortgage', clientData.other.residenceMortgage, 'Residence/Mortgage');
+  setInputValue('other-debt', clientData.other.otherDebt, 'Other Debt');
+
+  // Accounts
+  ['c1', 'c2'].forEach(client => {
+    const clientKey = client === 'c1' ? 'client1' : 'client2';
+    const accounts = clientData[clientKey].accounts;
+    const container = document.getElementById(`${client}-accounts`);
+    if (!container) return;
+
+    // Clear all accounts and re-render
+    const existingAccounts = container.querySelectorAll('.account');
+    existingAccounts.forEach(account => account.remove());
+
+    accounts.forEach((account, index) => {
+      const newAccount = document.createElement('div');
+      newAccount.classList.add('account');
+      newAccount.innerHTML = currentAnalysis === 'personal-finance' ? `
+        <label>Account Name: <input type="text" id="${client}-account-${index}-name" placeholder="Account ${index + 1}"></label>
+        <label>Balance ($): <input type="number" id="${client}-account-${index}-balance" min="0" step="1000" placeholder="0"></label>
+        <label>ROR (%): <input type="number" id="${client}-account-${index}-ror" min="0" max="100" step="0.1" placeholder="0"></label>
+      ` : `
+        <label>Account Name: <input type="text" id="${client}-account-${index}-name" placeholder="Account ${index + 1}"></label>
+        <label>Balance ($): <input type="number" id="${client}-account-${index}-balance" min="0" step="1000" placeholder="0"></label>
+        <label>Contribution ($/yr): <input type="number" id="${client}-account-${index}-contribution" min="0" step="1000" placeholder="0"></label>
+        <label>Employer Match (%): <input type="number" id="${client}-account-${index}-employer-match" min="0" max="100" step="0.1" placeholder="0"></label>
+        <label>ROR (%): <input type="number" id="${client}-account-${index}-ror" min="0" max="100" step="0.1" placeholder="0"></label>
+      `;
+      const addButton = container.querySelector('.add-account-btn');
+      container.insertBefore(newAccount, addButton);
+
+      setInputValue(`${client}-account-${index}-name`, account.name, `Account ${index} Name`);
+      setInputValue(`${client}-account-${index}-balance`, account.balance, `Account ${index} Balance`);
+      setInputValue(`${client}-account-${index}-ror`, account.ror, `Account ${index} ROR`);
+      if (currentAnalysis !== 'personal-finance') {
+        setInputValue(`${client}-account-${index}-contribution`, account.contribution, `Account ${index} Contribution`);
+        setInputValue(`${client}-account-${index}-employer-match`, account.employerMatch, `Account ${index} Employer Match`);
+      }
+    });
+    accountCount[client] = accounts.length;
+    console.log(`Populated ${client} accounts:`, accounts);
+  });
+
+  // Assets
+  ['c1', 'c2'].forEach(client => {
+    const clientKey = client === 'c1' ? 'client1' : 'client2';
+    const assets = clientData[clientKey].other.assets;
+    const container = document.getElementById(`${client}-assets`);
+    if (!container) return;
+
+    const existingAssets = container.querySelectorAll('.asset');
+    existingAssets.forEach(asset => asset.remove());
+
+    assets.forEach((asset, index) => {
+      const newAsset = document.createElement('div');
+      newAsset.classList.add('asset');
+      newAsset.innerHTML = `
+        <label>Asset Name: <input type="text" id="${client}-asset-${index}-name" placeholder="Asset ${index + 1}"></label>
+        <label>Balance ($): <input type="number" id="${client}-asset-${index}-balance" min="0" step="1000" placeholder="0"></label>
+        <label>ROR (%): <input type="number" id="${client}-asset-${index}-ror" min="0" max="100" step="0.1" placeholder="0"></label>
+        <label>Asset Debt ($): <input type="number" id="${client}-asset-${index}-debt" min="0" step="1000" placeholder="0"></label>
+      `;
+      const addButton = container.querySelector('.add-asset-btn');
+      container.insertBefore(newAsset, addButton);
+
+      setInputValue(`${client}-asset-${index}-name`, asset.name, `Asset ${index} Name`);
+      setInputValue(`${client}-asset-${index}-balance`, asset.balance, `Asset ${index} Balance`);
+      setInputValue(`${client}-asset-${index}-ror`, asset.ror, `Asset ${index} ROR`);
+      setInputValue(`${client}-asset-${index}-debt`, asset.debt, `Asset ${index} Debt`);
+    });
+    assetCount[client] = assets.length;
+  });
+}
+
+// Helper to set input value
+function setInputValue(id, value, label, property = 'value') {
+  const input = document.getElementById(id);
+  if (input) {
+    input[property] = value ?? '';
+    console.log(`Set ${label} (#${id}) to: ${value ?? 'empty'}`);
+  } else {
+    console.warn(`Input #${id} not found for ${label}`);
+  }
 }
 
 // Tab switching
 function setupTabSwitching() {
-  document.querySelectorAll('.tab-btn').forEach(button => {
-    button.addEventListener('click', () => {
-      document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-      button.classList.add('active');
-      document.querySelectorAll('.tab-content').forEach(content => {
-        content.style.display = content.id === button.dataset.tab ? 'block' : 'none';
-      });
-    });
+  inputTabs.querySelectorAll('.tab-btn').forEach(button => {
+    button.removeEventListener('click', tabClickHandler);
+    button.addEventListener('click', tabClickHandler);
+  });
+}
+
+function tabClickHandler() {
+  inputTabs.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+  this.classList.add('active');
+  inputContent.querySelectorAll('.tab-content').forEach(content => {
+    content.style.display = content.id === this.dataset.tab ? 'block' : 'none';
+  });
+}
+
+// Event delegation for inputs and checkboxes
+function setupEventDelegation() {
+  document.addEventListener('input', (e) => {
+    if (e.target.closest('#client-input-form')) {
+      updateClientData(e);
+    }
+  });
+
+  document.addEventListener('change', (e) => {
+    if (e.target.id === 'is-married') {
+      toggleClient2(e);
+    } else if (e.target.classList.contains('report-checkbox')) {
+      reportCount += e.target.checked ? 1 : -1;
+      presentationCount.textContent = reportCount;
+      presentationCount.classList.toggle('active', reportCount > 0);
+    }
   });
 }
 
@@ -305,53 +459,55 @@ function toggleClient2(e) {
 // Add account/asset buttons
 function setupAddButtons() {
   document.querySelectorAll('.add-account-btn').forEach(btn => {
-    btn.addEventListener('click', (e) => {
-      const client = e.target.dataset.client;
-      const container = document.getElementById(`${client}-accounts`);
-      const count = accountCount[client]++;
-      const newAccount = document.createElement('div');
-      newAccount.classList.add('account');
-      newAccount.innerHTML = currentAnalysis === 'personal-finance' ? `
-        <label>Account Name: <input type="text" id="${client}-account-${count}-name" placeholder="Account ${count + 1}"></label>
-        <label>Balance ($): <input type="number" id="${client}-account-${count}-balance" min="0" step="1000" placeholder="0"></label>
-        <label>ROR (%): <input type="number" id="${client}-account-${count}-ror" min="0" max="100" step="0.1" placeholder="0"></label>
-      ` : `
-        <label>Balance ($): <input type="number" id="${client}-account-${count}-balance" min="0" step="1000" placeholder="0"></label>
-        <label>Contribution ($/yr): <input type="number" id="${client}-account-${count}-contribution" min="0" step="1000" placeholder="0"></label>
-        <label>Employer Match (%): <input type="number" id="${client}-account-${count}-employer-match" min="0" max="100" step="0.1" placeholder="0"></label>
-        <label>ROR (%): <input type="number" id="${client}-account-${count}-ror" min="0" max="100" step="0.1" placeholder="0"></label>
-      `;
-      container.insertBefore(newAccount, btn);
-      const clientKey = client === 'c1' ? 'client1' : 'client2';
-      if (currentAnalysis === 'personal-finance') {
-        clientData[clientKey].accounts.push({ name: "", balance: "", ror: "" });
-      } else {
-        clientData[clientKey].capital.push({ balance: "", contribution: "", employerMatch: "", ror: "" });
-      }
-      newAccount.querySelectorAll('input').forEach(input => input.addEventListener('input', updateClientData));
-      updateGraph();
-    });
+    btn.removeEventListener('click', addAccountHandler);
+    btn.addEventListener('click', addAccountHandler);
   });
 
   document.querySelectorAll('.add-asset-btn').forEach(btn => {
-    btn.addEventListener('click', (e) => {
-      const client = e.target.dataset.client;
-      const container = document.getElementById(`${client}-assets`);
-      const count = assetCount[client]++;
-      const newAsset = document.createElement('div');
-      newAsset.classList.add('asset');
-      newAsset.innerHTML = `
-        <label>Asset Name: <input type="text" id="${client}-asset-${count}-name" placeholder="Asset ${count + 1}"></label>
-        <label>Balance ($): <input type="number" id="${client}-asset-${count}-balance" min="0" step="1000" placeholder="0"></label>
-        <label>ROR (%): <input type="number" id="${client}-asset-${count}-ror" min="0" max="100" step="0.1" placeholder="0"></label>
-        <label>Asset Debt ($): <input type="number" id="${client}-asset-${count}-debt" min="0" step="1000" placeholder="0"></label>
-      `;
-      container.insertBefore(newAsset, btn);
-      clientData[client === 'c1' ? 'client1' : 'client2'].other.assets.push({ name: "", balance: "", ror: "", debt: "" });
-      newAsset.querySelectorAll('input').forEach(input => input.addEventListener('input', updateClientData));
-      updateGraph();
-    });
+    btn.removeEventListener('click', addAssetHandler);
+    btn.addEventListener('click', addAssetHandler);
   });
+}
+
+function addAccountHandler(e) {
+  const client = e.target.dataset.client;
+  const container = document.getElementById(`${client}-accounts`);
+  const count = accountCount[client]++;
+  const newAccount = document.createElement('div');
+  newAccount.classList.add('account');
+  newAccount.innerHTML = currentAnalysis === 'personal-finance' ? `
+    <label>Account Name: <input type="text" id="${client}-account-${count}-name" placeholder="Account ${count + 1}"></label>
+    <label>Balance ($): <input type="number" id="${client}-account-${count}-balance" min="0" step="1000" placeholder="0"></label>
+    <label>ROR (%): <input type="number" id="${client}-account-${count}-ror" min="0" max="100" step="0.1" placeholder="0"></label>
+  ` : `
+    <label>Account Name: <input type="text" id="${client}-account-${count}-name" placeholder="Account ${count + 1}"></label>
+    <label>Balance ($): <input type="number" id="${client}-account-${count}-balance" min="0" step="1000" placeholder="0"></label>
+    <label>Contribution ($/yr): <input type="number" id="${client}-account-${count}-contribution" min="0" step="1000" placeholder="0"></label>
+    <label>Employer Match (%): <input type="number" id="${client}-account-${count}-employer-match" min="0" max="100" step="0.1" placeholder="0"></label>
+    <label>ROR (%): <input type="number" id="${client}-account-${count}-ror" min="0" max="100" step="0.1" placeholder="0"></label>
+  `;
+  container.insertBefore(newAccount, e.target);
+  const clientKey = client === 'c1' ? 'client1' : 'client2';
+  clientData[clientKey].accounts.push({ name: "", balance: "", ror: "", contribution: "", employerMatch: "" });
+  updateGraph();
+}
+
+function addAssetHandler(e) {
+  const client = e.target.dataset.client;
+  const container = document.getElementById(`${client}-assets`);
+  const count = assetCount[client]++;
+  const newAsset = document.createElement('div');
+  newAsset.classList.add('asset');
+  newAsset.innerHTML = `
+    <label>Asset Name: <input type="text" id="${client}-asset-${count}-name" placeholder="Asset ${count + 1}"></label>
+    <label>Balance ($): <input type="number" id="${client}-asset-${count}-balance" min="0" step="1000" placeholder="0"></label>
+    <label>ROR (%): <input type="number" id="${client}-asset-${count}-ror" min="0" max="100" step="0.1" placeholder="0"></label>
+    <label>Asset Debt ($): <input type="number" id="${client}-asset-${count}-debt" min="0" step="1000" placeholder="0"></label>
+  `;
+  container.insertBefore(newAsset, e.target);
+  const clientKey = client === 'c1' ? 'client1' : 'client2';
+  clientData[clientKey].other.assets.push({ name: "", balance: "", ror: "", debt: "" });
+  updateGraph();
 }
 
 // Update client file name
@@ -371,6 +527,8 @@ function updateClientData(e) {
 
   if (input.id === 'is-married') return;
 
+  console.log(`Updating ${input.id} with value: ${value}`);
+
   const clientKey = input.id.startsWith('c1-') ? 'client1' : input.id.startsWith('c2-') ? 'client2' : null;
 
   if (clientKey) {
@@ -388,8 +546,7 @@ function updateClientData(e) {
       clientData[clientKey].incomeSources.other = value;
     } else if (input.id.startsWith(`${clientKey === 'client1' ? 'c1' : 'c2'}-account-`)) {
       const [_, __, index, field] = input.id.split('-');
-      const target = currentAnalysis === 'personal-finance' ? clientData[clientKey].accounts : clientData[clientKey].capital;
-      target[parseInt(index)][field] = value;
+      clientData[clientKey].accounts[parseInt(index)][field] = value;
     } else if (input.id.startsWith(`${clientKey === 'client1' ? 'c1' : 'c2'}-asset-`)) {
       const [_, __, index, field] = input.id.split('-');
       clientData[clientKey].other.assets[parseInt(index)][field] = value;
@@ -419,38 +576,27 @@ function updateClientData(e) {
   updateGraph();
 }
 
-// Setup input listeners
-function setupInputListeners() {
-  document.querySelectorAll('#client-input-form input').forEach(input => {
-    input.addEventListener('input', updateClientData);
-  });
-}
-
 // Update graph
 function updateGraph() {
   const ctx = chartCanvas.getContext('2d');
   if (chartInstance) chartInstance.destroy();
 
   if (currentAnalysis === 'personal-finance') {
-    // Calculate net worth over time
-    const years = 30; // Project 30 years
+    const years = 30;
     const labels = [];
     const data = [];
     const startYear = new Date(clientData.assumptions.analysisDate || new Date()).getFullYear();
     
     let netWorth = 0;
-    // Sum accounts
     [clientData.client1, clientData.client2].forEach((client, idx) => {
       if (idx === 1 && !clientData.isMarried) return;
       client.accounts.forEach(account => {
         const balance = parseFloat(account.balance) || 0;
-        const ror = parseFloat(account.ror) / 100 || 0.06;
         netWorth += balance;
       });
       client.other.assets.forEach(asset => {
         const balance = parseFloat(asset.balance) || 0;
         const debt = parseFloat(asset.debt) || 0;
-        const ror = parseFloat(asset.ror) / 100 || 0.04;
         netWorth += balance - debt;
       });
     });
@@ -466,7 +612,7 @@ function updateGraph() {
                    (clientData.isMarried ? parseFloat(clientData.client2.incomeSources.employment) || 0 : 0) +
                    (parseFloat(clientData.client1.incomeSources.interestDividends) || 0) +
                    (parseFloat(clientData.client1.incomeSources.other) || 0);
-    const ror = 0.05; // Average ROR for simplicity
+    const ror = 0.05;
 
     for (let i = 0; i < years; i++) {
       netWorth = netWorth * (1 + ror) + (income + annualSavings - expenses);
@@ -494,7 +640,6 @@ function updateGraph() {
       }
     });
   } else {
-    // Retirement Accumulation graph
     const yearsToRetirement = clientData.client1.personal.retirementAge - getAge(clientData.client1.personal.dob) || 30;
     const yearsInRetirement = clientData.assumptions.mortalityAge - clientData.client1.personal.retirementAge || 25;
     const inflation = clientData.assumptions.inflation / 100 || 0.02;
@@ -507,7 +652,7 @@ function updateGraph() {
 
     [clientData.client1, clientData.client2].forEach((client, idx) => {
       if (idx === 1 && !clientData.isMarried) return;
-      client.capital.forEach(account => {
+      client.accounts.forEach(account => {
         const balance = parseFloat(account.balance) || 0;
         const contribution = parseFloat(account.contribution) || 0;
         const employerMatch = (parseFloat(account.employerMatch) / 100) * contribution || 0;
