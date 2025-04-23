@@ -1,5 +1,5 @@
-import { retirementAccumulationTabs, updateRetirementGraph, updateRetirementOutputs } from './retirementAccumulation.js';
-import { personalFinanceTabs, updatePersonalFinanceGraph, updatePersonalFinanceOutputs } from './personalFinance.js';
+import { retirementAccumulationTabs, updateRetirementGraph, updateRetirementOutputs } from '../retirementAccumulation.js';
+import { personalFinanceTabs, updatePersonalFinanceGraph, updatePersonalFinanceOutputs } from '../personalFinance.js';
 
 // Client data structure
 let clientData = {
