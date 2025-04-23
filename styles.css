@@ -831,40 +831,8 @@ body.dark-mode .breadcrumb span {
   overflow-y: auto;
 }
 
-/* Dropdown for Analysis tab */
-.dropdown {
-  position: relative;
-}
-
-.dropdown-content {
-  display: none;
-  position: absolute;
-  background: #ffffff;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-  z-index: 1001;
-  top: 100%;
-  left: 0;
-  padding: 10px;
-}
-
-.dropdown:hover .dropdown-content {
-  display: block;
-}
-
-.dropdown-content a {
-  display: block;
-  padding: 8px 12px;
-  color: #64748b;
-  text-decoration: none;
-  transition: color 0.2s;
-}
-
-.dropdown-content a:hover, .dropdown-content a.active {
-  color: #3b82f6;
-}
 
 /* Dark Mode Adjustments */
-body.dark-mode .dropdown-content,
 body.dark-mode .analysis-topics,
 body.dark-mode .topic-btn.active {
   background: #334155;
