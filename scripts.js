@@ -385,7 +385,16 @@ document.querySelectorAll('#tag-filters input[type="checkbox"]').forEach(checkbo
     renderReports();
   });
 });
-
+// Initialize client file name on page load
+document.addEventListener('DOMContentLoaded', () => {
+    const clientFileNameElement = document.getElementById('client-file-name');
+    if (clientFileNameElement) {
+        const storedClientName = localStorage.getItem('clientFileName') || 'No Client Selected';
+        clientFileNameElement.textContent = storedClientName;
+    } else {
+        console.warn('Client file name element (#client-file-name) not found in Education tab');
+    }
+});
 // Initial render
 renderReports();
 updatePresentationCount();
