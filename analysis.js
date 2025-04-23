@@ -1406,3 +1406,338 @@ function updateTimeline() {
     const c2Age = clientData.isMarried ? getAge(clientData.client2.personal.dob) : c1Age;
     const c1RetirementAge = parseFloat(clientData.client1.personal.retirementAge) || 65;
     const c2Ret
+let clientData = {
+  client1: {
+    personal: { name: "", dob: "", retirementAge: "" },
+    incomeSources: { employment: "", socialSecurity: "", other: "", interestDividends: "" },
+    accounts: [{ name: "", balance: "", contribution: "", employerMatch: "", ror: "" }],
+    other: { assets: [{ name: "", balance: "", ror: "", debt: "" }] }
+  },
+  client2: {
+    personal: { name: "", dob: "", retirementAge: "" },
+    incomeSources: { employment: "", socialSecurity: "", other: "", interestDividends: "" },
+    accounts: [{ name: "", balance: "", contribution: "", employerMatch: "", ror: "" }],
+    other: { assets: [{ name: "", balance: "", ror: "", debt: "" }] }
+  },
+  isMarried: false,
+  incomeNeeds: { monthly: "" },
+  assumptions: { mortalityAge: "", inflation: "", rorRetirement: "", analysisDate: "" },
+  savingsExpenses: {
+    householdExpenses: "",
+    taxes: "",
+    otherExpenses: "",
+    monthlySavings: ""
+  },
+  other: {
+    assets: [{ name: "", balance: "", ror: "", debt: "" }],
+    cash: "",
+    residenceMortgage: "",
+    otherDebt: ""
+  }
+};
+
+let accountCount = { c1: 1, c2: 1 };
+let assetCount = { c1: 0, c2: 0 };
+let currentAnalysis = 'retirement-accumulation';
+let currentOutputTab = 'graph';
+
+// DOM elements
+const analysisTopics = document.querySelector('.analysis-topics');
+const inputTabs = document.querySelector('.input-tabs');
+const inputContent = document.querySelector('.input-content');
+const recalculateBtn = document.getElementById('recalculate-btn');
+const exportGraphBtn = document.getElementById('export-graph-btn');
+const chartCanvas = document.getElementById('analysis-chart');
+const clientFileName = document.getElementById('client-file-name');
+const presentationCount = document.getElementById('presentation-count');
+const analysisOutputs = document.getElementById('analysis-outputs');
+const timelineBody = document.getElementById('timeline-body');
+const alternativesList = document.getElementById('alternatives-list');
+let chartInstance = null;
+let reportCount = 0;
+
+// Tab configurations
+const tabConfigs = {
+  'retirement-accumulation': [
+    { id: 'personal', label: 'Personal', content: `
+      <label>Marital Status: <input type="checkbox" id="is-married"></label>
+      <div class="client">
+        <h5>Client 1</h5>
+        <label>Name: <input type="text" id="c1-name" placeholder="John Doe"></label>
+        <label>Date of Birth: <input type="date" id="c1-dob"></label>
+        <label>Retirement Age: <input type="number" id="c1-retirement-age" min="1" max="120" placeholder="65"></label>
+      </div>
+      <div class="client" id="client2-section" style="display: none;">
+        <h5>Client 2</h5>
+        <label>Name: <input type="text" id="c2-name" placeholder="Jane Doe"></label>
+        <label>Date of Birth: <input type="date" id="c2-dob"></label>
+        <label>Retirement Age: <input type="number" id="c2-retirement-age" min="1" max="120" placeholder="65"></label>
+      </div>
+    `},
+    { id: 'income-needs', label: 'Income Needs', content: `
+      <label>Monthly Income Needs ($): <input type="number" id="monthly-income" min="0" step="100" placeholder="5000" class="currency"></label>
+    `},
+    { id: 'income-sources', label: 'Income Sources', content: `
+      <div class="client">
+        <h5>Client 1</h5>
+        <label>Employment Income ($/yr): <input type="number" id="c1-employment" min="0" step="1000" placeholder="50000" class="currency"></label>
+        <label>Social Security ($/mo): <input type="number" id="c1-social-security" min="0" step="100" placeholder="2000" class="currency"></label>
+        <label>Other Income ($/mo): <input type="number" id="c1-other-income" min="0" step="100" placeholder="500" class="currency"></label>
+      </div>
+      <div class="client" id="client2-income-section" style="display: none;">
+        <h5>Client 2</h5>
+        <label>Employment Income ($/yr): <input type="number" id="c2-employment" min="0" step="1000" placeholder="40000" class="currency"></label>
+        <label>Social Security ($/mo): <input type="number" id="c2-social-security" min="0" step="100" placeholder="1800" class="currency"></label>
+        <label>Other Income ($/mo): <input type="number" id="c2-other-income" min="0" step="100" placeholder="400" class="currency"></label>
+      </div>
+    `},
+    { id: 'capital', label: 'Capital', content: `
+      <div id="c1-accounts">
+        <h5>Client 1 Accounts</h5>
+        <div class="account">
+          <label>Account Name: <input type="text" id="c1-account-0-name" placeholder="401(k)"></label>
+          <label>Balance ($): <input type="number" id="c1-account-0-balance" min="0" step="1000" placeholder="100000" class="currency"></label>
+          <label>Contribution ($/yr): <input type="number" id="c1-account-0-contribution" min="0" step="1000" placeholder="10000" class="currency"></label>
+          <label>Employer Match (%): <input type="number" id="c1-account-0-employer-match" min="0" max="100" step="0.1" placeholder="3" class="percentage"></label>
+          <label>ROR (%): <input type="number" id="c1-account-0-ror" min="0" max="100" step="0.1" placeholder="6" class="percentage"></label>
+        </div>
+        <button type="button" class="add-account-btn" data-client="c1">Add Account</button>
+      </div>
+      <div id="c2-accounts" style="display: none;">
+        <h5>Client 2 Accounts</h5>
+        <div class="account">
+          <label>Account Name: <input type="text" id="c2-account-0-name" placeholder="IRA"></label>
+          <label>Balance ($): <input type="number" id="c2-account-0-balance" min="0" step="1000" placeholder="80000" class="currency"></label>
+          <label>Contribution ($/yr): <input type="number" id="c2-account-0-contribution" min="0" step="1000" placeholder="8000" class="currency"></label>
+          <label>Employer Match (%): <input type="number" id="c2-account-0-employer-match" min="0" max="100" step="0.1" placeholder="2" class="percentage"></label>
+          <label>ROR (%): <input type="number" id="c2-account-0-ror" min="0" max="100" step="0.1" placeholder="5" class="percentage"></label>
+        </div>
+        <button type="button" class="add-account-btn" data-client="c2">Add Account</button>
+      </div>
+    `},
+    { id: 'assumptions', label: 'Assumptions', content: `
+      <label>Mortality Age: <input type="number" id="mortality-age" min="1" max="120" placeholder="90"></label>
+      <label>Inflation (%): <input type="number" id="inflation" min="0" max="100" step="0.1" placeholder="2" class="percentage"></label>
+      <label>ROR During Retirement (%): <input type="number" id="ror-retirement" min="0" max="100" step="0.1" placeholder="4" class="percentage"></label>
+    `},
+    { id: 'reports', label: 'Reports', content: `
+      <div class="report-list">
+        <label><input type="checkbox" class="report-checkbox" data-report="retirement-analysis"> Retirement Analysis</label>
+        <label><input type="checkbox" class="report-checkbox" data-report="social-security-optimizer"> Social Security Optimizer</label>
+        <label><input type="checkbox" class="report-checkbox" data-report="capital-available"> Capital Available for Retirement</label>
+        <label><input type="checkbox" class="report-checkbox" data-report="alternatives-retirement"> Alternatives to Achieving Retirement Goals</label>
+        <label><input type="checkbox" class="report-checkbox" data-report="retirement-timeline"> Retirement Timeline</label>
+        <label><input type="checkbox" class="report-checkbox" data-report="retirement-fact-finder"> Retirement Analysis Fact Finder</label>
+      </div>
+    `}
+  ],
+  'personal-finance': [
+    { id: 'personal', label: 'Personal', content: `
+      <label>Marital Status: <input type="checkbox" id="is-married"></label>
+      <div class="client">
+        <h5>Client 1</h5>
+        <label>Name: <input type="text" id="c1-name" placeholder="John Doe"></label>
+      </div>
+      <div class="client" id="client2-section" style="display: none;">
+        <h5>Client 2</h5>
+        <label>Name: <input type="text" id="c2-name" placeholder="Jane Doe"></label>
+      </div>
+    `},
+    { id: 'income', label: 'Income', content: `
+      <div class="client">
+        <h5>Client 1</h5>
+        <label>Employment Income ($/yr): <input type="number" id="c1-employment" min="0" step="1000" placeholder="50000" class="currency"></label>
+      </div>
+      <div class="client" id="client2-income-section" style="display: none;">
+        <h5>Client 2</h5>
+        <label>Employment Income ($/yr): <input type="number" id="c2-employment" min="0" step="1000" placeholder="40000" class="currency"></label>
+      </div>
+      <label>Interest and Dividends ($/yr): <input type="number" id="interest-dividends" min="0" step="1000" placeholder="5000" class="currency"></label>
+      <label>Other Income ($/yr): <input type="number" id="other-income" min="0" step="1000" placeholder="10000" class="currency"></label>
+    `},
+    { id: 'savings-expenses', label: 'Savings & Expenses', content: `
+      <label>Household Expenses ($/yr): <input type="number" id="household-expenses" min="0" step="1000" placeholder="30000" class="currency"></label>
+      <label>Taxes ($/yr): <input type="number" id="taxes" min="0" step="1000" placeholder="15000" class="currency"></label>
+      <label>Other Expenses ($/yr): <input type="number" id="other-expenses" min="0" step="1000" placeholder="5000" class="currency"></label>
+      <label>Monthly Savings ($): <input type="number" id="monthly-savings" min="0" step="100" placeholder="2000" class="currency"></label>
+    `},
+    { id: 'retirement', label: 'Retirement', content: `
+      <div id="c1-accounts">
+        <h5>Client 1 Accounts</h5>
+        <div class="account">
+          <label>Account Name: <input type="text" id="c1-account-0-name" placeholder="401(k)"></label>
+          <label>Balance ($): <input type="number" id="c1-account-0-balance" min="0" step="1000" placeholder="100000" class="currency"></label>
+          <label>ROR (%): <input type="number" id="c1-account-0-ror" min="0" max="100" step="0.1" placeholder="6" class="percentage"></label>
+        </div>
+        <button type="button" class="add-account-btn" data-client="c1">Add Account</button>
+      </div>
+      <div id="c2-accounts" style="display: none;">
+        <h5>Client 2 Accounts</h5>
+        <div class="account">
+          <label>Account Name: <input type="text" id="c2-account-0-name" placeholder="IRA"></label>
+          <label>Balance ($): <input type="number" id="c2-account-0-balance" min="0" step="1000" placeholder="80000" class="currency"></label>
+          <label>ROR (%): <input type="number" id="c2-account-0-ror" min="0" max="100" step="0.1" placeholder="5" class="percentage"></label>
+        </div>
+        <button type="button" class="add-account-btn" data-client="c2">Add Account</button>
+      </div>
+    `},
+    { id: 'other', label: 'Other', content: `
+      <div id="c1-assets">
+        <h5>Client 1 Assets</h5>
+        <div class="asset">
+          <label>Asset Name: <input type="text" id="c1-asset-0-name" placeholder="Investment Property"></label>
+          <label>Balance ($): <input type="number" id="c1-asset-0-balance" min="0" step="1000" placeholder="200000" class="currency"></label>
+          <label>ROR (%): <input type="number" id="c1-asset-0-ror" min="0" max="100" step="0.1" placeholder="4" class="percentage"></label>
+          <label>Asset Debt ($): <input type="number" id="c1-asset-0-debt" min="0" step="1000" placeholder="50000" class="currency"></label>
+        </div>
+        <button type="button" class="add-asset-btn" data-client="c1">Add Asset</button>
+      </div>
+      <div id="c2-assets" style="display: none;">
+        <h5>Client 2 Assets</h5>
+        <div class="asset">
+          <label>Asset Name: <input type="text" id="c2-asset-0-name" placeholder="Stock Portfolio"></label>
+          <label>Balance ($): <input type="number" id="c2-asset-0-balance" min="0" step="1000" placeholder="150000" class="currency"></label>
+          <label>ROR (%): <input type="number" id="c2-asset-0-ror" min="0" max="100" step="0.1" placeholder="7" class="percentage"></label>
+          <label>Asset Debt ($): <input type="number" id="c2-asset-0-debt" min="0" step="1000" placeholder="0" class="currency"></label>
+        </div>
+        <button type="button" class="add-asset-btn" data-client="c2">Add Asset</button>
+      </div>
+      <label>Cash ($): <input type="number" id="cash" min="0" step="1000" placeholder="20000" class="currency"></label>
+      <label>Residence/Mortgage ($): <input type="number" id="residence-mortgage" min="0" step="1000" placeholder="300000" class="currency"></label>
+      <label>Other Debt ($): <input type="number" id="other-debt" min="0" step="1000" placeholder="10000" class="currency"></label>
+    `},
+    { id: 'assumptions', label: 'Assumptions', content: `
+      <label>Analysis Date: <input type="date" id="analysis-date"></label>
+    `},
+    { id: 'reports', label: 'Reports', content: `
+      <div class="report-list">
+        <label><input type="checkbox" class="report-checkbox" data-report="cash-flow"> Cash Flow</label>
+        <label><input type="checkbox" class="report-checkbox" data-report="cash-flow-detail"> Cash Flow Detail</label>
+        <label><input type="checkbox" class="report-checkbox" data-report="net-worth"> Net Worth</label>
+        <label><input type="checkbox" class="report-checkbox" data-report="weighted-average-ror"> Weighted Average Rate of Return</label>
+        <label><input type="checkbox" class="report-checkbox" data-report="fact-finder"> Fact Finder</label>
+      </div>
+    `}
+  ]
+};
+
+// Analysis topics list
+const analysisTopicsList = [
+  { id: 'summary', label: 'Summary' },
+  { id: 'education-funding', label: 'Education Funding' },
+  { id: 'survivor-needs', label: 'Survivor Needs' },
+  { id: 'retirement-accumulation', label: 'Retirement Accumulation' },
+  { id: 'retirement-distribution', label: 'Retirement Distribution' },
+  { id: 'social-security', label: 'Social Security' },
+  { id: 'disability-income-needs', label: 'Disability Income Needs' },
+  { id: 'critical-illness', label: 'Critical Illness' },
+  { id: 'long-term-care-needs', label: 'Long-Term Care Needs' },
+  { id: 'estate-analysis', label: 'Estate Analysis' },
+  { id: 'accumulation-funding', label: 'Accumulation Funding' },
+  { id: 'asset-allocation', label: 'Asset Allocation' },
+  { id: 'charitable-remainder-trust', label: 'Charitable Remainder Trust' },
+  { id: 'personal-finance', label: 'Personal Finance' },
+  { id: 'debt-repayment', label: 'Debt Repayment' },
+  { id: 'business-continuation', label: 'Business Continuation' },
+  { id: 'key-employee', label: 'Key Employee' }
+];
+
+// Initialize on page load
+document.addEventListener('DOMContentLoaded', () => {
+  try {
+    console.log('Initializing page...');
+    populateAnalysisTopics();
+    updateTabs(currentAnalysis);
+    updateClientFileName();
+    setupEventDelegation();
+    setupOutputTabSwitching();
+    setupNumberFormatting();
+    setTimeout(() => {
+      updateGraph();
+      updateOutputs();
+      updateTimeline();
+      updateAlternatives();
+    }, 0);
+  } catch (error) {
+    console.error('Initialization error:', error);
+  }
+});
+
+// Number formatting for inputs
+function setupNumberFormatting() {
+  try {
+    const formatCurrency = (value) => {
+      if (!value && value !== 0) return '';
+      return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0 }).format(value);
+    };
+
+    const formatPercentage = (value) => {
+      if (!value && value !== 0) return '';
+      return `${parseFloat(value).toFixed(2)}%`;
+    };
+
+    const parseCurrency = (value) => {
+      return value.replace(/[^0-9.-]+/g, '');
+    };
+
+    const parsePercentage = (value) => {
+      return value.replace('%', '');
+    };
+
+    document.querySelectorAll('input.currency, input.percentage').forEach(input => {
+      const isCurrency = input.classList.contains('currency');
+      const formatFn = isCurrency ? formatCurrency : formatPercentage;
+      const parseFn = isCurrency ? parseCurrency : parsePercentage;
+
+      input.dataset.rawValue = input.value || '';
+      if (input.value) {
+        input.value = formatFn(parseFloat(input.value));
+      }
+
+      input.addEventListener('input', () => {
+        let raw = parseFn(input.value);
+        input.dataset.rawValue = raw;
+        if (raw === '' || isNaN(parseFloat(raw))) {
+          input.value = '';
+        } else {
+          input.value = formatFn(parseFloat(raw));
+        }
+      });
+
+      input.addEventListener('blur', () => {
+        if (input.dataset.rawValue === '' || isNaN(parseFloat(input.dataset.rawValue))) {
+          input.value = '';
+        } else {
+          input.value = formatFn(parseFloat(input.dataset.rawValue));
+        }
+      });
+
+      input.addEventListener('focus', () => {
+        if (input.dataset.rawValue) {
+          input.value = input.dataset.rawValue;
+        }
+      });
+    });
+  } catch (error) {
+    console.error('Error in setupNumberFormatting:', error);
+  }
+}
+
+// Populate analysis topics
+function populateAnalysisTopics() {
+  try {
+    analysisTopics.innerHTML = '';
+    analysisTopicsList.forEach(topic => {
+      const btn = document.createElement('button');
+      btn.classList.add('topic-btn');
+      btn.textContent = topic.label;
+      btn.dataset.analysis = topic.id;
+      if (topic.id === currentAnalysis) btn.classList.add('active');
+      analysisTopics.appendChild(btn);
+    });
+
+    document.querySelectorAll('.topic-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.topic-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        currentAnalysis
