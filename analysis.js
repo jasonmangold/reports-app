@@ -51,31 +51,31 @@ const tabConfigs = {
       <div class="client">
         <h5>Client 1</h5>
         <label>Name: <input type="text" id="c1-name" placeholder="John Doe"></label>
-        <label>Date of Birth: <input type="date" id="c1-dob"></label>
+        <label>Date of Birth: <input type="date" id="c1-dob" placeholder="1970-01-01"></label>
         <label>Retirement Age: <input type="number" id="c1-retirement-age" min="1" max="120" placeholder="65"></label>
       </div>
       <div class="client" id="client2-section" style="display: none;">
         <h5>Client 2</h5>
         <label>Name: <input type="text" id="c2-name" placeholder="Jane Doe"></label>
-        <label>Date of Birth: <input type="date" id="c2-dob"></label>
+        <label>Date of Birth: <input type="date" id="c2-dob" placeholder="1970-01-01"></label>
         <label>Retirement Age: <input type="number" id="c2-retirement-age" min="1" max="120" placeholder="65"></label>
       </div>
     `},
     { id: 'income-needs', label: 'Income Needs', content: `
-      <label>Monthly Income Needs ($): <input type="number" id="monthly-income" min="0" step="100" placeholder="5000"></label>
+      <label>Monthly Income Needs ($): <input type="number" id="monthly-income" min="0" step="100" placeholder="$5,000"></label>
     `},
     { id: 'income-sources', label: 'Income Sources', content: `
       <div class="client">
         <h5>Client 1</h5>
-        <label>Employment Income ($/yr): <input type="number" id="c1-employment" min="0" step="1000" placeholder="50000"></label>
-        <label>Social Security ($/mo): <input type="number" id="c1-social-security" min="0" step="100" placeholder="2000"></label>
-        <label>Other Income ($/mo): <input type="number" id="c1-other-income" min="0" step="100" placeholder="500"></label>
+        <label>Employment Income ($/yr): <input type="number" id="c1-employment" min="0" step="1000" placeholder="$50,000"></label>
+        <label>Social Security ($/mo): <input type="number" id="c1-social-security" min="0" step="100" placeholder="$2,000"></label>
+        <label>Other Income ($/mo): <input type="number" id="c1-other-income" min="0" step="100" placeholder="$500"></label>
       </div>
       <div class="client" id="client2-income-section" style="display: none;">
         <h5>Client 2</h5>
-        <label>Employment Income ($/yr): <input type="number" id="c2-employment" min="0" step="1000" placeholder="40000"></label>
-        <label>Social Security ($/mo): <input type="number" id="c2-social-security" min="0" step="100" placeholder="1800"></label>
-        <label>Other Income ($/mo): <input type="number" id="c2-other-income" min="0" step="100" placeholder="400"></label>
+        <label>Employment Income ($/yr): <input type="number" id="c2-employment" min="0" step="1000" placeholder="$40,000"></label>
+        <label>Social Security ($/mo): <input type="number" id="c2-social-security" min="0" step="100" placeholder="$1,800"></label>
+        <label>Other Income ($/mo): <input type="number" id="c2-other-income" min="0" step="100" placeholder="$400"></label>
       </div>
     `},
     { id: 'capital', label: 'Capital', content: `
@@ -83,10 +83,10 @@ const tabConfigs = {
         <h5>Client 1 Accounts</h5>
         <div class="account">
           <label>Account Name: <input type="text" id="c1-account-0-name" placeholder="401(k)"></label>
-          <label>Balance ($): <input type="number" id="c1-account-0-balance" min="0" step="1000" placeholder="100000"></label>
-          <label>Contribution ($/yr): <input type="number" id="c1-account-0-contribution" min="0" step="1000" placeholder="10000"></label>
-          <label>Employer Match (%): <input type="number" id="c1-account-0-employer-match" min="0" max="100" step="0.1" placeholder="3"></label>
-          <label>ROR (%): <input type="number" id="c1-account-0-ror" min="0" max="100" step="0.1" placeholder="6"></label>
+          <label>Balance ($): <input type="number" id="c1-account-0-balance" min="0" step="1000" placeholder="$0"></label>
+          <label>Contribution ($/yr): <input type="number" id="c1-account-0-contribution" min="0" step="1000" placeholder="$0"></label>
+          <label>Employer Match (%): <input type="number" id="c1-account-0-employer-match" min="0" max="100" step="0.1" placeholder="3%"></label>
+          <label>ROR (%): <input type="number" id="c1-account-0-ror" min="0" max="100" step="0.1" placeholder="6%"></label>
         </div>
         <button type="button" class="add-account-btn" data-client="c1">Add Account</button>
       </div>
@@ -94,18 +94,18 @@ const tabConfigs = {
         <h5>Client 2 Accounts</h5>
         <div class="account">
           <label>Account Name: <input type="text" id="c2-account-0-name" placeholder="IRA"></label>
-          <label>Balance ($): <input type="number" id="c2-account-0-balance" min="0" step="1000" placeholder="80000"></label>
-          <label>Contribution ($/yr): <input type="number" id="c2-account-0-contribution" min="0" step="1000" placeholder="8000"></label>
-          <label>Employer Match (%): <input type="number" id="c2-account-0-employer-match" min="0" max="100" step="0.1" placeholder="2"></label>
-          <label>ROR (%): <input type="number" id="c2-account-0-ror" min="0" max="100" step="0.1" placeholder="5"></label>
+          <label>Balance ($): <input type="number" id="c2-account-0-balance" min="0" step="1000" placeholder="$0"></label>
+          <label>Contribution ($/yr): <input type="number" id="c2-account-0-contribution" min="0" step="1000" placeholder="$0"></label>
+          <label>Employer Match (%): <input type="number" id="c2-account-0-employer-match" min="0" max="100" step="0.1" placeholder="2%"></label>
+          <label>ROR (%): <input type="number" id="c2-account-0-ror" min="0" max="100" step="0.1" placeholder="5%"></label>
         </div>
         <button type="button" class="add-account-btn" data-client="c2">Add Account</button>
       </div>
     `},
     { id: 'assumptions', label: 'Assumptions', content: `
       <label>Mortality Age: <input type="number" id="mortality-age" min="1" max="120" placeholder="90"></label>
-      <label>Inflation (%): <input type="number" id="inflation" min="0" max="100" step="0.1" placeholder="2"></label>
-      <label>ROR During Retirement (%): <input type="number" id="ror-retirement" min="0" max="100" step="0.1" placeholder="4"></label>
+      <label>Inflation (%): <input type="number" id="inflation" min="0" max="100" step="0.1" placeholder="2%"></label>
+      <label>ROR During Retirement (%): <input type="number" id="ror-retirement" min="0" max="100" step="0.1" placeholder="4%"></label>
     `},
     { id: 'reports', label: 'Reports', content: `
       <div class="report-list">
@@ -133,28 +133,28 @@ const tabConfigs = {
     { id: 'income', label: 'Income', content: `
       <div class="client">
         <h5>Client 1</h5>
-        <label>Employment Income ($/yr): <input type="number" id="c1-employment" min="0" step="1000" placeholder="50000"></label>
+        <label>Employment Income ($/yr): <input type="number" id="c1-employment" min="0" step="1000" placeholder="$50,000"></label>
       </div>
       <div class="client" id="client2-income-section" style="display: none;">
         <h5>Client 2</h5>
-        <label>Employment Income ($/yr): <input type="number" id="c2-employment" min="0" step="1000" placeholder="40000"></label>
+        <label>Employment Income ($/yr): <input type="number" id="c2-employment" min="0" step="1000" placeholder="$40,000"></label>
       </div>
-      <label>Interest and Dividends ($/yr): <input type="number" id="interest-dividends" min="0" step="1000" placeholder="5000"></label>
-      <label>Other Income ($/yr): <input type="number" id="other-income" min="0" step="1000" placeholder="10000"></label>
+      <label>Interest and Dividends ($/yr): <input type="number" id="interest-dividends" min="0" step="1000" placeholder="$5,000"></label>
+      <label>Other Income ($/yr): <input type="number" id="other-income" min="0" step="1000" placeholder="$10,000"></label>
     `},
     { id: 'savings-expenses', label: 'Savings & Expenses', content: `
-      <label>Household Expenses ($/yr): <input type="number" id="household-expenses" min="0" step="1000" placeholder="30000"></label>
-      <label>Taxes ($/yr): <input type="number" id="taxes" min="0" step="1000" placeholder="15000"></label>
-      <label>Other Expenses ($/yr): <input type="number" id="other-expenses" min="0" step="1000" placeholder="5000"></label>
-      <label>Monthly Savings ($): <input type="number" id="monthly-savings" min="0" step="100" placeholder="2000"></label>
+      <label>Household Expenses ($/yr): <input type="number" id="household-expenses" min="0" step="1000" placeholder="$30,000"></label>
+      <label>Taxes ($/yr): <input type="number" id="taxes" min="0" step="1000" placeholder="$15,000"></label>
+      <label>Other Expenses ($/yr): <input type="number" id="other-expenses" min="0" step="1000" placeholder="$5,000"></label>
+      <label>Monthly Savings ($): <input type="number" id="monthly-savings" min="0" step="100" placeholder="$2,000"></label>
     `},
     { id: 'retirement', label: 'Retirement', content: `
       <div id="c1-accounts">
         <h5>Client 1 Accounts</h5>
         <div class="account">
           <label>Account Name: <input type="text" id="c1-account-0-name" placeholder="401(k)"></label>
-          <label>Balance ($): <input type="number" id="c1-account-0-balance" min="0" step="1000" placeholder="100000"></label>
-          <label>ROR (%): <input type="number" id="c1-account-0-ror" min="0" max="100" step="0.1" placeholder="6"></label>
+          <label>Balance ($): <input type="number" id="c1-account-0-balance" min="0" step="1000" placeholder="$0"></label>
+          <label>ROR (%): <input type="number" id="c1-account-0-ror" min="0" max="100" step="0.1" placeholder="6%"></label>
         </div>
         <button type="button" class="add-account-btn" data-client="c1">Add Account</button>
       </div>
@@ -162,8 +162,8 @@ const tabConfigs = {
         <h5>Client 2 Accounts</h5>
         <div class="account">
           <label>Account Name: <input type="text" id="c2-account-0-name" placeholder="IRA"></label>
-          <label>Balance ($): <input type="number" id="c2-account-0-balance" min="0" step="1000" placeholder="80000"></label>
-          <label>ROR (%): <input type="number" id="c2-account-0-ror" min="0" max="100" step="0.1" placeholder="5"></label>
+          <label>Balance ($): <input type="number" id="c2-account-0-balance" min="0" step="1000" placeholder="$0"></label>
+          <label>ROR (%): <input type="number" id="c2-account-0-ror" min="0" max="100" step="0.1" placeholder="5%"></label>
         </div>
         <button type="button" class="add-account-btn" data-client="c2">Add Account</button>
       </div>
@@ -173,9 +173,9 @@ const tabConfigs = {
         <h5>Client 1 Assets</h5>
         <div class="asset">
           <label>Asset Name: <input type="text" id="c1-asset-0-name" placeholder="Investment Property"></label>
-          <label>Balance ($): <input type="number" id="c1-asset-0-balance" min="0" step="1000" placeholder="200000"></label>
-          <label>ROR (%): <input type="number" id="c1-asset-0-ror" min="0" max="100" step="0.1" placeholder="4"></label>
-          <label>Asset Debt ($): <input type="number" id="c1-asset-0-debt" min="0" step="1000" placeholder="50000"></label>
+          <label>Balance ($): <input type="number" id="c1-asset-0-balance" min="0" step="1000" placeholder="$0"></label>
+          <label>ROR (%): <input type="number" id="c1-asset-0-ror" min="0" max="100" step="0.1" placeholder="4%"></label>
+          <label>Asset Debt ($): <input type="number" id="c1-asset-0-debt" min="0" step="1000" placeholder="$0"></label>
         </div>
         <button type="button" class="add-asset-btn" data-client="c1">Add Asset</button>
       </div>
@@ -183,18 +183,18 @@ const tabConfigs = {
         <h5>Client 2 Assets</h5>
         <div class="asset">
           <label>Asset Name: <input type="text" id="c2-asset-0-name" placeholder="Stock Portfolio"></label>
-          <label>Balance ($): <input type="number" id="c2-asset-0-balance" min="0" step="1000" placeholder="150000"></label>
-          <label>ROR (%): <input type="number" id="c2-asset-0-ror" min="0" max="100" step="0.1" placeholder="7"></label>
-          <label>Asset Debt ($): <input type="number" id="c2-asset-0-debt" min="0" step="1000" placeholder="0"></label>
+          <label>Balance ($): <input type="number" id="c2-asset-0-balance" min="0" step="1000" placeholder="$0"></label>
+          <label>ROR (%): <input type="number" id="c2-asset-0-ror" min="0" max="100" step="0.1" placeholder="7%"></label>
+          <label>Asset Debt ($): <input type="number" id="c2-asset-0-debt" min="0" step="1000" placeholder="$0"></label>
         </div>
         <button type="button" class="add-asset-btn" data-client="c2">Add Asset</button>
       </div>
-      <label>Cash ($): <input type="number" id="cash" min="0" step="1000" placeholder="20000"></label>
-      <label>Residence/Mortgage ($): <input type="number" id="residence-mortgage" min="0" step="1000" placeholder="300000"></label>
-      <label>Other Debt ($): <input type="number" id="other-debt" min="0" step="1000" placeholder="10000"></label>
+      <label>Cash ($): <input type="number" id="cash" min="0" step="1000" placeholder="$0"></label>
+      <label>Residence/Mortgage ($): <input type="number" id="residence-mortgage" min="0" step="1000" placeholder="$0"></label>
+      <label>Other Debt ($): <input type="number" id="other-debt" min="0" step="1000" placeholder="$0"></label>
     `},
     { id: 'assumptions', label: 'Assumptions', content: `
-      <label>Analysis Date: <input type="date" id="analysis-date"></label>
+      <label>Analysis Date: <input type="date" id="analysis-date" placeholder="2025-04-23"></label>
     `},
     { id: 'reports', label: 'Reports', content: `
       <div class="report-list">
@@ -369,14 +369,14 @@ function populateInputFields() {
         newAccount.classList.add('account');
         newAccount.innerHTML = currentAnalysis === 'personal-finance' ? `
           <label>Account Name: <input type="text" id="${client}-account-${index}-name" placeholder="Account ${index + 1}"></label>
-          <label>Balance ($): <input type="number" id="${client}-account-${index}-balance" min="0" step="1000" placeholder="0"></label>
-          <label>ROR (%): <input type="number" id="${client}-account-${index}-ror" min="0" max="100" step="0.1" placeholder="0"></label>
+          <label>Balance ($): <input type="number" id="${client}-account-${index}-balance" min="0" step="1000" placeholder="$0"></label>
+          <label>ROR (%): <input type="number" id="${client}-account-${index}-ror" min="0" max="100" step="0.1" placeholder="0%"></label>
         ` : `
           <label>Account Name: <input type="text" id="${client}-account-${index}-name" placeholder="Account ${index + 1}"></label>
-          <label>Balance ($): <input type="number" id="${client}-account-${index}-balance" min="0" step="1000" placeholder="0"></label>
-          <label>Contribution ($/yr): <input type="number" id="${client}-account-${index}-contribution" min="0" step="1000" placeholder="0"></label>
-          <label>Employer Match (%): <input type="number" id="${client}-account-${index}-employer-match" min="0" max="100" step="0.1" placeholder="0"></label>
-          <label>ROR (%): <input type="number" id="${client}-account-${index}-ror" min="0" max="100" step="0.1" placeholder="0"></label>
+          <label>Balance ($): <input type="number" id="${client}-account-${index}-balance" min="0" step="1000" placeholder="$0"></label>
+          <label>Contribution ($/yr): <input type="number" id="${client}-account-${index}-contribution" min="0" step="1000" placeholder="$0"></label>
+          <label>Employer Match (%): <input type="number" id="${client}-account-${index}-employer-match" min="0" max="100" step="0.1" placeholder="0%"></label>
+          <label>ROR (%): <input type="number" id="${client}-account-${index}-ror" min="0" max="100" step="0.1" placeholder="0%"></label>
         `;
         const addButton = container.querySelector('.add-account-btn');
         container.insertBefore(newAccount, addButton);
@@ -408,9 +408,9 @@ function populateInputFields() {
         newAsset.classList.add('asset');
         newAsset.innerHTML = `
           <label>Asset Name: <input type="text" id="${client}-asset-${index}-name" placeholder="Asset ${index + 1}"></label>
-          <label>Balance ($): <input type="number" id="${client}-asset-${index}-balance" min="0" step="1000" placeholder="0"></label>
-          <label>ROR (%): <input type="number" id="${client}-asset-${index}-ror" min="0" max="100" step="0.1" placeholder="0"></label>
-          <label>Asset Debt ($): <input type="number" id="${client}-asset-${index}-debt" min="0" step="1000" placeholder="0"></label>
+          <label>Balance ($): <input type="number" id="${client}-asset-${index}-balance" min="0" step="1000" placeholder="$0"></label>
+          <label>ROR (%): <input type="number" id="${client}-asset-${index}-ror" min="0" max="100" step="0.1" placeholder="0%"></label>
+          <label>Asset Debt ($): <input type="number" id="${client}-asset-${index}-debt" min="0" step="1000" placeholder="$0"></label>
         `;
         const addButton = container.querySelector('.add-asset-btn');
         container.insertBefore(newAsset, addButton);
@@ -432,7 +432,16 @@ function setInputValue(id, value, label, property = 'value') {
   try {
     const input = document.getElementById(id);
     if (input) {
-      input[property] = value ?? '';
+      if (input.type === 'number' && value !== '' && value != null) {
+        // Format numbers with no decimals
+        const formattedValue = new Intl.NumberFormat('en-US', { 
+          minimumFractionDigits: 0, 
+          maximumFractionDigits: 0 
+        }).format(Math.round(Number(value)));
+        input[property] = formattedValue.replace(/,/g, ''); // Remove commas for input
+      } else {
+        input[property] = value ?? '';
+      }
       console.log(`Set ${label} (#${id}) to: ${value ?? 'empty'}`);
     } else {
       console.warn(`Input #${id} not found for ${label}`);
@@ -542,14 +551,14 @@ function addAccountHandler(e) {
     newAccount.classList.add('account');
     newAccount.innerHTML = currentAnalysis === 'personal-finance' ? `
       <label>Account Name: <input type="text" id="${client}-account-${count}-name" placeholder="Account ${count + 1}"></label>
-      <label>Balance ($): <input type="number" id="${client}-account-${count}-balance" min="0" step="1000" placeholder="0"></label>
-      <label>ROR (%): <input type="number" id="${client}-account-${count}-ror" min="0" max="100" step="0.1" placeholder="0"></label>
+      <label>Balance ($): <input type="number" id="${client}-account-${count}-balance" min="0" step="1000" placeholder="$0"></label>
+      <label>ROR (%): <input type="number" id="${client}-account-${count}-ror" min="0" max="100" step="0.1" placeholder="0%"></label>
     ` : `
       <label>Account Name: <input type="text" id="${client}-account-${count}-name" placeholder="Account ${count + 1}"></label>
-      <label>Balance ($): <input type="number" id="${client}-account-${count}-balance" min="0" step="1000" placeholder="0"></label>
-      <label>Contribution ($/yr): <input type="number" id="${client}-account-${count}-contribution" min="0" step="1000" placeholder="0"></label>
-      <label>Employer Match (%): <input type="number" id="${client}-account-${count}-employer-match" min="0" max="100" step="0.1" placeholder="0"></label>
-      <label>ROR (%): <input type="number" id="${client}-account-${count}-ror" min="0" max="100" step="0.1" placeholder="0"></label>
+      <label>Balance ($): <input type="number" id="${client}-account-${count}-balance" min="0" step="1000" placeholder="$0"></label>
+      <label>Contribution ($/yr): <input type="number" id="${client}-account-${count}-contribution" min="0" step="1000" placeholder="$0"></label>
+      <label>Employer Match (%): <input type="number" id="${client}-account-${count}-employer-match" min="0" max="100" step="0.1" placeholder="0%"></label>
+      <label>ROR (%): <input type="number" id="${client}-account-${count}-ror" min="0" max="100" step="0.1" placeholder="0%"></label>
     `;
     container.insertBefore(newAccount, e.target);
     const clientKey = client === 'c1' ? 'client1' : 'client2';
@@ -571,9 +580,9 @@ function addAssetHandler(e) {
     newAsset.classList.add('asset');
     newAsset.innerHTML = `
       <label>Asset Name: <input type="text" id="${client}-asset-${count}-name" placeholder="Asset ${count + 1}"></label>
-      <label>Balance ($): <input type="number" id="${client}-asset-${count}-balance" min="0" step="1000" placeholder="0"></label>
-      <label>ROR (%): <input type="number" id="${client}-asset-${count}-ror" min="0" max="100" step="0.1" placeholder="0"></label>
-      <label>Asset Debt ($): <input type="number" id="${client}-asset-${count}-debt" min="0" step="1000" placeholder="0"></label>
+      <label>Balance ($): <input type="number" id="${client}-asset-${count}-balance" min="0" step="1000" placeholder="$0"></label>
+      <label>ROR (%): <input type="number" id="${client}-asset-${count}-ror" min="0" max="100" step="0.1" placeholder="0%"></label>
+      <label>Asset Debt ($): <input type="number" id="${client}-asset-${count}-debt" min="0" step="1000" placeholder="$0"></label>
     `;
     container.insertBefore(newAsset, e.target);
     const clientKey = client === 'c1' ? 'client1' : 'client2';
@@ -606,7 +615,9 @@ function updateClientData(e) {
     const input = e.target;
     if (input.id === 'is-married') return;
     
-    const value = input.type === 'number' ? (input.value === '' ? '' : parseFloat(input.value)) : input.value;
+    let value = input.type === 'number' ? 
+      (input.value === '' ? '' : Math.round(parseFloat(input.value.replace(/,/g, '')))) : 
+      input.value;
     console.log(`Updating ${input.id} with value: ${value}`);
 
     const clientKey = input.id.startsWith('c1-') ? 'client1' : input.id.startsWith('c2-') ? 'client2' : null;
@@ -667,7 +678,12 @@ function updateClientData(e) {
 
 // Format currency
 function formatCurrency(value) {
-  return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0 }).format(value);
+  return new Intl.NumberFormat('en-US', { 
+    style: 'currency', 
+    currency: 'USD', 
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0 
+  }).format(Math.round(value));
 }
 
 // Calculate age
@@ -861,7 +877,7 @@ function updateOutputs() {
               <tr>
                 <td>${goal.age}</td>
                 <td>${clientData.isMarried ? goal.age - (c1RetirementAge - c2RetirementAge) : '-'}</td>
-                <td>${goal.percentage.toFixed(2)}%</td>
+                <td>${Math.round(goal.percentage)}%</td>
                 <td>${formatCurrency(goal.amount)}</td>
               </tr>
             `).join('')}
@@ -914,7 +930,7 @@ function updateOutputs() {
         <h3>Results</h3>
         <div class="results-highlight">
           <p>Your funds will be depleted at Client 1's age ${depletionAge}.</p>
-          <p>Current monthly savings of ${formatCurrency(currentSavings)} need to increase by ${formatCurrency(additionalSavings)} at ${rorRetirement * 100}% ROR.</p>
+          <p>Current monthly savings of ${formatCurrency(currentSavings)} need to increase by ${formatCurrency(additionalSavings)} at ${Math.round(rorRetirement * 100)}% ROR.</p>
           ${requiredAtRetirement > 0 ? `<p>Additional ${formatCurrency(requiredAtRetirement)} required at retirement.</p>` : ''}
         </div>
         <div class="depletion-progress">
@@ -984,7 +1000,7 @@ function updateGraph() {
 
       for (let i = 0; i < years; i++) {
         netWorth = netWorth * (1 + ror) + (income + annualSavings - expenses);
-        data.push(Math.max(0, netWorth));
+        data.push(Math.max(0, Math.round(netWorth)));
         labels.push(startYear + i);
       }
 
@@ -1086,7 +1102,7 @@ function updateGraph() {
               tempBalance += tempBalance * rorRetirement;
             }
           }
-          totalBalance += tempBalance;
+          totalBalance += Math.round(tempBalance);
         });
       });
       // Add other assets
@@ -1096,7 +1112,7 @@ function updateGraph() {
         for (let i = 0; i < yearsToRetirement; i++) {
           tempBalance += tempBalance * ror;
         }
-        totalBalance += tempBalance;
+        totalBalance += Math.round(tempBalance);
       });
 
       // Prepare data for retirement period
@@ -1122,11 +1138,11 @@ function updateGraph() {
         if (clientData.isMarried && currentAge >= c2RetirementAge) {
           socialSecurity += parseFloat(clientData.client2.incomeSources.socialSecurity) || 0;
         }
-        socialSecurityData.push(socialSecurity);
+        socialSecurityData.push(Math.round(socialSecurity));
 
         // Other Income
         const otherIncome = parseFloat(clientData.client1.incomeSources.other) || 0;
-        otherIncomeData.push(otherIncome);
+        otherIncomeData.push(Math.round(otherIncome));
 
         // Capital withdrawal to meet total need
         const remainingNeed = adjustedMonthlyNeed - socialSecurity - otherIncome;
@@ -1146,8 +1162,8 @@ function updateGraph() {
             balance = 0;
           }
         }
-        capitalData.push(capitalWithdrawal);
-        shortfallData.push(shortfall);
+        capitalData.push(Math.round(capitalWithdrawal));
+        shortfallData.push(Math.round(shortfall));
 
         // Stop if no more funds or income and shortfall exists
         if (balance <= 0 && capitalWithdrawal === 0 && socialSecurity === 0 && otherIncome === 0 && shortfall > 0) {
