@@ -1104,12 +1104,12 @@ function updateGraph() {
       const capitalData = [];
       const socialSecurityData = [];
       const otherIncomeData = [];
+      const shortfallData = [];
       let balance = totalBalance;
-      const startYear = new Date().getFullYear() + yearsToRetirement;
 
       for (let i = 0; i <= mortalityAge - startAge; i++) {
         const currentAge = startAge + i;
-        labels.push(startYear + i);
+        labels.push(currentAge); // X-axis shows Client 1's age
 
         // Calculate inflation-adjusted monthly need
         const adjustedMonthlyNeed = monthlyNeed * Math.pow(1 + inflation, i);
@@ -1128,21 +1128,30 @@ function updateGraph() {
         const otherIncome = parseFloat(clientData.client1.incomeSources.other) || 0;
         otherIncomeData.push(otherIncome);
 
-        // Capital withdrawal
+        // Capital withdrawal to meet total need
         const remainingNeed = adjustedMonthlyNeed - socialSecurity - otherIncome;
         let capitalWithdrawal = 0;
-        if (remainingNeed > 0 && balance > 0) {
-          capitalWithdrawal = Math.min(remainingNeed, balance * rorRetirement / 12);
-          balance = balance * (1 + rorRetirement) - capitalWithdrawal * 12;
-          if (balance < 0) {
-            capitalWithdrawal = (remainingNeed * 12 - (balance * (1 + rorRetirement))) / 12;
+        let shortfall = 0;
+        if (remainingNeed > 0) {
+          // Calculate annual withdrawal needed
+          const annualWithdrawal = remainingNeed * 12;
+          // Check if enough balance is available
+          const availableBalance = balance * (1 + rorRetirement);
+          if (availableBalance >= annualWithdrawal) {
+            capitalWithdrawal = remainingNeed; // Full withdrawal needed
+            balance = availableBalance - annualWithdrawal;
+          } else {
+            capitalWithdrawal = availableBalance / 12; // Use all available balance
+            shortfall = remainingNeed - capitalWithdrawal; // Remaining unmet need
             balance = 0;
           }
         }
         capitalData.push(capitalWithdrawal);
+        shortfallData.push(shortfall);
 
-        if (balance <= 0 && capitalWithdrawal === 0 && socialSecurity === 0 && otherIncome === 0) {
-          break; // Stop if no more funds or income
+        // Stop if no more funds or income and shortfall exists
+        if (balance <= 0 && capitalWithdrawal === 0 && socialSecurity === 0 && otherIncome === 0 && shortfall > 0) {
+          break;
         }
       }
 
@@ -1151,12 +1160,6 @@ function updateGraph() {
         data: {
           labels: labels,
           datasets: [
-            {
-              label: 'Capital',
-              data: capitalData,
-              backgroundColor: '#f97316', // Orange
-              stack: 'Stack0'
-            },
             {
               label: 'Social Security',
               data: socialSecurityData,
@@ -1167,6 +1170,18 @@ function updateGraph() {
               label: 'Other Income',
               data: otherIncomeData,
               backgroundColor: '#3b82f6', // Blue
+              stack: 'Stack0'
+            },
+            {
+              label: 'Capital',
+              data: capitalData,
+              backgroundColor: '#f97316', // Orange
+              stack: 'Stack0'
+            },
+            {
+              label: 'Shortfall',
+              data: shortfallData,
+              backgroundColor: '#ef4444', // Red
               stack: 'Stack0'
             }
           ]
@@ -1180,12 +1195,12 @@ function updateGraph() {
             },
             title: {
               display: true,
-              text: 'Retirement Income Sources by Year'
+              text: 'Retirement Income Sources by Age'
             }
           },
           scales: {
             x: {
-              title: { display: true, text: 'Year' },
+              title: { display: true, text: 'Client 1 Age' },
               stacked: true
             },
             y: {
