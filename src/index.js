@@ -74,6 +74,8 @@ const analysisTopicsList = [
 document.addEventListener('DOMContentLoaded', () => {
   try {
     console.log('Initializing page...');
+    console.log('Chart.js available:', typeof Chart !== 'undefined');
+    console.log('chartCanvas:', chartCanvas);
     populateAnalysisTopics();
     updateTabs(currentAnalysis);
     updateClientFileName();
@@ -408,7 +410,7 @@ function addAssetHandler(e) {
     const container = document.getElementById(`${client}-assets`);
     const count = assetCount[client]++;
     const newAsset = document.createElement('div');
-    newAsset.classList.add('asset');
+    newAccount.classList.add('asset');
     newAsset.innerHTML = `
       <label>Asset Name: <input type="text" id="${client}-asset-${count}-name" placeholder="Asset ${count + 1}"></label>
       <label>Balance ($): <input type="number" id="${client}-asset-${count}-balance" min="0" step="1000" placeholder="0"></label>
@@ -529,10 +531,32 @@ function getAge(dob) {
 // Update graph
 function updateGraph() {
   try {
+    console.log('updateGraph called, currentAnalysis:', currentAnalysis);
+    console.log('chartCanvas:', chartCanvas);
+    console.log('clientData:', clientData);
+
+    // Destroy existing chart instance to prevent overlap
+    if (chartInstance) {
+      chartInstance.destroy();
+      chartInstance = null;
+    }
+
+    if (!chartCanvas) {
+      console.error('Chart canvas not found');
+      return;
+    }
+
+    if (!clientData) {
+      console.error('clientData is undefined');
+      return;
+    }
+
     if (currentAnalysis === 'retirement-accumulation') {
-      updateRetirementGraph(chartCanvas, clientData, Chart);
+      console.log('Calling updateRetirementGraph');
+      chartInstance = updateRetirementGraph(chartCanvas, clientData, Chart);
     } else if (currentAnalysis === 'personal-finance') {
-      updatePersonalFinanceGraph(chartCanvas, clientData, Chart);
+      console.log('Calling updatePersonalFinanceGraph');
+      chartInstance = updatePersonalFinanceGraph(chartCanvas, clientData, Chart);
     } else {
       console.warn(`No graph rendering for analysis type: ${currentAnalysis}`);
     }
@@ -575,17 +599,4 @@ exportGraphBtn?.addEventListener('click', () => {
   } catch (error) {
     console.error('Error in exportGraph:', error);
   }
-  function updateGraph() {
-  try {
-    if (currentAnalysis === 'retirement-accumulation') {
-      updateRetirementGraph(chartCanvas, clientData, Chart);
-    } else if (currentAnalysis === 'personal-finance') {
-      updatePersonalFinanceGraph(chartCanvas, clientData, Chart);
-    } else {
-      console.warn(`No graph rendering for analysis type: ${currentAnalysis}`);
-    }
-  } catch (error) {
-    console.error('Error in updateGraph:', error);
-  }
-}
 });
