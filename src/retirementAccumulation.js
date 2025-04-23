@@ -100,11 +100,11 @@ export function updateRetirementGraph(chartCanvas, clientData, Chart) {
   try {
     if (!chartCanvas) {
       console.error('Chart canvas #analysis-chart not found');
-      return;
+      return null;
     }
     if (typeof Chart === 'undefined') {
       console.error('Chart.js not loaded');
-      return;
+      return null;
     }
 
     const ctx = chartCanvas.getContext('2d');
@@ -142,7 +142,7 @@ export function updateRetirementGraph(chartCanvas, clientData, Chart) {
         }
       });
       console.log('Invalid inputs for graph');
-      return;
+      return chartInstance;
     }
     if (startAge >= mortalityAge) {
       chartInstance = new Chart(ctx, {
@@ -163,7 +163,7 @@ export function updateRetirementGraph(chartCanvas, clientData, Chart) {
         }
       });
       console.log('Invalid retirement/mortality age');
-      return;
+      return chartInstance;
     }
 
     let totalBalance = 0;
@@ -294,6 +294,7 @@ export function updateRetirementGraph(chartCanvas, clientData, Chart) {
       }
     });
     console.log('Retirement Accumulation bar graph rendered');
+    return chartInstance;
   } catch (error) {
     console.error('Error in updateRetirementGraph:', error);
     const ctx = chartCanvas.getContext('2d');
@@ -312,6 +313,7 @@ export function updateRetirementGraph(chartCanvas, clientData, Chart) {
         plugins: { title: { display: true, text: 'Error rendering graph' } }
       }
     });
+    return chartInstance;
   }
 }
 
@@ -403,7 +405,7 @@ export function updateRetirementOutputs(analysisOutputs, clientData, formatCurre
             name: `${clientData.client2.personal.name || 'Client 2'}'s ${account.name || 'Retirement Account'}`,
             balance
           });
-          totalAssets += balance;
+        totalAssets += balance;
         }
       });
     }
@@ -425,7 +427,7 @@ export function updateRetirementOutputs(analysisOutputs, clientData, formatCurre
             name: asset.name || 'Other Asset',
             balance
           });
-          totalAssets += balance;
+        totalAssets += balance;
         }
       });
     }
@@ -557,7 +559,7 @@ export function updateRetirementOutputs(analysisOutputs, clientData, formatCurre
   }
 }
 
-// Helper function (should be imported from utils.js)
+// Helper function (temporary until moved to utils.js or imported from index.js)
 function getAge(dob) {
   try {
     if (!dob) return 0;
@@ -570,33 +572,5 @@ function getAge(dob) {
   } catch (error) {
     console.error('Error in getAge:', error);
     return 0;
-  }
-}
-// retirementAccumulation.js
-function updateRetirementGraph(canvas, data, Chart) {
-  try {
-    console.log('updateRetirementGraph called with:', { canvas, data, Chart });
-    if (!canvas || !data || !Chart) {
-      console.error('Invalid arguments in updateRetirementGraph:', { canvas, data, Chart });
-      return null;
-    }
-    const chart = new Chart(canvas, {
-      type: 'line',
-      data: {
-        labels: ['Year 1', 'Year 2', 'Year 3'],
-        datasets: [{
-          label: 'Retirement Savings',
-          data: [100000, 110000, 121000],
-          borderColor: 'blue',
-          fill: false
-        }]
-      },
-      options: { responsive: true, scales: { y: { beginAtZero: true } } }
-    });
-    console.log('Chart instance created:', chart);
-    return chart;
-  } catch (error) {
-    console.error('Error in updateRetirementGraph:', error);
-    return null;
   }
 }
