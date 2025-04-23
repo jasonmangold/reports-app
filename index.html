@@ -3,30 +3,22 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Analysis - Advisys</title>
+  <title>Education - Advisys</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
   <link rel="stylesheet" href="styles.css">
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
   <header>
     <div class="logo">Advisys</div>
-    <div class="client-file">
-      <span id="client-file-name">No Client Selected</span>
-    </div>
+    <span id="client-file-name">No Client Selected</span>
     <nav>
       <ul>
         <li><a href="home.html">Home</a></li>
-        <li class="dropdown">
-          <a href="analysis.html" class="active">Analysis</a>
-          <div class="dropdown-content" id="analysis-list">
-            <!-- Populated dynamically by JavaScript -->
-          </div>
-        </li>
-        <li><a href="index.html">Education</a></li>
+        <li><a href="analysis.html">Analysis</a></li>
+        <li><a href="index.html" class="active">Education</a></li>
         <li><a href="#">Calculators</a></li>
-        <li><a href="presentation.html" id="presentation-tab">Presentation <span id="presentation-count" class="count-badge">0</span></a></li>
+        <li><a href="#" id="presentation-tab">Presentation <span id="presentation-count" class="count-badge">0</span></a></li>
         <li><a href="#">Search</a></li>
         <li><a href="#">Profile</a></li>
       </ul>
@@ -38,34 +30,82 @@
     </div>
   </header>
 
-  <div class="analysis-page">
-    <div class="analysis-topics">
-      <!-- Populated dynamically from JavaScript -->
+  <div class="reports-page">
+    <div class="sidebar">
+      <h3>Categories</h3>
+      <ul id="category-filter">
+        <li><a href="#" data-category="all" class="active">All</a></li>
+        <li><a href="#" data-category="Personal Finance">Personal Finance</a></li>
+        <li><a href="#" data-category="Personal Cash Flow">Personal Cash Flow</a></li>
+        <li><a href="#" data-category="Health and Medical">Health and Medical</a></li>
+        <li><a href="#" data-category="Employee Benefits">Employee Benefits</a></li>
+        <li><a href="#" data-category="Long-Term Care">Long-Term Care</a></li>
+        <li><a href="#" data-category="Disability">Disability</a></li>
+        <li><a href="#" data-category="Income Taxes">Income Taxes</a></li>
+        <li><a href="#" data-category="Home Ownership">Home Ownership</a></li>
+        <li><a href="#" data-category="Investments">Investments</a></li>
+        <li><a href="#" data-category="Retirement Planning">Retirement Planning</a></li>
+        <li><a href="#" data-category="Education Funding">Education Funding</a></li>
+        <li><a href="#" data-category="Protecting Your Finances">Protecting Your Finances</a></li>
+        <li><a href="#" data-category="Social Security and Other Government Programs">Social Security and Other Government Programs</a></li>
+        <li><a href="#" data-category="Estate Planning">Estate Planning</a></li>
+        <li><a href="#" data-category="Business Planning">Business Planning</a></li>
+        <li><a href="#" data-category="Charitable Planning">Charitable Planning</a></li>
+        <li><a href="#" data-category="Advisor Support">Advisor Support</a></li>
+      </ul>
     </div>
-    <div class="analysis-workspace">
-      <div class="client-inputs">
-        <h3>Client Inputs</h3>
-        <div class="input-container">
-          <div class="input-tabs">
-            <!-- Tabs populated dynamically -->
-          </div>
-          <form id="client-input-form" class="input-content">
-            <!-- Tab content populated dynamically -->
-          </form>
+
+    <div class="main-content">
+      <div class="tag-filters" id="tag-filters">
+        <h3>Filter Reports</h3>
+        <div class="filter-group">
+          <label>Format:</label>
+          <label><input type="checkbox" value="one-pager"> One Pagers</label>
+        </div>
+        <div class="filter-group">
+          <label>Topic:</label>
+          <label><input type="checkbox" value="topic-retirement"> Retirement</label>
+          <label><input type="checkbox" value="topic-life-insurance"> Life Insurance</label>
+          <label><input type="checkbox" value="topic-college"> College</label>
+          <label><input type="checkbox" value="topic-disability"> Disability</label>
+          <label><input type="checkbox" value="topic-long-term-care"> Long-Term Care</label>
+          <label><input type="checkbox" value="topic-debt"> Debt</label>
         </div>
       </div>
-      <div class="graph-outputs">
-        <h3>Analysis Outputs</h3>
-        <canvas id="analysis-chart"></canvas>
-        <div id="analysis-outputs">
-          <p class="output-card">Please enter client data to view analysis outputs.</p>
+      <div class="search-bar">
+        <input type="text" id="search-input" placeholder="Search reports...">
+        <i class="fas fa-search"></i>
+      </div>
+      <div class="view-toggle">
+        <button id="grid-view-btn" class="active">Grid</button>
+        <button id="list-view-btn">List</button>
+      </div>
+      <div id="breadcrumb" class="breadcrumb" style="display: none;"></div>
+      <div id="subfolder-container" class="subfolder-grid" style="display: none;"></div>
+      <div id="report-grid" class="report-grid grid-view"></div>
+    </div>
+  </div>
+
+  <div class="modal" id="report-modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <div class="modal-title-row">
+          <h2 id="modal-title"></h2>
+          <div class="modal-actions">
+            <button id="modal-share-btn" class="share-icon-btn" title="Share on Social Media"><i class="fas fa-share-alt"></i></button>
+            <button id="modal-save-pdf-btn" class="save-pdf-top-btn" title="Save PDF">Save PDF</button>
+          </div>
         </div>
-        <button id="recalculate-btn">Recalculate</button>
-        <button id="export-graph-btn">Export Graph</button>
+        <span class="close" id="modal-close">×</span>
+      </div>
+      <div class="modal-body" id="modal-content"></div>
+      <div class="modal-footer">
+        <button class="save-pdf-btn" id="save-pdf-btn">Save PDF</button>
       </div>
     </div>
   </div>
 
-  <script type="module" src="index.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  <script src="scripts.js"></script>
 </body>
 </html>
