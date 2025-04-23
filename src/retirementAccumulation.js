@@ -572,3 +572,31 @@ function getAge(dob) {
     return 0;
   }
 }
+// retirementAccumulation.js
+function updateRetirementGraph(canvas, data, Chart) {
+  try {
+    console.log('updateRetirementGraph called with:', { canvas, data, Chart });
+    if (!canvas || !data || !Chart) {
+      console.error('Invalid arguments in updateRetirementGraph:', { canvas, data, Chart });
+      return null;
+    }
+    const chart = new Chart(canvas, {
+      type: 'line',
+      data: {
+        labels: ['Year 1', 'Year 2', 'Year 3'],
+        datasets: [{
+          label: 'Retirement Savings',
+          data: [100000, 110000, 121000],
+          borderColor: 'blue',
+          fill: false
+        }]
+      },
+      options: { responsive: true, scales: { y: { beginAtZero: true } } }
+    });
+    console.log('Chart instance created:', chart);
+    return chart;
+  } catch (error) {
+    console.error('Error in updateRetirementGraph:', error);
+    return null;
+  }
+}
