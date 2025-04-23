@@ -1,4 +1,51 @@
-import Chart from 'chart.js/auto';
+function updateGraph() {
+  try {
+    console.log('updateGraph called, currentAnalysis:', currentAnalysis);
+    console.log('chartCanvas:', chartCanvas);
+    console.log('clientData:', clientData);
+
+    // Destroy existing chart instance to prevent overlap
+    if (chartInstance) {
+      console.log('Destroying existing chartInstance');
+      chartInstance.destroy();
+      chartInstance = null;
+    }
+
+    // Additional safety: Clear any existing charts on the canvas
+    if (chartCanvas && Chart.getChart(chartCanvas)) {
+      console.log('Destroying orphaned chart on canvas');
+      Chart.getChart(chartCanvas).destroy();
+    }
+
+    if (!chartCanvas) {
+      console.error('Chart canvas not found');
+      return;
+    }
+
+    if (!clientData) {
+      console.error('clientData is undefined');
+      return;
+    }
+
+    if (currentAnalysis === 'retirement-accumulation') {
+      console.log('Calling updateRetirementGraph');
+      chartInstance = updateRetirementGraph(chartCanvas, clientData, Chart);
+      console.log('updateRetirementGraph returned chartInstance:', chartInstance);
+    } else if (currentAnalysis === 'personal-finance') {
+      console.log('Calling updatePersonalFinanceGraph');
+      chartInstance = updatePersonalFinanceGraph(chartCanvas, clientData, Chart);
+      console.log('updatePersonalFinanceGraph returned chartInstance:', chartInstance);
+    } else {
+      console.warn(`No graph rendering for analysis type: ${currentAnalysis}`);
+    }
+
+    if (!chartInstance) {
+      console.warn('No chart instance created');
+    }
+  } catch (error) {
+    console.error('Error in updateGraph:', error);
+  }
+}
 import { retirementAccumulationTabs, updateRetirementGraph, updateRetirementOutputs } from './retirementAccumulation.js';
 import { personalFinanceTabs, updatePersonalFinanceGraph, updatePersonalFinanceOutputs } from './personalFinance.js';
 
