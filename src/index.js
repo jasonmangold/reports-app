@@ -575,4 +575,17 @@ exportGraphBtn?.addEventListener('click', () => {
   } catch (error) {
     console.error('Error in exportGraph:', error);
   }
+  function updateGraph() {
+  try {
+    if (currentAnalysis === 'retirement-accumulation') {
+      updateRetirementGraph(chartCanvas, clientData, Chart);
+    } else if (currentAnalysis === 'personal-finance') {
+      updatePersonalFinanceGraph(chartCanvas, clientData, Chart);
+    } else {
+      console.warn(`No graph rendering for analysis type: ${currentAnalysis}`);
+    }
+  } catch (error) {
+    console.error('Error in updateGraph:', error);
+  }
+}
 });
