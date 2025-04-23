@@ -81,18 +81,5 @@
   </div>
 
   <script src="analysis.js"></script>
-  <script>
-    // Report checkbox functionality (for presentation tab count)
-    const presentationCount = document.getElementById('presentation-count');
-    let count = 0;
-
-    document.addEventListener('change', (e) => {
-      if (e.target.classList.contains('report-checkbox')) {
-        count += e.target.checked ? 1 : -1;
-        presentationCount.textContent = count;
-        presentationCount.classList.toggle('active', count > 0);
-      }
-    });
-  </script>
 </body>
 </html>
