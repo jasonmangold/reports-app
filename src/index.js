@@ -618,4 +618,28 @@ exportGraphBtn?.addEventListener('click', () => {
   } catch (error) {
     console.error('Error in exportGraph:', error);
   }
+  
+});
+function setupOutputTabSwitching() {
+  document.querySelectorAll('.output-tab-btn').forEach(button => {
+    button.addEventListener('click', () => {
+      document.querySelectorAll('.output-tab-btn').forEach(btn => btn.classList.remove('active'));
+      document.querySelectorAll('.output-tab-content').forEach(content => {
+        content.style.display = 'none';
+      });
+      button.classList.add('active');
+      document.getElementById(button.dataset.tab).style.display = 'block';
+    });
+  });
+}
+// In DOMContentLoaded
+document.addEventListener('DOMContentLoaded', () => {
+  // ... existing code ...
+  setupOutputTabSwitching();
+});
+// In input event listener
+document.querySelector('.client-inputs').addEventListener('input', () => {
+  updateGraph();
+  updateOutputs();
+  setupOutputTabSwitching();
 });
