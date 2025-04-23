@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Analysis - Advisys</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <link rel="stylesheet" href="styles.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+  <header>
+    <div class="logo">Advisys</div>
+    <div class="client-file">
+      <span id="client-file-name">No Client Selected</span>
+    </div>
+    <nav>
+      <ul>
+        <li><a href="home.html">Home</a></li>
+        <li class="dropdown">
+          <a href="analysis.html" class="active">Analysis</a>
+          <div class="dropdown-content" id="analysis-list">
+            <!-- Populated dynamically by JavaScript -->
+          </div>
+        </li>
+        <li><a href="index.html">Education</a></li>
+        <li><a href="#">Calculators</a></li>
+        <li><a href="presentation.html" id="presentation-tab">Presentation <span id="presentation-count" class="count-badge">0</span></a></li>
+        <li><a href="#">Search</a></li>
+        <li><a href="#">Profile</a></li>
+      </ul>
+    </nav>
+    <div class="icons">
+      <i class="fas fa-bell"></i>
+      <i class="fas fa-question-circle"></i>
+      <i class="fas fa-moon dark-mode-toggle"></i>
+    </div>
+  </header>
+
+  <div class="analysis-page">
+    <div class="analysis-topics">
+      <!-- Populated dynamically from JavaScript -->
+    </div>
+    <div class="analysis-workspace">
+      <div class="client-inputs">
+        <h3>Client Inputs</h3>
+        <div class="input-container">
+          <div class="input-tabs">
+            <!-- Tabs populated dynamically -->
+          </div>
+          <form id="client-input-form" class="input-content">
+            <!-- Tab content populated dynamically -->
+          </form>
+        </div>
+      </div>
+      <div class="graph-outputs">
+        <h3>Analysis Outputs</h3>
+        <canvas id="analysis-chart"></canvas>
+        <div id="analysis-outputs">
+          <p class="output-card">Please enter client data to view analysis outputs.</p>
+        </div>
+        <button id="recalculate-btn">Recalculate</button>
+        <button id="export-graph-btn">Export Graph</button>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="index.js"></script>
+</body>
+</html>
