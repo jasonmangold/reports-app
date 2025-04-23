@@ -31,7 +31,6 @@ let assetCount = { c1: 0, c2: 0 };
 let currentAnalysis = 'retirement-accumulation';
 
 // DOM elements
-const analysisList = document.getElementById('analysis-list');
 const analysisTopics = document.querySelector('.analysis-topics');
 const inputTabs = document.querySelector('.input-tabs');
 const inputContent = document.querySelector('.input-content');
@@ -91,6 +90,7 @@ const tabConfigs = {
         <button type="button" class="add-account-btn" data-client="c1">Add Account</button>
       </div>
       <div id="c2-accounts" style="display: none;">
+        <h遵义市大通区
         <h5>Client 2 Accounts</h5>
         <div class="account">
           <label>Account Name: <input type="text" id="c2-account-0-name" placeholder="IRA"></label>
@@ -208,6 +208,27 @@ const tabConfigs = {
   ]
 };
 
+// Analysis topics list
+const analysisTopicsList = [
+  { id: 'summary', label: 'Summary' },
+  { id: 'education-funding', label: 'Education Funding' },
+  { id: 'survivor-needs', label: 'Survivor Needs' },
+  { id: 'retirement-accumulation', label: 'Retirement Accumulation' },
+  { id: 'retirement-distribution', label: 'Retirement Distribution' },
+  { id: 'social-security', label: 'Social Security' },
+  { id: 'disability-income-needs', label: 'Disability Income Needs' },
+  { id: 'critical-illness', label: 'Critical Illness' },
+  { id: 'long-term-care-needs', label: 'Long-Term Care Needs' },
+  { id: 'estate-analysis', label: 'Estate Analysis' },
+  { id: 'accumulation-funding', label: 'Accumulation Funding' },
+  { id: 'asset-allocation', label: 'Asset Allocation' },
+  { id: 'charitable-remainder-trust', label: 'Charitable Remainder Trust' },
+  { id: 'personal-finance', label: 'Personal Finance' },
+  { id: 'debt-repayment', label: 'Debt Repayment' },
+  { id: 'business-continuation', label: 'Business Continuation' },
+  { id: 'key-employee', label: 'Key Employee' }
+];
+
 // Initialize on page load
 document.addEventListener('DOMContentLoaded', () => {
   try {
@@ -226,13 +247,12 @@ document.addEventListener('DOMContentLoaded', () => {
 function populateAnalysisTopics() {
   try {
     analysisTopics.innerHTML = '';
-    const links = analysisList?.querySelectorAll('a') || [];
-    links.forEach(link => {
+    analysisTopicsList.forEach(topic => {
       const btn = document.createElement('button');
       btn.classList.add('topic-btn');
-      btn.textContent = link.textContent;
-      btn.dataset.analysis = link.dataset.analysis;
-      if (link.dataset.analysis === currentAnalysis) btn.classList.add('active');
+      btn.textContent = topic.label;
+      btn.dataset.analysis = topic.id;
+      if (topic.id === currentAnalysis) btn.classList.add('active');
       analysisTopics.appendChild(btn);
     });
 
@@ -243,18 +263,6 @@ function populateAnalysisTopics() {
         currentAnalysis = btn.dataset.analysis;
         updateTabs(currentAnalysis);
         updateGraph();
-      });
-    });
-
-    links.forEach(link => {
-      link.addEventListener('click', (e) => {
-        e.preventDefault();
-        links.forEach(a => a.classList.remove('active'));
-        link.classList.add('active');
-        currentAnalysis = link.dataset.analysis;
-        updateTabs(currentAnalysis);
-        updateGraph();
-        populateAnalysisTopics();
       });
     });
   } catch (error) {
