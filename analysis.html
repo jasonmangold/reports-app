@@ -21,23 +21,7 @@
         <li class="dropdown">
           <a href="analysis.html" class="active">Analysis</a>
           <div class="dropdown-content" id="analysis-list">
-            <a href="#" data-analysis="summary">Summary</a>
-            <a href="#" data-analysis="education-funding">Education Funding</a>
-            <a href="#" data-analysis="survivor-needs">Survivor Needs</a>
-            <a href="#" data-analysis="retirement-accumulation" class="active">Retirement Accumulation</a>
-            <a href="#" data-analysis="retirement-distribution">Retirement Distribution</a>
-            <a href="#" data-analysis="social-security">Social Security</a>
-            <a href="#" data-analysis="disability-income-needs">Disability Income Needs</a>
-            <a href="#" data-analysis="critical-illness">Critical Illness</a>
-            <a href="#" data-analysis="long-term-care-needs">Long-Term Care Needs</a>
-            <a href="#" data-analysis="estate-analysis">Estate Analysis</a>
-            <a href="#" data-analysis="accumulation-funding">Accumulation Funding</a>
-            <a href="#" data-analysis="asset-allocation">Asset Allocation</a>
-            <a href="#" data-analysis="charitable-remainder-trust">Charitable Remainder Trust</a>
-            <a href="#" data-analysis="personal-finance">Personal Finance</a>
-            <a href="#" data-analysis="debt-repayment">Debt Repayment</a>
-            <a href="#" data-analysis="business-continuation">Business Continuation</a>
-            <a href="#" data-analysis="key-employee">Key Employee</a>
+            <!-- Populated dynamically by JavaScript -->
           </div>
         </li>
         <li><a href="index.html">Education</a></li>
@@ -56,7 +40,7 @@
 
   <div class="analysis-page">
     <div class="analysis-topics">
-      <!-- Populated dynamically from dropdown -->
+      <!-- Populated dynamically from JavaScript -->
     </div>
     <div class="analysis-workspace">
       <div class="client-inputs">
@@ -72,38 +56,9 @@
       </div>
       <div class="graph-outputs">
         <h3>Analysis Outputs</h3>
-        <div class="output-tabs">
-          <button class="output-tab-btn active" data-tab="graph">Graph</button>
-          <button class="output-tab-btn" data-tab="timeline">Timeline</button>
-          <button class="output-tab-btn" data-tab="alternatives">Alternatives</button>
-        </div>
-        <div id="graph-content" class="output-content active">
-          <canvas id="analysis-chart"></canvas>
-          <div id="analysis-outputs">
-            <p class="output-card">Please enter client data to view analysis outputs.</p>
-          </div>
-        </div>
-        <div id="timeline-content" class="output-content">
-          <table class="timeline-table">
-            <thead>
-              <tr>
-                <th>Year</th>
-                <th>Age</th>
-                <th>Social Security</th>
-                <th>Other Income</th>
-                <th>Capital</th>
-                <th>Shortfall</th>
-              </tr>
-            </thead>
-            <tbody id="timeline-body">
-              <!-- Populated dynamically -->
-            </tbody>
-          </table>
-        </div>
-        <div id="alternatives-content" class="output-content">
-          <ul class="alternatives-list" id="alternatives-list">
-            <!-- Populated dynamically -->
-          </ul>
+        <canvas id="analysis-chart"></canvas>
+        <div id="analysis-outputs">
+          <p class="output-card">Please enter client data to view analysis outputs.</p>
         </div>
         <button id="recalculate-btn">Recalculate</button>
         <button id="export-graph-btn">Export Graph</button>
@@ -111,6 +66,6 @@
     </div>
   </div>
 
-  <script src="analysis.js"></script>
+  <script type="module" src="src/index.js"></script>
 </body>
 </html>
