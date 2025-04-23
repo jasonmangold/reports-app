@@ -1035,3 +1035,589 @@ function getAge(dob) {
     return 0;
   }
 }
+// Calculate age
+function getAge(dob) {
+  try {
+    if (!dob) return 0;
+    const today = new Date();
+    const birthDate = new Date(dob);
+    let age = today.getFullYear() - birthDate.getFullYear();
+    const m = today.getMonth() - birthDate.getMonth();
+    if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) age--;
+    return Math.max(0, age);
+  } catch (error) {
+    console.error('Error in getAge:', error);
+    return 0;
+  }
+}
+
+// Update outputs
+function updateOutputs() {
+  try {
+    if (!analysisOutputs) {
+      console.error('Analysis outputs #analysis-outputs not found');
+      return;
+    }
+
+    if (currentAnalysis !== 'retirement-accumulation') {
+      analysisOutputs.innerHTML = '<p class="output-card">Outputs available for Retirement Accumulation only.</p>';
+      return;
+    }
+
+    // Input validation with fallback values
+    const c1Age = getAge(clientData.client1.personal.dob);
+    const c2Age = clientData.isMarried ? getAge(clientData.client2.personal.dob) : c1Age;
+    const c1RetirementAge = parseFloat(clientData.client1.personal.retirementAge) || 65;
+    const c2RetirementAge = clientData.isMarried ? parseFloat(clientData.client2.personal.retirementAge) || 65 : c1RetirementAge;
+    const mortalityAge = parseFloat(clientData.assumptions.mortalityAge) || 90;
+    const inflation = parseFloat(clientData.assumptions.inflation) / 100 || 0.02;
+    const rorRetirement = parseFloat(clientData.assumptions.rorRetirement) / 100 || 0.04;
+    const monthlyNeed = parseFloat(clientData.incomeNeeds.monthly) || 5000;
+
+    // Check for valid inputs
+    if (c1Age >= c1RetirementAge || (clientData.isMarried && c2Age >= c2RetirementAge)) {
+      analysisOutputs.innerHTML = '<p class="output-card">Client(s) already at or past retirement age. Please adjust retirement age or DOB.</p>';
+      return;
+    }
+    if (c1RetirementAge >= mortalityAge || (clientData.isMarried && c2RetirementAge >= mortalityAge)) {
+      analysisOutputs.innerHTML = '<p class="output-card">Retirement age must be less than mortality age.</p>';
+      return;
+    }
+
+    // Income Goals
+    const incomeGoals = [
+      { age: c1RetirementAge, percentage: 100, amount: monthlyNeed },
+      { age: c1RetirementAge + 10, percentage: 80, amount: monthlyNeed * 0.8 },
+      { age: c1RetirementAge + 15, percentage: 70, amount: monthlyNeed * 0.7 }
+    ];
+
+    // Income Sources
+    const incomeSources = [];
+    if (clientData.client1.incomeSources.employment && c1Age < c1RetirementAge) {
+      incomeSources.push({
+        source: `${clientData.client1.personal.name || 'Client 1'}'s Employment Income`,
+        details: `Until age ${c1RetirementAge}`,
+        amount: parseFloat(clientData.client1.incomeSources.employment) / 12 || 0
+      });
+    }
+    if (clientData.isMarried && clientData.client2.incomeSources.employment && c2Age < c2RetirementAge) {
+      incomeSources.push({
+        source: `${clientData.client2.personal.name || 'Client 2'}'s Employment Income`,
+        details: `Until age ${c2RetirementAge}`,
+        amount: parseFloat(clientData.client2.incomeSources.employment) / 12 || 0
+      });
+    }
+    if (clientData.client1.incomeSources.socialSecurity) {
+      incomeSources.push({
+        source: `${clientData.client1.personal.name || 'Client 1'}'s Social Security`,
+        details: `At age ${c1RetirementAge}`,
+        amount: parseFloat(clientData.client1.incomeSources.socialSecurity) || 0
+      });
+    }
+    if (clientData.isMarried && clientData.client2.incomeSources.socialSecurity) {
+      incomeSources.push({
+        source: `${clientData.client2.personal.name || 'Client 2'}'s Social Security`,
+        details: `At age ${c2RetirementAge}`,
+        amount: parseFloat(clientData.client2.incomeSources.socialSecurity) || 0
+      });
+    }
+    if (clientData.client1.incomeSources.other) {
+      incomeSources.push({
+        source: 'Other Income',
+        details: `At age ${c1RetirementAge}`,
+        amount: parseFloat(clientData.client1.incomeSources.other) || 0
+      });
+    }
+
+    // Assets
+    let totalAssets = 0;
+    const assets = [];
+    clientData.client1.accounts.forEach(account => {
+      const balance = parseFloat(account.balance) || 0;
+      if (balance > 0) {
+        assets.push({
+          name: `${clientData.client1.personal.name || 'Client 1'}'s ${account.name || 'Retirement Account'}`,
+          balance
+        });
+        totalAssets += balance;
+      }
+    });
+    if (clientData.isMarried) {
+      clientData.client2.accounts.forEach(account => {
+        const balance = parseFloat(account.balance) || 0;
+        if (balance > 0) {
+          assets.push({
+            name: `${clientData.client2.personal.name || 'Client 2'}'s ${account.name || 'Retirement Account'}`,
+            balance
+          });
+          totalAssets += balance;
+        }
+      });
+    }
+    clientData.other.assets.forEach(asset => {
+      const balance = parseFloat(asset.balance) || 0;
+      if (balance > 0) {
+        assets.push({
+          name: asset.name || 'Other Asset',
+          balance
+        });
+        totalAssets += balance;
+      }
+    });
+
+    // Calculate retirement balance
+    let balance = totalAssets;
+    const yearsToRetirement = Math.max(c1RetirementAge - c1Age, clientData.isMarried ? c2RetirementAge - c2Age : 0);
+    [clientData.client1, clientData.isMarried ? clientData.client2 : null].forEach((client, idx) => {
+      if (!client) return;
+      client.accounts.forEach(account => {
+        let tempBalance = parseFloat(account.balance) || 0;
+        const contribution = parseFloat(account.contribution) || 0;
+        const employerMatch = (parseFloat(account.employerMatch) / 100) * contribution || 0;
+        const ror = parseFloat(account.ror) / 100 || 0.06;
+        for (let i = 0; i < yearsToRetirement; i++) {
+          tempBalance += tempBalance * ror + contribution + employerMatch;
+        }
+        balance += tempBalance - (parseFloat(account.balance) || 0);
+      });
+    });
+
+    // Calculate depletion
+    let depletionAge = c1RetirementAge;
+    const monthlySources = incomeSources.reduce((sum, src) => sum + (src.amount || 0), 0);
+    for (let i = 0; i < mortalityAge - c1RetirementAge; i++) {
+      const currentNeed = monthlyNeed * Math.pow(1 + inflation, i) - monthlySources;
+      balance = balance * (1 + rorRetirement) - (currentNeed > 0 ? currentNeed * 12 : 0);
+      if (balance <= 0) {
+        depletionAge = c1RetirementAge + i;
+        break;
+      }
+    }
+    if (balance > 0) depletionAge = mortalityAge;
+
+    // Calculate additional savings needed
+    const currentSavings = parseFloat(clientData.savingsExpenses.monthlySavings) || 0;
+    let additionalSavings = 0;
+    let requiredAtRetirement = 0;
+    if (depletionAge < mortalityAge) {
+      const yearsShort = mortalityAge - depletionAge;
+      const annualNeed = (monthlyNeed - monthlySources) * 12;
+      requiredAtRetirement = annualNeed * (1 - Math.pow(1 + rorRetirement, -yearsShort)) / rorRetirement;
+      const yearsToSave = yearsToRetirement;
+      additionalSavings = requiredAtRetirement / ((Math.pow(1 + rorRetirement, yearsToSave) - 1) / rorRetirement);
+    }
+
+    // Render outputs
+    analysisOutputs.innerHTML = `
+      <div class="output-card">
+        <h3>Income Goals</h3>
+        <p>Your desired monthly retirement income in today's dollars:</p>
+        <table class="output-table">
+          <thead>
+            <tr>
+              <th>Client 1 Age</th>
+              <th>Client 2 Age</th>
+              <th>% of Current Income</th>
+              <th>Monthly Amount</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${incomeGoals.map(goal => `
+              <tr>
+                <td>${goal.age}</td>
+                <td>${clientData.isMarried ? goal.age - (c1RetirementAge - c2RetirementAge) : '-'}</td>
+                <td>${Math.round(goal.percentage)}%</td>
+                <td>${formatCurrency(goal.amount)}</td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      </div>
+      <div class="output-card">
+        <h3>Income Sources</h3>
+        <p>Monthly income sources to support your retirement goals:</p>
+        <table class="output-table">
+          <thead>
+            <tr>
+              <th>Source</th>
+              <th>Details</th>
+              <th>Monthly Amount</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${incomeSources.length ? incomeSources.map(src => `
+              <tr>
+                <td>${src.source}</td>
+                <td>${src.details}</td>
+                <td>${formatCurrency(src.amount)}</td>
+              </tr>
+            `).join('') : '<tr><td colspan="3">No income sources provided.</td></tr>'}
+          </tbody>
+        </table>
+      </div>
+      <div class="output-card">
+        <h3>Assets Available at Retirement</h3>
+        <p>Applied assets for retirement funding:</p>
+        <table class="output-table">
+          <thead>
+            <tr>
+              <th>Asset</th>
+              <th>Balance</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${assets.length ? assets.map(asset => `
+              <tr>
+                <td>${asset.name}</td>
+                <td>${formatCurrency(asset.balance)}</td>
+              </tr>
+            `).join('') : '<tr><td colspan="2">No assets provided.</td></tr>'}
+          </tbody>
+        </table>
+      </div>
+      <div class="output-card">
+        <h3>Results</h3>
+        <div class="results-highlight">
+          <p>Your funds will be depleted at Client 1's age ${depletionAge}.</p>
+          <p>Current monthly savings of ${formatCurrency(currentSavings)} need to increase by ${formatCurrency(additionalSavings)} at ${Math.round(rorRetirement * 100)}% ROR.</p>
+          ${requiredAtRetirement > 0 ? `<p>Additional ${formatCurrency(requiredAtRetirement)} required at retirement.</p>` : ''}
+        </div>
+        <div class="depletion-progress">
+          <progress value="${depletionAge - c1RetirementAge}" max="${mortalityAge - c1RetirementAge}"></progress>
+          <p>Retirement duration: ${depletionAge - c1RetirementAge} of ${mortalityAge - c1RetirementAge} years</p>
+        </div>
+        <p class="disclaimer">Values shown are hypothetical and not a promise of future performance.</p>
+      </div>
+    `;
+    console.log('Analysis outputs rendered');
+  } catch (error) {
+    console.error('Error in updateOutputs:', error);
+    analysisOutputs.innerHTML = '<p class="output-card">Unable to render outputs. Please ensure all required fields (DOB, retirement age, mortality age, income needs) are filled correctly.</p>';
+  }
+}
+
+// Update graph
+function updateGraph() {
+  try {
+    if (!chartCanvas) {
+      console.error('Chart canvas #analysis-chart not found');
+      return;
+    }
+    if (typeof Chart === 'undefined') {
+      console.error('Chart.js not loaded');
+      return;
+    }
+
+    const ctx = chartCanvas.getContext('2d');
+    if (chartInstance) {
+      chartInstance.destroy();
+      chartInstance = null;
+    }
+
+    if (currentAnalysis === 'personal-finance') {
+      const years = 30;
+      const labels = [];
+      const data = [];
+      const startYear = new Date(clientData.assumptions.analysisDate || new Date()).getFullYear();
+      
+      let netWorth = 0;
+      [clientData.client1, clientData.client2].forEach((client, idx) => {
+        if (idx === 1 && !clientData.isMarried) return;
+        client.accounts.forEach(account => {
+          const balance = parseFloat(account.balance) || 0;
+          netWorth += balance;
+        });
+        client.other?.assets?.forEach(asset => {
+          const balance = parseFloat(asset.balance) || 0;
+          const debt = parseFloat(asset.debt) || 0;
+          netWorth += balance - debt;
+        });
+      });
+      netWorth += parseFloat(clientData.other.cash) || 0;
+      netWorth -= parseFloat(clientData.other.residenceMortgage) || 0;
+      netWorth -= parseFloat(clientData.other.otherDebt) || 0;
+
+      const annualSavings = (parseFloat(clientData.savingsExpenses.monthlySavings) || 0) * 12;
+      const expenses = (parseFloat(clientData.savingsExpenses.householdExpenses) || 0) +
+                      (parseFloat(clientData.savingsExpenses.taxes) || 0) +
+                      (parseFloat(clientData.savingsExpenses.otherExpenses) || 0);
+      const income = (parseFloat(clientData.client1.incomeSources.employment) || 0) +
+                     (clientData.isMarried ? parseFloat(clientData.client2.incomeSources.employment) || 0 : 0) +
+                     (parseFloat(clientData.client1.incomeSources.interestDividends) || 0) +
+                     (parseFloat(clientData.client1.incomeSources.other) || 0);
+      const ror = 0.05;
+
+      for (let i = 0; i < years; i++) {
+        netWorth = netWorth * (1 + ror) + (income + annualSavings - expenses);
+        data.push(Math.max(0, Math.round(netWorth)));
+        labels.push(startYear + i);
+      }
+
+      chartInstance = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: labels,
+          datasets: [{
+            label: 'Net Worth ($)',
+            data: data,
+            borderColor: '#3b82f6',
+            fill: false
+          }]
+        },
+        options: {
+          responsive: true,
+          scales: {
+            x: { title: { display: true, text: 'Year' } },
+            y: { title: { display: true, text: 'Net Worth ($)' } }
+          }
+        }
+      });
+      console.log('Personal Finance graph rendered');
+    } else {
+      // Input validation with fallback values
+      const c1Age = getAge(clientData.client1.personal.dob);
+      const c2Age = clientData.isMarried ? getAge(clientData.client2.personal.dob) : c1Age;
+      const c1RetirementAge = parseFloat(clientData.client1.personal.retirementAge) || 65;
+      const c2RetirementAge = clientData.isMarried ? parseFloat(clientData.client2.personal.retirementAge) || 65 : c1RetirementAge;
+      const startAge = Math.max(c1RetirementAge, c2RetirementAge); // Start at latest retirement age
+      const mortalityAge = parseFloat(clientData.assumptions.mortalityAge) || 90;
+      const inflation = parseFloat(clientData.assumptions.inflation) / 100 || 0.02;
+      const rorRetirement = parseFloat(clientData.assumptions.rorRetirement) / 100 || 0.04;
+      const monthlyNeed = parseFloat(clientData.incomeNeeds.monthly) || 5000;
+
+      // Validate inputs
+      if (!clientData.client1.personal.dob || c1Age >= c1RetirementAge || (clientData.isMarried && (!clientData.client2.personal.dob || c2Age >= c2RetirementAge))) {
+        chartInstance = new Chart(ctx, {
+          type: 'bar',
+          data: {
+            labels: ['Error'],
+            datasets: [{
+              label: 'Error',
+              data: [0],
+              backgroundColor: '#ef4444'
+            }]
+          },
+          options: {
+            responsive: true,
+            plugins: {
+              title: { display: true, text: 'Please enter valid DOB and retirement age' }
+            }
+          }
+        });
+        console.log('Invalid inputs for graph');
+        return;
+      }
+      if (startAge >= mortalityAge) {
+        chartInstance = new Chart(ctx, {
+          type: 'bar',
+          data: {
+            labels: ['Error'],
+            datasets: [{
+              label: 'Error',
+              data: [0],
+              backgroundColor: '#ef4444'
+            }]
+          },
+          options: {
+            responsive: true,
+            plugins: {
+              title: { display: true, text: 'Retirement age must be less than mortality age' }
+            }
+          }
+        });
+        console.log('Invalid retirement/mortality age');
+        return;
+      }
+
+      // Calculate total capital at retirement
+      let totalBalance = 0;
+      const yearsToRetirement = startAge - c1Age;
+      [clientData.client1, clientData.isMarried ? clientData.client2 : null].forEach((client, idx) => {
+        if (!client) return;
+        const clientRetirementAge = idx === 0 ? c1RetirementAge : c2RetirementAge;
+        const yearsToClientRetirement = clientRetirementAge - (idx === 0 ? c1Age : c2Age);
+        client.accounts.forEach(account => {
+          let tempBalance = parseFloat(account.balance) || 0;
+          const contribution = parseFloat(account.contribution) || 0;
+          const employerMatch = (parseFloat(account.employerMatch) / 100) * contribution || 0;
+          const ror = parseFloat(account.ror) / 100 || 0.06;
+          // Grow balance until client's retirement age
+          for (let i = 0; i < yearsToClientRetirement; i++) {
+            tempBalance += tempBalance * ror + contribution + employerMatch;
+          }
+          // If this client's retirement is earlier, grow at rorRetirement until startAge
+          if (yearsToClientRetirement < yearsToRetirement) {
+            for (let i = yearsToClientRetirement; i < yearsToRetirement; i++) {
+              tempBalance += tempBalance * rorRetirement;
+            }
+          }
+          totalBalance += Math.round(tempBalance);
+        });
+      });
+      // Add other assets
+      clientData.other.assets.forEach(asset => {
+        let tempBalance = parseFloat(asset.balance) || 0;
+        const ror = parseFloat(asset.ror) / 100 || 0.06;
+        for (let i = 0; i < yearsToRetirement; i++) {
+          tempBalance += tempBalance * ror;
+        }
+        totalBalance += Math.round(tempBalance);
+      });
+
+      // Prepare data for retirement period
+      const labels = [];
+      const capitalData = [];
+      const socialSecurityData = [];
+      const otherIncomeData = [];
+      const shortfallData = [];
+      let balance = totalBalance;
+
+      for (let i = 0; i <= mortalityAge - startAge; i++) {
+        const currentAge = startAge + i;
+        labels.push(currentAge); // X-axis shows Client 1's age
+
+        // Calculate inflation-adjusted monthly need
+        const adjustedMonthlyNeed = monthlyNeed * Math.pow(1 + inflation, i);
+
+        // Social Security
+        let socialSecurity = 0;
+        if (currentAge >= c1RetirementAge) {
+          socialSecurity += parseFloat(clientData.client1.incomeSources.socialSecurity) || 0;
+        }
+        if (clientData.isMarried && currentAge >= c2RetirementAge) {
+          socialSecurity += parseFloat(clientData.client2.incomeSources.socialSecurity) || 0;
+        }
+        socialSecurityData.push(Math.round(socialSecurity));
+
+        // Other Income
+        const otherIncome = parseFloat(clientData.client1.incomeSources.other) || 0;
+        otherIncomeData.push(Math.round(otherIncome));
+
+        // Capital withdrawal to meet total need
+        const remainingNeed = adjustedMonthlyNeed - socialSecurity - otherIncome;
+        let capitalWithdrawal = 0;
+        let shortfall = 0;
+        if (remainingNeed > 0) {
+          // Calculate annual withdrawal needed
+          const annualWithdrawal = remainingNeed * 12;
+          // Check if enough balance is available
+          const availableBalance = balance * (1 + rorRetirement);
+          if (availableBalance >= annualWithdrawal) {
+            capitalWithdrawal = remainingNeed; // Full withdrawal needed
+            balance = availableBalance - annualWithdrawal;
+          } else {
+            capitalWithdrawal = availableBalance / 12; // Use all available balance
+            shortfall = remainingNeed - capitalWithdrawal; // Remaining unmet need
+            balance = 0;
+          }
+        }
+        capitalData.push(Math.round(capitalWithdrawal));
+        shortfallData.push(Math.round(shortfall));
+
+        // Stop if no more funds or income and shortfall exists
+        if (balance <= 0 && capitalWithdrawal === 0 && socialSecurity === 0 && otherIncome === 0 && shortfall > 0) {
+          break;
+        }
+      }
+
+      chartInstance = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: labels,
+          datasets: [
+            {
+              label: 'Social Security',
+              data: socialSecurityData,
+              backgroundColor: '#22c55e', // Green
+              stack: 'Stack0'
+            },
+            {
+              label: 'Other Income',
+              data: otherIncomeData,
+              backgroundColor: '#3b82f6', // Blue
+              stack: 'Stack0'
+            },
+            {
+              label: 'Capital',
+              data: capitalData,
+              backgroundColor: '#f97316', // Orange
+              stack: 'Stack0'
+            },
+            {
+              label: 'Shortfall',
+              data: shortfallData,
+              backgroundColor: '#ef4444', // Red
+              stack: 'Stack0'
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            legend: {
+              display: true,
+              position: 'top'
+            },
+            title: {
+              display: true,
+              text: 'Retirement Income Sources by Age'
+            }
+          },
+          scales: {
+            x: {
+              title: { display: true, text: 'Client 1 Age' },
+              stacked: true
+            },
+            y: {
+              title: { display: true, text: 'Monthly Income ($)' },
+              stacked: true,
+              beginAtZero: true
+            }
+          }
+        }
+      });
+      console.log('Retirement Accumulation bar graph rendered');
+    }
+  } catch (error) {
+    console.error('Error in updateGraph:', error);
+    if (ctx) {
+      chartInstance = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: ['Error'],
+          datasets: [{
+            label: 'Error',
+            data: [0],
+            backgroundColor: '#ef4444'
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            title: { display: true, text: 'Error rendering graph' }
+          }
+        }
+      });
+    }
+  }
+}
+
+// Recalculate and export
+recalculateBtn?.addEventListener('click', () => {
+  updateGraph();
+  updateOutputs();
+});
+exportGraphBtn?.addEventListener('click', () => {
+  try {
+    if (!chartCanvas) {
+      console.error('Chart canvas not found for export');
+      return;
+    }
+    const link = document.createElement('a');
+    link.href = chartCanvas.toDataURL('image/png');
+    link.download = `${currentAnalysis}-graph.png`;
+    link.click();
+  } catch (error) {
+    console.error('Error in exportGraph:', error);
+  }
+});
