@@ -72,9 +72,38 @@
       </div>
       <div class="graph-outputs">
         <h3>Analysis Outputs</h3>
-        <canvas id="analysis-chart"></canvas>
-        <div id="analysis-outputs">
-          <p class="output-card">Please enter client data to view analysis outputs.</p>
+        <div class="output-tabs">
+          <button class="output-tab-btn active" data-tab="graph">Graph</button>
+          <button class="output-tab-btn" data-tab="timeline">Timeline</button>
+          <button class="output-tab-btn" data-tab="alternatives">Alternatives</button>
+        </div>
+        <div id="graph-content" class="output-content active">
+          <canvas id="analysis-chart"></canvas>
+          <div id="analysis-outputs">
+            <p class="output-card">Please enter client data to view analysis outputs.</p>
+          </div>
+        </div>
+        <div id="timeline-content" class="output-content">
+          <table class="timeline-table">
+            <thead>
+              <tr>
+                <th>Year</th>
+                <th>Age</th>
+                <th>Social Security</th>
+                <th>Other Income</th>
+                <th>Capital</th>
+                <th>Shortfall</th>
+              </tr>
+            </thead>
+            <tbody id="timeline-body">
+              <!-- Populated dynamically -->
+            </tbody>
+          </table>
+        </div>
+        <div id="alternatives-content" class="output-content">
+          <ul class="alternatives-list" id="alternatives-list">
+            <!-- Populated dynamically -->
+          </ul>
         </div>
         <button id="recalculate-btn">Recalculate</button>
         <button id="export-graph-btn">Export Graph</button>
