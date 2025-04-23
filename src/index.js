@@ -83,6 +83,7 @@ document.addEventListener('DOMContentLoaded', () => {
     setTimeout(() => {
       updateGraph();
       updateOutputs();
+      setupOutputTabSwitching();
     }, 0);
   } catch (error) {
     console.error('Initialization error:', error);
@@ -110,6 +111,7 @@ function populateAnalysisTopics() {
         updateTabs(currentAnalysis);
         updateGraph();
         updateOutputs();
+        setupOutputTabSwitching();
       });
     });
   } catch (error) {
@@ -274,7 +276,8 @@ function populateInputFields() {
 function setInputValue(id, value, label, property = 'value') {
   try {
     const input = document.getElementById(id);
-    if (input) {
+    if ( trilogy
+    input) {
       input[property] = value ?? '';
       console.log(`Set ${label} (#${id}) to: ${value ?? 'empty'}`);
     } else {
@@ -285,7 +288,7 @@ function setInputValue(id, value, label, property = 'value') {
   }
 }
 
-// Tab switching
+// Tab switching for input tabs
 function setupTabSwitching() {
   try {
     inputTabs.querySelectorAll('.tab-btn').forEach(button => {
@@ -309,6 +312,30 @@ function tabClickHandler() {
   }
 }
 
+// Tab switching for output tabs
+function setupOutputTabSwitching() {
+  try {
+    document.querySelectorAll('.output-tab-btn').forEach(button => {
+      button.removeEventListener('click', outputTabClickHandler);
+      button.addEventListener('click', outputTabClickHandler);
+    });
+  } catch (error) {
+    console.error('Error in setupOutputTabSwitching:', error);
+  }
+}
+
+function outputTabClickHandler() {
+  try {
+    document.querySelectorAll('.output-tab-btn').forEach(btn => btn.classList.remove('active'));
+    this.classList.add('active');
+    document.querySelectorAll('.output-tab-content').forEach(content => {
+      content.style.display = content.id === this.dataset.tab ? 'block' : 'none';
+    });
+  } catch (error) {
+    console.error('Error in outputTabClickHandler:', error);
+  }
+}
+
 // Event delegation for inputs and checkboxes
 function setupEventDelegation() {
   try {
@@ -321,6 +348,7 @@ function setupEventDelegation() {
         graphTimeout = setTimeout(() => {
           updateGraph();
           updateOutputs();
+          setupOutputTabSwitching();
           if (activeElement) activeElement.focus();
         }, 500);
       }
@@ -331,6 +359,7 @@ function setupEventDelegation() {
         toggleClient2(e);
         updateGraph();
         updateOutputs();
+        setupOutputTabSwitching();
       } else if (e.target.classList.contains('report-checkbox')) {
         reportCount += e.target.checked ? 1 : -1;
         presentationCount.textContent = reportCount;
@@ -353,6 +382,7 @@ function toggleClient2(e) {
     if (c2Assets) c2Assets.style.display = e.target.checked ? 'block' : 'none';
     updateClientFileName();
     updateOutputs();
+    setupOutputTabSwitching();
   } catch (error) {
     console.error('Error in toggleClient2:', error);
   }
@@ -399,6 +429,7 @@ function addAccountHandler(e) {
     populateInputFields();
     updateGraph();
     updateOutputs();
+    setupOutputTabSwitching();
   } catch (error) {
     console.error('Error in addAccountHandler:', error);
   }
@@ -423,6 +454,7 @@ function addAssetHandler(e) {
     populateInputFields();
     updateGraph();
     updateOutputs();
+    setupOutputTabSwitching();
   } catch (error) {
     console.error('Error in addAssetHandler:', error);
   }
@@ -603,6 +635,7 @@ function updateOutputs() {
 recalculateBtn?.addEventListener('click', () => {
   updateGraph();
   updateOutputs();
+  setupOutputTabSwitching();
 });
 
 exportGraphBtn?.addEventListener('click', () => {
@@ -618,28 +651,4 @@ exportGraphBtn?.addEventListener('click', () => {
   } catch (error) {
     console.error('Error in exportGraph:', error);
   }
-  
-});
-function setupOutputTabSwitching() {
-  document.querySelectorAll('.output-tab-btn').forEach(button => {
-    button.addEventListener('click', () => {
-      document.querySelectorAll('.output-tab-btn').forEach(btn => btn.classList.remove('active'));
-      document.querySelectorAll('.output-tab-content').forEach(content => {
-        content.style.display = 'none';
-      });
-      button.classList.add('active');
-      document.getElementById(button.dataset.tab).style.display = 'block';
-    });
-  });
-}
-// In DOMContentLoaded
-document.addEventListener('DOMContentLoaded', () => {
-  // ... existing code ...
-  setupOutputTabSwitching();
-});
-// In input event listener
-document.querySelector('.client-inputs').addEventListener('input', () => {
-  updateGraph();
-  updateOutputs();
-  setupOutputTabSwitching();
 });
