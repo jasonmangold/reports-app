@@ -6,13 +6,8 @@
   <title>Analysis - Advisys</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/shepherd.js@10.0.1/dist/css/shepherd.css">
   <link rel="stylesheet" href="styles.css">
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@2.0.1"></script>
-  <script src="https://cdn.jsdelivr.net/npm/shepherd.js@10.0.1/dist/js/shepherd.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
 </head>
 <body>
   <header>
@@ -23,6 +18,7 @@
     <nav>
       <ul>
         <li><a href="home.html">Home</a></li>
+        <li><a href="index.html">Reports</a></li>
         <li class="dropdown">
           <a href="analysis.html" class="active">Analysis</a>
           <div class="dropdown-content" id="analysis-list">
@@ -45,9 +41,8 @@
             <a href="#" data-analysis="key-employee">Key Employee</a>
           </div>
         </li>
-        <li><a href="index.html">Education</a></li>
-        <li><a href="#">Calculators</a></li>
         <li><a href="presentation.html" id="presentation-tab">Presentation <span id="presentation-count" class="count-badge">0</span></a></li>
+        <li><a href="#">Calculators</a></li>
         <li><a href="#">Search</a></li>
         <li><a href="#">Profile</a></li>
       </ul>
@@ -56,7 +51,6 @@
       <i class="fas fa-bell"></i>
       <i class="fas fa-question-circle"></i>
       <i class="fas fa-moon dark-mode-toggle"></i>
-      <i class="fas fa-adjust high-contrast-toggle" title="Toggle High Contrast Mode"></i>
     </div>
   </header>
 
@@ -75,46 +69,28 @@
             <!-- Tab content populated dynamically -->
           </form>
         </div>
-        <div class="data-controls">
-          <button id="save-profile-btn">Save Profile</button>
-          <select id="load-profile-select">
-            <option value="">Load Profile</option>
-          </select>
-          <button id="reset-form-btn">Reset Form</button>
-          <button id="undo-btn" disabled>Undo</button>
-          <button id="redo-btn" disabled>Redo</button>
-          <button id="start-tour-btn">Start Tour</button>
-        </div>
       </div>
       <div class="graph-outputs">
         <h3>Analysis Outputs</h3>
-        <div class="graph-controls">
-          <label><input type="checkbox" id="toggle-c1" checked> Client 1</label>
-          <label><input type="checkbox" id="toggle-c2" checked> Client 2</label>
-          <label><input type="checkbox" id="toggle-expenses" checked> Expenses (Personal Finance)</label>
-          <button id="show-all-labels-btn">Show All Labels</button>
-        </div>
         <canvas id="analysis-chart"></canvas>
-        <div id="chart-summary" class="sr-only" aria-live="polite"></div>
         <button id="export-graph-btn">Export Graph</button>
-        <button id="export-pdf-btn">Export PDF</button>
       </div>
     </div>
   </div>
 
-  <dialog id="report-preview-modal">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h2>Report Preview</h2>
-        <span class="close">&times;</span>
-      </div>
-      <div class="modal-body" id="report-preview-content"></div>
-      <div class="modal-footer">
-        <button class="save-pdf-btn">Save as PDF</button>
-      </div>
-    </div>
-  </dialog>
-
   <script src="analysis.js"></script>
+  <script>
+    // Report checkbox functionality (for presentation tab count)
+    const presentationCount = document.getElementById('presentation-count');
+    let count = 0;
+
+    document.addEventListener('change', (e) => {
+      if (e.target.classList.contains('report-checkbox')) {
+        count += e.target.checked ? 1 : -1;
+        presentationCount.textContent = count;
+        presentationCount.classList.toggle('active', count > 0);
+      }
+    });
+  </script>
 </body>
 </html>
