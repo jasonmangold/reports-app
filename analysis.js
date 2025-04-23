@@ -1009,72 +1009,216 @@ function updateGraph() {
       });
       console.log('Personal Finance graph rendered');
     } else {
-      const yearsToRetirement = parseFloat(clientData.client1.personal.retirementAge) - getAge(clientData.client1.personal.dob) || 30;
-      const yearsInRetirement = parseFloat(clientData.assumptions.mortalityAge) - parseFloat(clientData.client1.personal.retirementAge) || 25;
+      // Input validation with fallback values
+      const c1Age = getAge(clientData.client1.personal.dob);
+      const c2Age = clientData.isMarried ? getAge(clientData.client2.personal.dob) : c1Age;
+      const c1RetirementAge = parseFloat(clientData.client1.personal.retirementAge) || 65;
+      const c2RetirementAge = clientData.isMarried ? parseFloat(clientData.client2.personal.retirementAge) || 65 : c1RetirementAge;
+      const startAge = Math.max(c1RetirementAge, c2RetirementAge); // Start at latest retirement age
+      const mortalityAge = parseFloat(clientData.assumptions.mortalityAge) || 90;
       const inflation = parseFloat(clientData.assumptions.inflation) / 100 || 0.02;
       const rorRetirement = parseFloat(clientData.assumptions.rorRetirement) / 100 || 0.04;
+      const monthlyNeed = parseFloat(clientData.incomeNeeds.monthly) || 5000;
 
+      // Validate inputs
+      if (!clientData.client1.personal.dob || c1Age >= c1RetirementAge || (clientData.isMarried && (!clientData.client2.personal.dob || c2Age >= c2RetirementAge))) {
+        chartInstance = new Chart(ctx, {
+          type: 'bar',
+          data: {
+            labels: ['Error'],
+            datasets: [{
+              label: 'Error',
+              data: [0],
+              backgroundColor: '#ef4444'
+            }]
+          },
+          options: {
+            responsive: true,
+            plugins: {
+              title: { display: true, text: 'Please enter valid DOB and retirement age' }
+            }
+          }
+        });
+        console.log('Invalid inputs for graph');
+        return;
+      }
+      if (startAge >= mortalityAge) {
+        chartInstance = new Chart(ctx, {
+          type: 'bar',
+          data: {
+            labels: ['Error'],
+            datasets: [{
+              label: 'Error',
+              data: [0],
+              backgroundColor: '#ef4444'
+            }]
+          },
+          options: {
+            responsive: true,
+            plugins: {
+              title: { display: true, text: 'Retirement age must be less than mortality age' }
+            }
+          }
+        });
+        console.log('Invalid retirement/mortality age');
+        return;
+      }
+
+      // Calculate total capital at retirement
       let totalBalance = 0;
-      const data = [];
-      const labels = [];
-      let year = new Date().getFullYear();
-
-      [clientData.client1, clientData.client2].forEach((client, idx) => {
-        if (idx === 1 && !clientData.isMarried) return;
+      const yearsToRetirement = startAge - c1Age;
+      [clientData.client1, clientData.isMarried ? clientData.client2 : null].forEach((client, idx) => {
+        if (!client) return;
+        const clientRetirementAge = idx === 0 ? c1RetirementAge : c2RetirementAge;
+        const yearsToClientRetirement = clientRetirementAge - (idx === 0 ? c1Age : c2Age);
         client.accounts.forEach(account => {
-          const balance = parseFloat(account.balance) || 0;
+          let tempBalance = parseFloat(account.balance) || 0;
           const contribution = parseFloat(account.contribution) || 0;
           const employerMatch = (parseFloat(account.employerMatch) / 100) * contribution || 0;
           const ror = parseFloat(account.ror) / 100 || 0.06;
-
-          let tempBalance = balance;
-          for (let i = 0; i < yearsToRetirement; i++) {
-            tempBalance = tempBalance * (1 + ror) + contribution + employerMatch;
-            if (idx === 0) {
-              data[i] = (data[i] || 0) + tempBalance;
-              labels[i] = year + i;
-            } else {
-              data[i] += tempBalance;
+          // Grow balance until client's retirement age
+          for (let i = 0; i < yearsToClientRetirement; i++) {
+            tempBalance += tempBalance * ror + contribution + employerMatch;
+          }
+          // If this client's retirement is earlier, grow at rorRetirement until startAge
+          if (yearsToClientRetirement < yearsToRetirement) {
+            for (let i = yearsToClientRetirement; i < yearsToRetirement; i++) {
+              tempBalance += tempBalance * rorRetirement;
             }
           }
           totalBalance += tempBalance;
         });
       });
+      // Add other assets
+      clientData.other.assets.forEach(asset => {
+        let tempBalance = parseFloat(asset.balance) || 0;
+        const ror = parseFloat(asset.ror) / 100 || 0.06;
+        for (let i = 0; i < yearsToRetirement; i++) {
+          tempBalance += tempBalance * ror;
+        }
+        totalBalance += tempBalance;
+      });
 
-      const monthlyNeed = (parseFloat(clientData.incomeNeeds.monthly) || 5000) * 12;
-      const monthlySources = ((parseFloat(clientData.client1.incomeSources.socialSecurity) || 0) +
-                             (clientData.isMarried ? parseFloat(clientData.client2.incomeSources.socialSecurity) || 0 : 0) +
-                             (parseFloat(clientData.client1.incomeSources.other) || 0)) * 12;
-      for (let i = 0; i < yearsInRetirement; i++) {
-        totalBalance = totalBalance * (1 + rorRetirement) - (monthlyNeed - monthlySources) * Math.pow(1 + inflation, i);
-        if (totalBalance < 0) totalBalance = 0;
-        data.push(totalBalance);
-        labels.push(year + yearsToRetirement + i);
+      // Prepare data for retirement period
+      const labels = [];
+      const capitalData = [];
+      const socialSecurityData = [];
+      const otherIncomeData = [];
+      let balance = totalBalance;
+      const startYear = new Date().getFullYear() + yearsToRetirement;
+
+      for (let i = 0; i <= mortalityAge - startAge; i++) {
+        const currentAge = startAge + i;
+        labels.push(startYear + i);
+
+        // Calculate inflation-adjusted monthly need
+        const adjustedMonthlyNeed = monthlyNeed * Math.pow(1 + inflation, i);
+
+        // Social Security
+        let socialSecurity = 0;
+        if (currentAge >= c1RetirementAge) {
+          socialSecurity += parseFloat(clientData.client1.incomeSources.socialSecurity) || 0;
+        }
+        if (clientData.isMarried && currentAge >= c2RetirementAge) {
+          socialSecurity += parseFloat(clientData.client2.incomeSources.socialSecurity) || 0;
+        }
+        socialSecurityData.push(socialSecurity);
+
+        // Other Income
+        const otherIncome = parseFloat(clientData.client1.incomeSources.other) || 0;
+        otherIncomeData.push(otherIncome);
+
+        // Capital withdrawal
+        const remainingNeed = adjustedMonthlyNeed - socialSecurity - otherIncome;
+        let capitalWithdrawal = 0;
+        if (remainingNeed > 0 && balance > 0) {
+          capitalWithdrawal = Math.min(remainingNeed, balance * rorRetirement / 12);
+          balance = balance * (1 + rorRetirement) - capitalWithdrawal * 12;
+          if (balance < 0) {
+            capitalWithdrawal = (remainingNeed * 12 - (balance * (1 + rorRetirement))) / 12;
+            balance = 0;
+          }
+        }
+        capitalData.push(capitalWithdrawal);
+
+        if (balance <= 0 && capitalWithdrawal === 0 && socialSecurity === 0 && otherIncome === 0) {
+          break; // Stop if no more funds or income
+        }
       }
 
       chartInstance = new Chart(ctx, {
-        type: 'line',
+        type: 'bar',
         data: {
           labels: labels,
+          datasets: [
+            {
+              label: 'Capital',
+              data: capitalData,
+              backgroundColor: '#f97316', // Orange
+              stack: 'Stack0'
+            },
+            {
+              label: 'Social Security',
+              data: socialSecurityData,
+              backgroundColor: '#22c55e', // Green
+              stack: 'Stack0'
+            },
+            {
+              label: 'Other Income',
+              data: otherIncomeData,
+              backgroundColor: '#3b82f6', // Blue
+              stack: 'Stack0'
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            legend: {
+              display: true,
+              position: 'top'
+            },
+            title: {
+              display: true,
+              text: 'Retirement Income Sources by Year'
+            }
+          },
+          scales: {
+            x: {
+              title: { display: true, text: 'Year' },
+              stacked: true
+            },
+            y: {
+              title: { display: true, text: 'Monthly Income ($)' },
+              stacked: true,
+              beginAtZero: true
+            }
+          }
+        }
+      });
+      console.log('Retirement Accumulation bar graph rendered');
+    }
+  } catch (error) {
+    console.error('Error in updateGraph:', error);
+    if (ctx) {
+      chartInstance = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: ['Error'],
           datasets: [{
-            label: 'Retirement Savings ($)',
-            data: data,
-            borderColor: '#3b82f6',
-            fill: false
+            label: 'Error',
+            data: [0],
+            backgroundColor: '#ef4444'
           }]
         },
         options: {
           responsive: true,
-          scales: {
-            x: { title: { display: true, text: 'Year' } },
-            y: { title: { display: true, text: 'Savings ($)' } }
+          plugins: {
+            title: { display: true, text: 'Error rendering graph' }
           }
         }
       });
-      console.log('Retirement Accumulation graph rendered');
     }
-  } catch (error) {
-    console.error('Error in updateGraph:', error);
   }
 }
 
