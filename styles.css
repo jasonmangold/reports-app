@@ -957,3 +957,175 @@ body.dark-mode .add-asset-btn {
 body.dark-mode .add-asset-btn:hover {
   background: #2563eb;
 }
+/* Analysis Outputs */
+#analysis-outputs {
+  margin-top: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.output-card {
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  padding: 20px;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.output-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+}
+
+.output-card h3 {
+  font-size: 18px;
+  font-weight: 600;
+  color: #3b82f6;
+  margin-bottom: 15px;
+  border-bottom: 2px solid #3b82f6;
+  padding-bottom: 5px;
+}
+
+.output-card p {
+  font-size: 14px;
+  color: #475569;
+  margin-bottom: 10px;
+}
+
+.output-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 10px 0;
+}
+
+.output-table th,
+.output-table td {
+  border: 1px solid #ddd;
+  padding: 8px;
+  text-align: left;
+  font-size: 14px;
+}
+
+.output-table th {
+  background: #f1f5f9;
+  color: #1e293b;
+  font-weight: 600;
+}
+
+.output-table td {
+  color: #475569;
+}
+
+.results-highlight {
+  background: #eff6ff;
+  border-radius: 8px;
+  padding: 15px;
+  margin-top: 15px;
+}
+
+.results-highlight p {
+  color: #3b82f6;
+  font-weight: 600;
+}
+
+.disclaimer {
+  font-size: 12px;
+  color: #64748b;
+  margin-top: 10px;
+  font-style: italic;
+}
+
+/* Progress Bar for Funds Depletion */
+.depletion-progress {
+  margin-top: 15px;
+}
+
+.depletion-progress progress {
+  width: 100%;
+  height: 20px;
+  border-radius: 4px;
+}
+
+.depletion-progress progress::-webkit-progress-bar {
+  background: #f1f5f9;
+  border-radius: 4px;
+}
+
+.depletion-progress progress::-webkit-progress-value {
+  background: #3b82f6;
+  border-radius: 4px;
+}
+
+/* Dark Mode Adjustments */
+body.dark-mode #analysis-outputs .output-card {
+  background: #334155;
+}
+
+body.dark-mode #analysis-outputs .output-card h3 {
+  color: #60a5fa;
+  border-bottom-color: #60a5fa;
+}
+
+body.dark-mode #analysis-outputs .output-card p {
+  color: #94a3b8;
+}
+
+body.dark-mode #analysis-outputs .output-table th {
+  background: #475569;
+  color: #f1f5f9;
+}
+
+body.dark-mode #analysis-outputs .output-table td {
+  color: #94a3b8;
+}
+
+body.dark-mode #analysis-outputs .results-highlight {
+  background: #4b5e7a;
+}
+
+body.dark-mode #analysis-outputs .results-highlight p {
+  color: #60a5fa;
+}
+
+body.dark-mode #analysis-outputs .disclaimer {
+  color: #94a3b8;
+}
+
+body.dark-mode .depletion-progress progress::-webkit-progress-bar {
+  background: #475569;
+}
+
+body.dark-mode .depletion-progress progress::-webkit-progress-value {
+  background: #60a5fa;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+  #analysis-outputs {
+    margin-top: 15px;
+    gap: 15px;
+  }
+
+  .output-card {
+    padding: 15px;
+  }
+
+  .output-card h3 {
+    font-size: 16px;
+  }
+
+  .output-table th,
+  .output-table td {
+    font-size: 12px;
+    padding: 6px;
+  }
+
+  .results-highlight {
+    padding: 10px;
+  }
+
+  .depletion-progress progress {
+    height: 15px;
+  }
+}
