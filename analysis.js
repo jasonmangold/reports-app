@@ -237,23 +237,10 @@ document.addEventListener('DOMContentLoaded', () => {
     updateTabs(currentAnalysis);
     updateClientFileName();
     setupEventDelegation();
-    // Handle dropdown clicks
-    document.querySelectorAll('#analysis-list a').forEach(link => {
-      link.addEventListener('click', (e) => {
-        e.preventDefault();
-        const analysis = e.target.dataset.analysis;
-        document.querySelectorAll('.topic-btn').forEach(b => b.classList.remove('active'));
-        document.querySelector(`.topic-btn[data-analysis="${analysis}"]`)?.classList.add('active');
-        currentAnalysis = analysis;
-        updateTabs(currentAnalysis);
-        updateGraph();
-        updateOutputs();
-      });
-    });
     setTimeout(() => {
       updateGraph();
       updateOutputs();
-    }, 0);
+    }, 0); // Defer graph and outputs update
   } catch (error) {
     console.error('Initialization error:', error);
   }
@@ -344,29 +331,25 @@ function populateInputFields() {
     setInputValue('is-married', clientData.isMarried, 'Is Married', 'checked');
 
     // Retirement Accumulation specific
-    if (currentAnalysis === 'retirement-accumulation') {
-      setInputValue('c1-dob', clientData.client1.personal.dob, 'Client 1 DOB');
-      setInputValue('c2-dob', clientData.client2.personal.dob, 'Client 2 DOB');
-      setInputValue('c1-retirement-age', clientData.client1.personal.retirementAge, 'Client 1 Retirement Age');
-      setInputValue('c2-retirement-age', clientData.client2.personal.retirementAge, 'Client 2 Retirement Age');
-      setInputValue('monthly-income', clientData.incomeNeeds.monthly, 'Monthly Income');
-      setInputValue('mortality-age', clientData.assumptions.mortalityAge, 'Mortality Age');
-      setInputValue('inflation', clientData.assumptions.inflation, 'Inflation');
-      setInputValue('ror-retirement', clientData.assumptions.rorRetirement, 'ROR Retirement');
-    }
+    setInputValue('c1-dob', clientData.client1.personal.dob, 'Client 1 DOB');
+    setInputValue('c2-dob', clientData.client2.personal.dob, 'Client 2 DOB');
+    setInputValue('c1-retirement-age', clientData.client1.personal.retirementAge, 'Client 1 Retirement Age');
+    setInputValue('c2-retirement-age', clientData.client2.personal.retirementAge, 'Client 2 Retirement Age');
+    setInputValue('monthly-income', clientData.incomeNeeds.monthly, 'Monthly Income');
+    setInputValue('mortality-age', clientData.assumptions.mortalityAge, 'Mortality Age');
+    setInputValue('inflation', clientData.assumptions.inflation, 'Inflation');
+    setInputValue('ror-retirement', clientData.assumptions.rorRetirement, 'ROR Retirement');
 
     // Personal Finance specific
-    if (currentAnalysis === 'personal-finance') {
-      setInputValue('interest-dividends', clientData.client1.incomeSources.interestDividends, 'Interest and Dividends');
-      setInputValue('household-expenses', clientData.savingsExpenses.householdExpenses, 'Household Expenses');
-      setInputValue('taxes', clientData.savingsExpenses.taxes, 'Taxes');
-      setInputValue('other-expenses', clientData.savingsExpenses.otherExpenses, 'Other Expenses');
-      setInputValue('monthly-savings', clientData.savingsExpenses.monthlySavings, 'Monthly Savings');
-      setInputValue('analysis-date', clientData.assumptions.analysisDate, 'Analysis Date');
-      setInputValue('cash', clientData.other.cash, 'Cash');
-      setInputValue('residence-mortgage', clientData.other.residenceMortgage, 'Residence/Mortgage');
-      setInputValue('other-debt', clientData.other.otherDebt, 'Other Debt');
-    }
+    setInputValue('interest-dividends', clientData.client1.incomeSources.interestDividends, 'Interest and Dividends');
+    setInputValue('household-expenses', clientData.savingsExpenses.householdExpenses, 'Household Expenses');
+    setInputValue('taxes', clientData.savingsExpenses.taxes, 'Taxes');
+    setInputValue('other-expenses', clientData.savingsExpenses.otherExpenses, 'Other Expenses');
+    setInputValue('monthly-savings', clientData.savingsExpenses.monthlySavings, 'Monthly Savings');
+    setInputValue('analysis-date', clientData.assumptions.analysisDate, 'Analysis Date');
+    setInputValue('cash', clientData.other.cash, 'Cash');
+    setInputValue('residence-mortgage', clientData.other.residenceMortgage, 'Residence/Mortgage');
+    setInputValue('other-debt', clientData.other.otherDebt, 'Other Debt');
 
     // Accounts
     ['c1', 'c2'].forEach(client => {
@@ -715,12 +698,6 @@ function updateOutputs() {
       return;
     }
 
-    // Validate required inputs
-    if (!clientData.client1.personal.dob || !clientData.client1.personal.retirementAge || !clientData.incomeNeeds.monthly || !clientData.assumptions.mortalityAge) {
-      analysisOutputs.innerHTML = '<p class="output-card">Please provide Client 1 DOB, Retirement Age, Monthly Income Needs, and Mortality Age.</p>';
-      return;
-    }
-
     const c1Age = getAge(clientData.client1.personal.dob);
     const c2Age = clientData.isMarried ? getAge(clientData.client2.personal.dob) : c1Age;
     const c1RetirementAge = parseFloat(clientData.client1.personal.retirementAge) || 67;
@@ -741,28 +718,28 @@ function updateOutputs() {
     const incomeSources = [];
     if (clientData.client1.incomeSources.employment && c1Age < c1RetirementAge) {
       incomeSources.push({
-        source: `${clientData.client1.personal.name || 'Client 1'}'s Employment Income`,
+        source: `${clientData.client1.personal.name}'s Employment Income`,
         details: `Until age ${c1RetirementAge}`,
         amount: parseFloat(clientData.client1.incomeSources.employment) / 12
       });
     }
     if (clientData.isMarried && clientData.client2.incomeSources.employment && c2Age < c2RetirementAge) {
       incomeSources.push({
-        source: `${clientData.client2.personal.name || 'Client 2'}'s Employment Income`,
+        source: `${clientData.client2.personal.name}'s Employment Income`,
         details: `Until age ${c2RetirementAge}`,
         amount: parseFloat(clientData.client2.incomeSources.employment) / 12
       });
     }
     if (clientData.client1.incomeSources.socialSecurity) {
       incomeSources.push({
-        source: `${clientData.client1.personal.name || 'Client 1'}'s Social Security`,
+        source: `${clientData.client1.personal.name}'s Social Security`,
         details: `At age ${c1RetirementAge}`,
         amount: parseFloat(clientData.client1.incomeSources.socialSecurity)
       });
     }
     if (clientData.isMarried && clientData.client2.incomeSources.socialSecurity) {
       incomeSources.push({
-        source: `${clientData.client2.personal.name || 'Client 2'}'s Social Security`,
+        source: `${clientData.client2.personal.name}'s Social Security`,
         details: `At age ${c2RetirementAge}`,
         amount: parseFloat(clientData.client2.incomeSources.socialSecurity)
       });
@@ -782,7 +759,7 @@ function updateOutputs() {
       const balance = parseFloat(account.balance) || 0;
       if (balance > 0) {
         assets.push({
-          name: `${clientData.client1.personal.name || 'Client 1'}'s ${account.name || 'Retirement Account'}`,
+          name: `${clientData.client1.personal.name}'s ${account.name || 'Retirement Account'}`,
           balance
         });
         totalAssets += balance;
@@ -793,7 +770,7 @@ function updateOutputs() {
         const balance = parseFloat(account.balance) || 0;
         if (balance > 0) {
           assets.push({
-            name: `${clientData.client2.personal.name || 'Client 2'}'s ${account.name || 'Retirement Account'}`,
+            name: `${clientData.client2.personal.name}'s ${account.name || 'Retirement Account'}`,
             balance
           });
           totalAssets += balance;
@@ -812,19 +789,18 @@ function updateOutputs() {
     });
 
     // Calculate retirement balance and depletion
-    let totalBalance = totalAssets;
+    let balance = totalAssets;
     const yearsToRetirement = Math.max(c1RetirementAge - c1Age, clientData.isMarried ? c2RetirementAge - c2Age : 0);
     [clientData.client1, clientData.isMarried ? clientData.client2 : null].forEach((client, idx) => {
       if (!client) return;
       client.accounts.forEach(account => {
-        let accountBalance = parseFloat(account.balance) || 0;
+        const balance = parseFloat(account.balance) || 0;
         const contribution = parseFloat(account.contribution) || 0;
         const employerMatch = (parseFloat(account.employerMatch) / 100) * contribution || 0;
         const ror = parseFloat(account.ror) / 100 || 0.06;
         for (let i = 0; i < yearsToRetirement; i++) {
-          accountBalance += (accountBalance * ror) + contribution + employerMatch;
+          balance += (balance * ror) + contribution + employerMatch;
         }
-        totalBalance += accountBalance - (parseFloat(account.balance) || 0);
       });
     });
 
@@ -832,13 +808,13 @@ function updateOutputs() {
     const monthlySources = incomeSources.reduce((sum, src) => sum + (src.amount || 0), 0);
     for (let i = 0; i < mortalityAge - c1RetirementAge; i++) {
       const currentNeed = monthlyNeed * Math.pow(1 + inflation, i) - monthlySources;
-      totalBalance = totalBalance * (1 + rorRetirement) - currentNeed * 12;
-      if (totalBalance <= 0) {
+      balance = balance * (1 + rorRetirement) - currentNeed * 12;
+      if (balance <= 0) {
         depletionAge = c1RetirementAge + i;
         break;
       }
-    });
-    if (totalBalance > 0) depletionAge = mortalityAge;
+    }
+    if (balance > 0) depletionAge = mortalityAge;
 
     // Calculate additional savings needed
     const currentSavings = parseFloat(clientData.savingsExpenses.monthlySavings) || 0;
