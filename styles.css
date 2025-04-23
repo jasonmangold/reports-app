@@ -1231,3 +1231,12 @@ body.dark-mode .alternatives-list li strong {
     height: 15px;
   }
 }
+.graph-outputs {
+  display: block;
+  min-height: 400px;
+}
+#analysis-chart {
+  display: block;
+  max-width: 100%;
+  height: 400px;
+}
