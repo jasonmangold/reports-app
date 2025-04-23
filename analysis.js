@@ -472,12 +472,14 @@ function setupEventDelegation() {
     let graphTimeout;
     document.addEventListener('input', (e) => {
       if (e.target.closest('#client-input-form')) {
+        const activeElement = document.activeElement;
         updateClientData(e);
         // Debounce graph and outputs update
         clearTimeout(graphTimeout);
         graphTimeout = setTimeout(() => {
           updateGraph();
           updateOutputs();
+          if (activeElement) activeElement.focus(); // Restore focus
         }, 500);
       }
     });
@@ -658,7 +660,6 @@ function updateClientData(e) {
     }
 
     if (input.id === 'c1-name' || input.id === 'c2-name') updateClientFileName();
-    // Removed populateInputFields to prevent focus loss
   } catch (error) {
     console.error('Error in updateClientData:', error);
   }
@@ -678,7 +679,7 @@ function getAge(dob) {
     let age = today.getFullYear() - birthDate.getFullYear();
     const m = today.getMonth() - birthDate.getMonth();
     if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) age--;
-    return age;
+    return Math.max(0, age);
   } catch (error) {
     console.error('Error in getAge:', error);
     return 0;
@@ -698,57 +699,68 @@ function updateOutputs() {
       return;
     }
 
+    // Input validation with fallback values
     const c1Age = getAge(clientData.client1.personal.dob);
     const c2Age = clientData.isMarried ? getAge(clientData.client2.personal.dob) : c1Age;
-    const c1RetirementAge = parseFloat(clientData.client1.personal.retirementAge) || 67;
+    const c1RetirementAge = parseFloat(clientData.client1.personal.retirementAge) || 65;
     const c2RetirementAge = clientData.isMarried ? parseFloat(clientData.client2.personal.retirementAge) || 65 : c1RetirementAge;
     const mortalityAge = parseFloat(clientData.assumptions.mortalityAge) || 90;
     const inflation = parseFloat(clientData.assumptions.inflation) / 100 || 0.02;
-    const rorRetirement = parseFloat(clientData.assumptions.rorRetirement) / 100 || 0.05;
-    const monthlyNeed = parseFloat(clientData.incomeNeeds.monthly) || 9000;
+    const rorRetirement = parseFloat(clientData.assumptions.rorRetirement) / 100 || 0.04;
+    const monthlyNeed = parseFloat(clientData.incomeNeeds.monthly) || 5000;
 
-    // Income Goals (simplified to three stages based on PDF)
+    // Check for valid inputs
+    if (c1Age >= c1RetirementAge || (clientData.isMarried && c2Age >= c2RetirementAge)) {
+      analysisOutputs.innerHTML = '<p class="output-card">Client(s) already at or past retirement age. Please adjust retirement age or DOB.</p>';
+      return;
+    }
+    if (c1RetirementAge >= mortalityAge || (clientData.isMarried && c2RetirementAge >= mortalityAge)) {
+      analysisOutputs.innerHTML = '<p class="output-card">Retirement age must be less than mortality age.</p>';
+      return;
+    }
+
+    // Income Goals
     const incomeGoals = [
-      { age: c1RetirementAge, percentage: 93.91, amount: monthlyNeed },
-      { age: c1RetirementAge + 10, percentage: 73.04, amount: monthlyNeed * (73.04 / 93.91) },
-      { age: c1RetirementAge + 15, percentage: 62.61, amount: monthlyNeed * (62.61 / 93.91) }
+      { age: c1RetirementAge, percentage: 100, amount: monthlyNeed },
+      { age: c1RetirementAge + 10, percentage: 80, amount: monthlyNeed * 0.8 },
+      { age: c1RetirementAge + 15, percentage: 70, amount: monthlyNeed * 0.7 }
     ];
 
     // Income Sources
     const incomeSources = [];
     if (clientData.client1.incomeSources.employment && c1Age < c1RetirementAge) {
       incomeSources.push({
-        source: `${clientData.client1.personal.name}'s Employment Income`,
+        source: `${clientData.client1.personal.name || 'Client 1'}'s Employment Income`,
         details: `Until age ${c1RetirementAge}`,
-        amount: parseFloat(clientData.client1.incomeSources.employment) / 12
+        amount: parseFloat(clientData.client1.incomeSources.employment) / 12 || 0
       });
     }
     if (clientData.isMarried && clientData.client2.incomeSources.employment && c2Age < c2RetirementAge) {
       incomeSources.push({
-        source: `${clientData.client2.personal.name}'s Employment Income`,
+        source: `${clientData.client2.personal.name || 'Client 2'}'s Employment Income`,
         details: `Until age ${c2RetirementAge}`,
-        amount: parseFloat(clientData.client2.incomeSources.employment) / 12
+        amount: parseFloat(clientData.client2.incomeSources.employment) / 12 || 0
       });
     }
     if (clientData.client1.incomeSources.socialSecurity) {
       incomeSources.push({
-        source: `${clientData.client1.personal.name}'s Social Security`,
+        source: `${clientData.client1.personal.name || 'Client 1'}'s Social Security`,
         details: `At age ${c1RetirementAge}`,
-        amount: parseFloat(clientData.client1.incomeSources.socialSecurity)
+        amount: parseFloat(clientData.client1.incomeSources.socialSecurity) || 0
       });
     }
     if (clientData.isMarried && clientData.client2.incomeSources.socialSecurity) {
       incomeSources.push({
-        source: `${clientData.client2.personal.name}'s Social Security`,
+        source: `${clientData.client2.personal.name || 'Client 2'}'s Social Security`,
         details: `At age ${c2RetirementAge}`,
-        amount: parseFloat(clientData.client2.incomeSources.socialSecurity)
+        amount: parseFloat(clientData.client2.incomeSources.socialSecurity) || 0
       });
     }
     if (clientData.client1.incomeSources.other) {
       incomeSources.push({
-        source: 'Other Income (Rental)',
+        source: 'Other Income',
         details: `At age ${c1RetirementAge}`,
-        amount: parseFloat(clientData.client1.incomeSources.other)
+        amount: parseFloat(clientData.client1.incomeSources.other) || 0
       });
     }
 
@@ -759,7 +771,7 @@ function updateOutputs() {
       const balance = parseFloat(account.balance) || 0;
       if (balance > 0) {
         assets.push({
-          name: `${clientData.client1.personal.name}'s ${account.name || 'Retirement Account'}`,
+          name: `${clientData.client1.personal.name || 'Client 1'}'s ${account.name || 'Retirement Account'}`,
           balance
         });
         totalAssets += balance;
@@ -770,7 +782,7 @@ function updateOutputs() {
         const balance = parseFloat(account.balance) || 0;
         if (balance > 0) {
           assets.push({
-            name: `${clientData.client2.personal.name}'s ${account.name || 'Retirement Account'}`,
+            name: `${clientData.client2.personal.name || 'Client 2'}'s ${account.name || 'Retirement Account'}`,
             balance
           });
           totalAssets += balance;
@@ -788,27 +800,29 @@ function updateOutputs() {
       }
     });
 
-    // Calculate retirement balance and depletion
+    // Calculate retirement balance
     let balance = totalAssets;
     const yearsToRetirement = Math.max(c1RetirementAge - c1Age, clientData.isMarried ? c2RetirementAge - c2Age : 0);
     [clientData.client1, clientData.isMarried ? clientData.client2 : null].forEach((client, idx) => {
       if (!client) return;
       client.accounts.forEach(account => {
-        const balance = parseFloat(account.balance) || 0;
+        let tempBalance = parseFloat(account.balance) || 0;
         const contribution = parseFloat(account.contribution) || 0;
         const employerMatch = (parseFloat(account.employerMatch) / 100) * contribution || 0;
         const ror = parseFloat(account.ror) / 100 || 0.06;
         for (let i = 0; i < yearsToRetirement; i++) {
-          balance += (balance * ror) + contribution + employerMatch;
+          tempBalance += tempBalance * ror + contribution + employerMatch;
         }
+        balance += tempBalance - (parseFloat(account.balance) || 0);
       });
     });
 
+    // Calculate depletion
     let depletionAge = c1RetirementAge;
     const monthlySources = incomeSources.reduce((sum, src) => sum + (src.amount || 0), 0);
     for (let i = 0; i < mortalityAge - c1RetirementAge; i++) {
       const currentNeed = monthlyNeed * Math.pow(1 + inflation, i) - monthlySources;
-      balance = balance * (1 + rorRetirement) - currentNeed * 12;
+      balance = balance * (1 + rorRetirement) - (currentNeed > 0 ? currentNeed * 12 : 0);
       if (balance <= 0) {
         depletionAge = c1RetirementAge + i;
         break;
@@ -913,7 +927,7 @@ function updateOutputs() {
     console.log('Analysis outputs rendered');
   } catch (error) {
     console.error('Error in updateOutputs:', error);
-    analysisOutputs.innerHTML = '<p class="output-card">Error rendering outputs. Please check inputs.</p>';
+    analysisOutputs.innerHTML = '<p class="output-card">Unable to render outputs. Please ensure all required fields (DOB, retirement age, mortality age, income needs) are filled correctly.</p>';
   }
 }
 
