@@ -81,11 +81,12 @@ document.addEventListener('DOMContentLoaded', () => {
     updateTabs(currentAnalysis);
     updateClientFileName();
     setupEventDelegation();
+    // Ensure outputs (including canvas) are rendered before graph
+    updateOutputs();
     setTimeout(() => {
       updateGraph();
-      updateOutputs();
       setupOutputTabSwitching();
-    }, 0);
+    }, 100); // Delay graph to ensure canvas exists
   } catch (error) {
     console.error('Initialization error:', error);
   }
@@ -110,8 +111,8 @@ function populateAnalysisTopics() {
         btn.classList.add('active');
         currentAnalysis = btn.dataset.analysis;
         updateTabs(currentAnalysis);
-        updateGraph();
         updateOutputs();
+        setTimeout(updateGraph, 100); // Delay graph update
         setupOutputTabSwitching();
       });
     });
@@ -316,6 +317,8 @@ function tabClickHandler() {
     if (currentAnalysis === 'retirement-accumulation') {
       setupAgeDisplayListeners(getAge);
     }
+    updateOutputs();
+    setTimeout(updateGraph, 100); // Delay graph update
   } catch (error) {
     console.error('Error in tabClickHandler:', error);
   }
@@ -333,8 +336,8 @@ function setupEventDelegation() {
         updateClientData(e);
         clearTimeout(graphTimeout);
         graphTimeout = setTimeout(() => {
-          updateGraph();
           updateOutputs();
+          updateGraph();
           setupOutputTabSwitching();
           isTyping = false;
           if (activeElement) activeElement.focus();
@@ -345,8 +348,8 @@ function setupEventDelegation() {
     document.addEventListener('change', (e) => {
       if (e.target.id === 'is-married') {
         toggleClient2(e);
-        updateGraph();
         updateOutputs();
+        setTimeout(updateGraph, 100); // Delay graph update
         setupOutputTabSwitching();
         if (currentAnalysis === 'retirement-accumulation') {
           setupAgeDisplayListeners(getAge);
@@ -373,6 +376,7 @@ function toggleClient2(e) {
     if (c2Assets) c2Assets.style.display = e.target.checked ? 'block' : 'none';
     updateClientFileName();
     updateOutputs();
+    setTimeout(updateGraph, 100); // Delay graph update
     setupOutputTabSwitching();
   } catch (error) {
     console.error('Error in toggleClient2:', error);
@@ -418,8 +422,8 @@ function addAccountHandler(e) {
     const clientKey = client === 'c1' ? 'client1' : 'client2';
     clientData[clientKey].accounts.push({ name: "", balance: "", ror: "", contribution: "", employerMatch: "" });
     populateInputFields();
-    updateGraph();
     updateOutputs();
+    setTimeout(updateGraph, 100); // Delay graph update
     setupOutputTabSwitching();
     if (currentAnalysis === 'retirement-accumulation') {
       setupAgeDisplayListeners(getAge);
@@ -446,8 +450,8 @@ function addAssetHandler(e) {
     const clientKey = client === 'c1' ? 'client1' : 'client2';
     clientData[clientKey].other.assets.push({ name: "", balance: "", ror: "", debt: "" });
     populateInputFields();
-    updateGraph();
     updateOutputs();
+    setTimeout(updateGraph, 100); // Delay graph update
     setupOutputTabSwitching();
     if (currentAnalysis === 'retirement-accumulation') {
       setupAgeDisplayListeners(getAge);
@@ -561,8 +565,10 @@ function getAge(dob) {
 function updateGraph() {
   try {
     console.log('updateGraph called, currentAnalysis:', currentAnalysis);
+    console.log('Chart.js available:', typeof Chart !== 'undefined');
+    // Get canvas dynamically to ensure it's in the DOM
+    const chartCanvas = document.getElementById('analysis-chart');
     console.log('chartCanvas:', chartCanvas);
-    console.log('clientData:', clientData);
 
     if (typeof Chart === 'undefined') {
       console.error('Chart.js is not loaded. Ensure the CDN script is included in analysis.html.');
@@ -581,7 +587,7 @@ function updateGraph() {
     }
 
     if (!chartCanvas) {
-      console.error('Chart canvas not found');
+      console.error('Chart canvas #analysis-chart not found. Ensure outputs are rendered first.');
       return;
     }
 
@@ -656,6 +662,9 @@ function outputTabClickHandler() {
     } else {
       console.warn(`Output tab content #${this.dataset.tab} not found`);
     }
+    if (this.dataset.tab === 'output-graph') {
+      setTimeout(updateGraph, 100); // Re-render graph when switching to graph tab
+    }
   } catch (error) {
     console.error('Error in outputTabClickHandler:', error);
   }
@@ -663,12 +672,13 @@ function outputTabClickHandler() {
 
 // Recalculate and export
 recalculateBtn?.addEventListener('click', () => {
-  updateGraph();
   updateOutputs();
+  setTimeout(updateGraph, 100); // Delay graph update
 });
 
 exportGraphBtn?.addEventListener('click', () => {
   try {
+    const chartCanvas = document.getElementById('analysis-chart');
     if (!chartCanvas) {
       console.error('Chart canvas not found for export');
       return;
