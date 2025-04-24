@@ -419,7 +419,6 @@ export function updateRetirementOutputs(analysisOutputs, clientData, formatCurre
             name: `${clientData.client2.personal?.name || 'Client 2'}'s ${account.name || 'Retirement Account'}`,
             balance
           });
-          totalAssets += balance;
         }
       });
     }
@@ -631,7 +630,7 @@ export function updateRetirementOutputs(analysisOutputs, clientData, formatCurre
         </div>
         <div class="output-card">
           <h3>Retirement Income Graph</h3>
-          <p class="graph-placeholder">View the retirement income chart above in the main graph area.</p>
+          <canvas id="analysis-chart" style="max-width: 100%;"></canvas>
         </div>
       </div>
       <div class="output-tab-content" id="output-timeline" style="display: none;">
@@ -673,6 +672,13 @@ export function updateRetirementOutputs(analysisOutputs, clientData, formatCurre
         </div>
       </div>
     `;
+
+    // Render the graph after the canvas is added to the DOM
+    const chartCanvas = document.getElementById('analysis-chart');
+    if (chartCanvas) {
+      updateRetirementGraph(chartCanvas, clientData, window.Chart);
+    }
+
     console.log('Retirement outputs with tabs rendered');
   } catch (error) {
     console.error('Error in updateRetirementOutputs:', error);
