@@ -873,17 +873,17 @@ export function updateRetirementOutputs(analysisOutputs, clientData, formatCurre
 
     // Render the chart in the Retirement Analysis report if selected
     const chartCanvas = document.getElementById('analysis-chart');
-    if (chartCanvas && Chart) {
+    if (chartCanvas && typeof Chart !== 'undefined') {
       try {
         updateRetirementGraph(chartCanvas, clientData, Chart, getAge);
       } catch (error) {
         console.error('Failed to render chart:', error);
         chartCanvas.parentElement.insertAdjacentHTML('afterend', '<p class="output-error">Error rendering chart. Please check data.</p>');
       }
-    } else if (!Chart) {
+    } else if (typeof Chart === 'undefined') {
       console.warn('Chart.js not loaded; skipping chart rendering');
       if (chartCanvas) {
-        chartCanvas.parentElement.insertAdjacentHTML('afterend', '<p class="output-error">Chart.js not available.</p>');
+        chartCanvas.parentElement.insertAdjacentHTML('afterend', '<p class="output-error">Chart.js not available. Ensure the CDN script is included in analysis.html.</p>');
       }
     } else {
       console.error('Chart canvas #analysis-chart not found after rendering');
@@ -899,7 +899,7 @@ export function updateRetirementOutputs(analysisOutputs, clientData, formatCurre
           content.style.display = content.id === selectedReport ? 'block' : 'none';
         });
         // Re-render chart if Retirement Analysis is selected
-        if (selectedReport === 'report-retirement-analysis' && Chart) {
+        if (selectedReport === 'report-retirement-analysis' && typeof Chart !== 'undefined') {
           const chartCanvas = document.getElementById('analysis-chart');
           if (chartCanvas) {
             try {
