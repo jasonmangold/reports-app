@@ -520,8 +520,7 @@ export function updateRetirementOutputs(analysisOutputs, clientData, formatCurre
     // Render Outputs with Tabs
     analysisOutputs.innerHTML = `
       <div class="output-tabs">
-        <button class="output-tab-btn active" data-tab="output-results">Results</button>
-        <button class="output-tab-btn" data-tab="output-graph">Graph</button>
+        <button class="output-tab-btn active" data-tab="output-results">Graph</button>
         <button class="output-tab-btn" data-tab="output-timeline">Timeline</button>
         <button class="output-tab-btn" data-tab="output-alternatives">Alternatives</button>
       </div>
@@ -604,12 +603,6 @@ export function updateRetirementOutputs(analysisOutputs, clientData, formatCurre
             <p>Retirement duration: ${depletionAge - c1RetirementAge} of ${mortalityAge - c1RetirementAge} years</p>
           </div>
           <p class="disclaimer">Values shown are hypothetical and not a promise of future performance.</p>
-        </div>
-      </div>
-      <div class="output-tab-content" id="output-graph" style="display: none;">
-        <div class="output-card">
-          <h3>Retirement Income Graph</h3>
-          <p class="graph-placeholder">View the retirement income chart above in the main graph area.</p>
         </div>
       </div>
       <div class="output-tab-content" id="output-timeline" style="display: none;">
