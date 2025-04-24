@@ -36,9 +36,10 @@ let accountCount = { c1: 1, c2: 1 };
 let assetCount = { c1: 0, c2: 0 };
 let currentAnalysis = 'retirement-accumulation';
 let reportCount = 0;
-let selectedReports = [];
-let isTyping = false;
+let selectedReports = []; // Track selected reports
+let isTyping = false; // Prevent re-rendering during typing
 
+// DOM elements
 const analysisTopics = document.querySelector('.analysis-topics');
 const inputTabs = document.querySelector('.input-tabs');
 const inputContent = document.querySelector('.input-content');
@@ -49,6 +50,7 @@ const presentationCount = document.getElementById('presentation-count');
 const analysisOutputs = document.getElementById('analysis-outputs');
 let chartInstance = null;
 
+// Analysis topics list
 const analysisTopicsList = [
   { id: 'summary', label: 'Summary' },
   { id: 'education-funding', label: 'Education Funding' },
@@ -69,6 +71,7 @@ const analysisTopicsList = [
   { id: 'key-employee', label: 'Key Employee' }
 ];
 
+// Initialize on page load
 document.addEventListener('DOMContentLoaded', () => {
   try {
     console.log('Initializing page...');
@@ -79,16 +82,18 @@ document.addEventListener('DOMContentLoaded', () => {
     updateClientFileName();
     setupEventDelegation();
     renderPresentationPreview();
+    // Ensure outputs (including canvas) are rendered before graph
     updateOutputs();
     setTimeout(() => {
       updateGraph();
       setupOutputTabSwitching();
-    }, 100);
+    }, 100); // Delay graph to ensure canvas exists
   } catch (error) {
     console.error('Initialization error:', error);
   }
 });
 
+// Populate analysis topics
 function populateAnalysisTopics() {
   try {
     analysisTopics.innerHTML = '';
@@ -108,7 +113,7 @@ function populateAnalysisTopics() {
         currentAnalysis = btn.dataset.analysis;
         updateTabs(currentAnalysis);
         updateOutputs();
-        setTimeout(updateGraph, 100);
+        setTimeout(updateGraph, 100); // Delay graph update
         setupOutputTabSwitching();
       });
     });
@@ -117,6 +122,7 @@ function populateAnalysisTopics() {
   }
 }
 
+// Update tabs and content
 function updateTabs(analysis) {
   try {
     console.log(`Updating tabs for ${analysis}`);
@@ -125,15 +131,13 @@ function updateTabs(analysis) {
 
     const config = analysis === 'retirement-accumulation' ? retirementAccumulationTabs : analysis === 'personal-finance' ? personalFinanceTabs : retirementAccumulationTabs;
 
-    // Create dropdown
-    const select = document.createElement('select');
-    select.classList.add('tab-select');
     config.forEach((tab, index) => {
-      const option = document.createElement('option');
-      option.value = tab.id;
-      option.textContent = tab.label;
-      if (index === 0) option.selected = true;
-      select.appendChild(option);
+      const btn = document.createElement('button');
+      btn.classList.add('tab-btn');
+      btn.dataset.tab = tab.id;
+      btn.textContent = tab.label;
+      if (index === 0) btn.classList.add('active');
+      inputTabs.appendChild(btn);
 
       const contentDiv = document.createElement('div');
       contentDiv.classList.add('tab-content');
@@ -142,7 +146,6 @@ function updateTabs(analysis) {
       contentDiv.innerHTML = tab.content;
       inputContent.appendChild(contentDiv);
     });
-    inputTabs.appendChild(select);
 
     populateInputFields();
     updateClientFileName();
@@ -162,6 +165,7 @@ function updateTabs(analysis) {
   }
 }
 
+// Populate input fields with clientData
 function populateInputFields() {
   try {
     if (isTyping) {
@@ -273,6 +277,7 @@ function populateInputFields() {
   }
 }
 
+// Helper to set input value
 function setInputValue(id, value, label, property = 'value') {
   try {
     const input = document.getElementById(id);
@@ -291,36 +296,36 @@ function setInputValue(id, value, label, property = 'value') {
   }
 }
 
+// Tab switching
 function setupTabSwitching() {
   try {
-    const select = inputTabs.querySelector('.tab-select');
-    if (!select) {
-      console.warn('Dropdown .tab-select not found');
-      return;
-    }
-    select.removeEventListener('change', tabChangeHandler);
-    select.addEventListener('change', tabChangeHandler);
+    inputTabs.querySelectorAll('.tab-btn').forEach(button => {
+      button.removeEventListener('click', tabClickHandler);
+      button.addEventListener('click', tabClickHandler);
+    });
   } catch (error) {
     console.error('Error in setupTabSwitching:', error);
   }
 }
 
-function tabChangeHandler() {
+function tabClickHandler() {
   try {
-    const select = this;
+    inputTabs.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+    this.classList.add('active');
     inputContent.querySelectorAll('.tab-content').forEach(content => {
-      content.style.display = content.id === select.value ? 'block' : 'none';
+      content.style.display = content.id === this.dataset.tab ? 'block' : 'none';
     });
     if (currentAnalysis === 'retirement-accumulation') {
       setupAgeDisplayListeners(getAge);
     }
     updateOutputs();
-    setTimeout(updateGraph, 100);
+    setTimeout(updateGraph, 100); // Delay graph update
   } catch (error) {
-    console.error('Error in tabChangeHandler:', error);
+    console.error('Error in tabClickHandler:', error);
   }
 }
 
+// Event delegation for inputs, buttons, and presentation actions
 function setupEventDelegation() {
   try {
     let graphTimeout;
@@ -345,7 +350,7 @@ function setupEventDelegation() {
       if (e.target.id === 'is-married') {
         toggleClient2(e);
         updateOutputs();
-        setTimeout(updateGraph, 100);
+        setTimeout(updateGraph, 100); // Delay graph update
         setupOutputTabSwitching();
         if (currentAnalysis === 'retirement-accumulation') {
           setupAgeDisplayListeners(getAge);
@@ -375,6 +380,7 @@ function setupEventDelegation() {
   }
 }
 
+// Toggle Client 2 inputs
 function toggleClient2(e) {
   try {
     clientData.isMarried = e.target.checked;
@@ -385,13 +391,14 @@ function toggleClient2(e) {
     if (c2Assets) c2Assets.style.display = e.target.checked ? 'block' : 'none';
     updateClientFileName();
     updateOutputs();
-    setTimeout(updateGraph, 100);
+    setTimeout(updateGraph, 100); // Delay graph update
     setupOutputTabSwitching();
   } catch (error) {
     console.error('Error in toggleClient2:', error);
   }
 }
 
+// Add account/asset buttons
 function setupAddButtons() {
   try {
     document.querySelectorAll('.add-account-btn').forEach(btn => {
@@ -431,7 +438,7 @@ function addAccountHandler(e) {
     clientData[clientKey].accounts.push({ name: "", balance: "", ror: "", contribution: "", employerMatch: "" });
     populateInputFields();
     updateOutputs();
-    setTimeout(updateGraph, 100);
+    setTimeout(updateGraph, 100); // Delay graph update
     setupOutputTabSwitching();
     if (currentAnalysis === 'retirement-accumulation') {
       setupAgeDisplayListeners(getAge);
@@ -459,7 +466,7 @@ function addAssetHandler(e) {
     clientData[clientKey].other.assets.push({ name: "", balance: "", ror: "", debt: "" });
     populateInputFields();
     updateOutputs();
-    setTimeout(updateGraph, 100);
+    setTimeout(updateGraph, 100); // Delay graph update
     setupOutputTabSwitching();
     if (currentAnalysis === 'retirement-accumulation') {
       setupAgeDisplayListeners(getAge);
@@ -469,6 +476,7 @@ function addAssetHandler(e) {
   }
 }
 
+// Update client file name
 function updateClientFileName() {
   try {
     let name = clientData.client1.personal.name || 'No Client Selected';
@@ -482,6 +490,7 @@ function updateClientFileName() {
   }
 }
 
+// Update client data
 function updateClientData(e) {
   try {
     const input = e.target;
@@ -546,10 +555,12 @@ function updateClientData(e) {
   }
 }
 
+// Format currency (used for outputs only)
 function formatCurrency(value) {
   return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0 }).format(value);
 }
 
+// Calculate age
 function getAge(dob) {
   try {
     if (!dob) return 0;
@@ -565,10 +576,12 @@ function getAge(dob) {
   }
 }
 
+// Update graph
 function updateGraph() {
   try {
-    console.log('updateGraph called, currentAnalyze:', currentAnalysis);
+    console.log('updateGraph called, currentAnalysis:', currentAnalysis);
     console.log('Chart.js available:', typeof Chart !== 'undefined');
+    // Get canvas dynamically to ensure it's in the DOM
     const chartCanvas = document.getElementById('analysis-chart');
     console.log('chartCanvas:', chartCanvas);
 
@@ -618,6 +631,7 @@ function updateGraph() {
   }
 }
 
+// Update outputs
 function updateOutputs() {
   try {
     if (currentAnalysis === 'retirement-accumulation') {
@@ -633,6 +647,7 @@ function updateOutputs() {
   }
 }
 
+// Output tab switching
 function setupOutputTabSwitching() {
   try {
     const buttons = document.querySelectorAll('.output-tab-btn');
@@ -663,13 +678,14 @@ function outputTabClickHandler() {
       console.warn(`Output tab content #${this.dataset.tab} not found`);
     }
     if (this.dataset.tab === 'output-graph') {
-      setTimeout(updateGraph, 100);
+      setTimeout(updateGraph, 100); // Re-render graph when switching to graph tab
     }
   } catch (error) {
     console.error('Error in outputTabClickHandler:', error);
   }
 }
 
+// Toggle report selection
 function toggleReportSelection(reportId, reportTitle) {
   try {
     const existingReport = selectedReports.find(report => report.id === reportId);
@@ -688,6 +704,7 @@ function toggleReportSelection(reportId, reportTitle) {
   }
 }
 
+// Render presentation preview panel
 function renderPresentationPreview() {
   try {
     let previewPanel = document.getElementById('presentation-preview');
@@ -711,6 +728,7 @@ function renderPresentationPreview() {
       <button id="finalize-presentation-btn" ${reportCount === 0 ? 'disabled' : ''}>Finalize Presentation</button>
     `;
 
+    // Setup drag-and-drop
     const reportItems = previewPanel.querySelectorAll('.report-item');
     reportItems.forEach(item => {
       item.addEventListener('dragstart', (e) => {
@@ -742,18 +760,21 @@ function renderPresentationPreview() {
   }
 }
 
+// Finalize presentation (placeholder for export)
 function finalizePresentation() {
   try {
     console.log('Finalizing presentation with reports:', selectedReports);
     alert('Presentation finalized with ' + reportCount + ' reports. Check console for details.');
+    // Future: Implement PDF/slideshow export here
   } catch (error) {
     console.error('Error in finalizePresentation:', error);
   }
 }
 
+// Recalculate and export
 recalculateBtn?.addEventListener('click', () => {
   updateOutputs();
-  setTimeout(updateGraph, 100);
+  setTimeout(updateGraph, 100); // Delay graph update
 });
 
 exportGraphBtn?.addEventListener('click', () => {
