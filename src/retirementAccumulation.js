@@ -123,7 +123,7 @@ function calculateRetirementIncome(clientData, getAge) {
       return result; // Empty result for invalid inputs
     }
     if (startAge >= mortalityAge) {
-      return result; // Empty result for invalid ages
+      return result; // Empty outflow for invalid ages
     }
 
     const yearsToRetirement = startAge - c1Age;
@@ -499,7 +499,7 @@ export function updateRetirementOutputs(analysisOutputs, clientData, formatCurre
       for (let i = 0; i < 20; i++) {
         const mid = (low + high) / 2;
         let tempBalance = incomeData.totalBalance;
-        for (let j = 0; j < mortalityAge - c1RetirementAge; j++) {
+        for (let j = 0; i < mortalityAge - c1RetirementAge; j++) {
           const currentNeed = mid * Math.pow(1 + inflation, j) - monthlySources;
           tempBalance = tempBalance * (1 + rorRetirement) - (currentNeed > 0 ? currentNeed * 12 : 0);
           if (tempBalance <= 0) break;
@@ -520,11 +520,11 @@ export function updateRetirementOutputs(analysisOutputs, clientData, formatCurre
     // Render Outputs with Tabs
     analysisOutputs.innerHTML = `
       <div class="output-tabs">
-        <button class="output-tab-btn active" data-tab="output-results">Graph</button>
+        <button class="output-tab-btn active" data-tab="output-graph">Graph</button>
         <button class="output-tab-btn" data-tab="output-timeline">Timeline</button>
         <button class="output-tab-btn" data-tab="output-alternatives">Alternatives</button>
       </div>
-      <div class="output-tab-content active" id="output-results">
+      <div class="output-tab-content active" id="output-graph">
         <div class="output-card">
           <h3>Income Goals</h3>
           <p>Your desired monthly retirement income in today's dollars:</p>
@@ -603,6 +603,10 @@ export function updateRetirementOutputs(analysisOutputs, clientData, formatCurre
             <p>Retirement duration: ${depletionAge - c1RetirementAge} of ${mortalityAge - c1RetirementAge} years</p>
           </div>
           <p class="disclaimer">Values shown are hypothetical and not a promise of future performance.</p>
+        </div>
+        <div class="output-card">
+          <h3>Retirement Income Graph</h3>
+          <p class="graph-placeholder">View the retirement income chart above in the main graph area.</p>
         </div>
       </div>
       <div class="output-tab-content" id="output-timeline" style="display: none;">
