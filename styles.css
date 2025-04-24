@@ -1278,3 +1278,8 @@ body.dark-mode .graph-placeholder {
 .timeline-table th:first-child, .timeline-table td:first-child {
   text-align: left;
 }
+select.output-select { 
+  padding: 8px; 
+  font-size: 16px; 
+  border-radius: 4px; 
+}
