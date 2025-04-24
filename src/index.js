@@ -1,4 +1,4 @@
-import { retirementAccumulationTabs, updateRetirementGraph, updateRetirementOutputs } from './retirementAccumulation.js';
+import { retirementAccumulationTabs, updateRetirementGraph, updateRetirementOutputs, setupAgeDisplayListeners } from './retirementAccumulation.js';
 import { personalFinanceTabs, updatePersonalFinanceGraph, updatePersonalFinanceOutputs } from './personalFinance.js';
 
 // Client data structure
@@ -154,6 +154,10 @@ function updateTabs(analysis) {
 
     setupTabSwitching();
     setupAddButtons();
+    // Initialize age display listeners for DOB inputs
+    if (analysis === 'retirement-accumulation') {
+      setupAgeDisplayListeners(getAge);
+    }
   } catch (error) {
     console.error('Error in updateTabs:', error);
   }
@@ -306,6 +310,10 @@ function tabClickHandler() {
     inputContent.querySelectorAll('.tab-content').forEach(content => {
       content.style.display = content.id === this.dataset.tab ? 'block' : 'none';
     });
+    // Re-attach age display listeners when switching tabs in retirement-accumulation
+    if (currentAnalysis === 'retirement-accumulation') {
+      setupAgeDisplayListeners(getAge);
+    }
   } catch (error) {
     console.error('Error in tabClickHandler:', error);
   }
@@ -335,6 +343,10 @@ function setupEventDelegation() {
         updateGraph();
         updateOutputs();
         setupOutputTabSwitching();
+        // Re-attach age display listeners after toggling Client 2
+        if (currentAnalysis === 'retirement-accumulation') {
+          setupAgeDisplayListeners(getAge);
+        }
       } else if (e.target.classList.contains('report-checkbox')) {
         reportCount += e.target.checked ? 1 : -1;
         presentationCount.textContent = reportCount;
@@ -405,6 +417,10 @@ function addAccountHandler(e) {
     updateGraph();
     updateOutputs();
     setupOutputTabSwitching();
+    // Re-attach age display listeners after adding account
+    if (currentAnalysis === 'retirement-accumulation') {
+      setupAgeDisplayListeners(getAge);
+    }
   } catch (error) {
     console.error('Error in addAccountHandler:', error);
   }
@@ -430,6 +446,10 @@ function addAssetHandler(e) {
     updateGraph();
     updateOutputs();
     setupOutputTabSwitching();
+    // Re-attach age display listeners after adding asset
+    if (currentAnalysis === 'retirement-accumulation') {
+      setupAgeDisplayListeners(getAge);
+    }
   } catch (error) {
     console.error('Error in addAssetHandler:', error);
   }
