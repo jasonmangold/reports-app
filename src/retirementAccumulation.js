@@ -8,12 +8,14 @@ export const retirementAccumulationTabs = [
         <h5>Client 1</h5>
         <label>Name: <input type="text" id="c1-name" placeholder="John Doe"></label>
         <label>Date of Birth: <input type="date" id="c1-dob"></label>
+        <div id="c1-age-display" class="age-display"></div>
         <label>Retirement Age: <input type="number" id="c1-retirement-age" min="1" max="120" placeholder="65"></label>
       </div>
       <div class="client" id="client2-section" style="display: none;">
         <h5>Client 2</h5>
         <label>Name: <input type="text" id="c2-name" placeholder="Jane Doe"></label>
         <label>Date of Birth: <input type="date" id="c2-dob"></label>
+        <div id="c2-age-display" class="age-display"></div>
         <label>Retirement Age: <input type="number" id="c2-retirement-age" min="1" max="120" placeholder="65"></label>
       </div>
     `
