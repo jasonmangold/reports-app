@@ -123,7 +123,7 @@ function calculateRetirementIncome(clientData, getAge) {
       return result; // Empty result for invalid inputs
     }
     if (startAge >= mortalityAge) {
-      return result; // Empty outflow for invalid ages
+      return result; // Empty result for invalid ages
     }
 
     const yearsToRetirement = startAge - c1Age;
@@ -325,6 +325,12 @@ export function updateRetirementOutputs(analysisOutputs, clientData, formatCurre
       return;
     }
 
+    // Get the tab container
+    const tabContainer = document.getElementById('output-tabs-container');
+    if (!tabContainer) {
+      console.warn('Tab container #output-tabs-container not found; tabs will be rendered in analysis-outputs');
+    }
+
     const c1Age = getAge(clientData.client1.personal.dob);
     const c2Age = clientData.isMarried ? getAge(clientData.client2.personal.dob) : c1Age;
     const c1RetirementAge = parseFloat(clientData.client1.personal.retirementAge) || 65;
@@ -334,12 +340,19 @@ export function updateRetirementOutputs(analysisOutputs, clientData, formatCurre
     const rorRetirement = parseFloat(clientData.assumptions.rorRetirement) / 100 || 0.04;
     const monthlyNeed = parseFloat(clientData.incomeNeeds.monthly) || 5000;
 
+    // Add defensive checks for missing properties
+    clientData.client1.other = clientData.client1.other || { assets: [] };
+    clientData.client2 = clientData.client2 || { other: { assets: [] } };
+    const currentSavings = parseFloat(clientData.savingsExpenses?.monthlySavings) || 0;
+
     if (c1Age >= c1RetirementAge || (clientData.isMarried && c2Age >= c2RetirementAge)) {
       analysisOutputs.innerHTML = '<p class="output-card">Client(s) already at or past retirement age. Please adjust retirement age or DOB.</p>';
+      if (tabContainer) tabContainer.innerHTML = ''; // Clear tabs on error
       return;
     }
     if (c1RetirementAge >= mortalityAge || (clientData.isMarried && c2RetirementAge >= mortalityAge)) {
       analysisOutputs.innerHTML = '<p class="output-card">Retirement age must be less than mortality age.</p>';
+      if (tabContainer) tabContainer.innerHTML = ''; // Clear tabs on error
       return;
     }
 
@@ -357,9 +370,9 @@ export function updateRetirementOutputs(analysisOutputs, clientData, formatCurre
         amount: parseFloat(clientData.client1.incomeSources.employment) / 12 || 0
       });
     }
-    if (clientData.isMarried && clientData.client2.incomeSources.employment && c2Age < c2RetirementAge) {
+    if (clientData.isMarried && clientData.client2.incomeSources?.employment && c2Age < c2RetirementAge) {
       incomeSources.push({
-        source: `${clientData.client2.personal.name || 'Client 2'}'s Employment Income`,
+        source: `${clientData.client2.personal?.name || 'Client 2'}'s Employment Income`,
         details: `Until age ${c2RetirementAge}`,
         amount: parseFloat(clientData.client2.incomeSources.employment) / 12 || 0
       });
@@ -371,9 +384,9 @@ export function updateRetirementOutputs(analysisOutputs, clientData, formatCurre
         amount: parseFloat(clientData.client1.incomeSources.socialSecurity) || 0
       });
     }
-    if (clientData.isMarried && clientData.client2.incomeSources.socialSecurity) {
+    if (clientData.isMarried && clientData.client2.incomeSources?.socialSecurity) {
       incomeSources.push({
-        source: `${clientData.client2.personal.name || 'Client 2'}'s Social Security`,
+        source: `${clientData.client2.personal?.name || 'Client 2'}'s Social Security`,
         details: `At age ${c2RetirementAge}`,
         amount: parseFloat(clientData.client2.incomeSources.socialSecurity) || 0
       });
@@ -398,12 +411,12 @@ export function updateRetirementOutputs(analysisOutputs, clientData, formatCurre
         totalAssets += balance;
       }
     });
-    if (clientData.isMarried) {
+    if (clientData.isMarried && clientData.client2.accounts) {
       clientData.client2.accounts.forEach(account => {
         const balance = parseFloat(account.balance) || 0;
         if (balance > 0) {
           assets.push({
-            name: `${clientData.client2.personal.name || 'Client 2'}'s ${account.name || 'Retirement Account'}`,
+            name: `${clientData.client2.personal?.name || 'Client 2'}'s ${account.name || 'Retirement Account'}`,
             balance
           });
           totalAssets += balance;
@@ -461,7 +474,6 @@ export function updateRetirementOutputs(analysisOutputs, clientData, formatCurre
     }
     if (balance > 0) depletionAge = mortalityAge;
 
-    const currentSavings = parseFloat(clientData.savingsExpenses.monthlySavings) || 0;
     let additionalSavings = 0;
     let requiredAtRetirement = 0;
     if (depletionAge < mortalityAge) {
@@ -499,7 +511,7 @@ export function updateRetirementOutputs(analysisOutputs, clientData, formatCurre
       for (let i = 0; i < 20; i++) {
         const mid = (low + high) / 2;
         let tempBalance = incomeData.totalBalance;
-        for (let j = 0; i < mortalityAge - c1RetirementAge; j++) {
+        for (let j = 0; j < mortalityAge - c1RetirementAge; j++) {
           const currentNeed = mid * Math.pow(1 + inflation, j) - monthlySources;
           tempBalance = tempBalance * (1 + rorRetirement) - (currentNeed > 0 ? currentNeed * 12 : 0);
           if (tempBalance <= 0) break;
@@ -517,13 +529,26 @@ export function updateRetirementOutputs(analysisOutputs, clientData, formatCurre
       if (newRetirementAge > mortalityAge) newRetirementAge = mortalityAge;
     }
 
-    // Render Outputs with Tabs
+    // Render Tabs in output-tabs-container
+    if (tabContainer) {
+      tabContainer.innerHTML = `
+        <div class="output-tabs">
+          <button class="output-tab-btn active" data-tab="output-graph">Graph</button>
+          <button class="output-tab-btn" data-tab="output-timeline">Timeline</button>
+          <button class="output-tab-btn" data-tab="output-alternatives">Alternatives</button>
+        </div>
+      `;
+    }
+
+    // Render Content in analysis-outputs
     analysisOutputs.innerHTML = `
-      <div class="output-tabs">
-        <button class="output-tab-btn active" data-tab="output-graph">Graph</button>
-        <button class="output-tab-btn" data-tab="output-timeline">Timeline</button>
-        <button class="output-tab-btn" data-tab="output-alternatives">Alternatives</button>
-      </div>
+      ${!tabContainer ? `
+        <div class="output-tabs">
+          <button class="output-tab-btn active" data-tab="output-graph">Graph</button>
+          <button class="output-tab-btn" data-tab="output-timeline">Timeline</button>
+          <button class="output-tab-btn" data-tab="output-alternatives">Alternatives</button>
+        </div>
+      ` : ''}
       <div class="output-tab-content active" id="output-graph">
         <div class="output-card">
           <h3>Income Goals</h3>
@@ -652,6 +677,7 @@ export function updateRetirementOutputs(analysisOutputs, clientData, formatCurre
   } catch (error) {
     console.error('Error in updateRetirementOutputs:', error);
     analysisOutputs.innerHTML = '<p class="output-card">Unable to render outputs. Please ensure all required fields (DOB, retirement age, mortality age, income needs) are filled correctly.</p>';
+    if (tabContainer) tabContainer.innerHTML = ''; // Clear tabs on error
   }
 }
 
