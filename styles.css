@@ -1261,3 +1261,8 @@ body.dark-mode .alternatives-list li strong {
 body.dark-mode .graph-placeholder {
   color: #94a3b8;
 }
+.age-display {
+  margin-top: 5px;
+  font-size: 0.9em;
+  color: #555;
+}
