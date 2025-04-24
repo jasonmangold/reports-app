@@ -1288,3 +1288,7 @@ body.dark-mode .graph-placeholder {
 .output-table th, .output-table td { border: 1px solid #ddd; padding: 8px; text-align: left; }
 canvas#analysis-chart { display: block; width: 600px; height: 400px; max-height: 400px; }
 
+.logo-img {
+  height: 40px; /* Adjust as needed */
+  width: auto;
+}
