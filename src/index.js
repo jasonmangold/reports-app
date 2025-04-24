@@ -44,7 +44,6 @@ const inputTabs = document.querySelector('.input-tabs');
 const inputContent = document.querySelector('.input-content');
 const recalculateBtn = document.getElementById('recalculate-btn');
 const exportGraphBtn = document.getElementById('export-graph-btn');
-const chartCanvas = document.getElementById('analysis-chart');
 const clientFileName = document.getElementById('client-file-name');
 const presentationCount = document.getElementById('presentation-count');
 const analysisOutputs = document.getElementById('analysis-outputs');
@@ -76,7 +75,7 @@ document.addEventListener('DOMContentLoaded', () => {
   try {
     console.log('Initializing page...');
     console.log('Chart.js available:', typeof Chart !== 'undefined');
-    console.log('chartCanvas:', chartCanvas);
+    console.log('chartCanvas:', document.getElementById('analysis-chart'));
     populateAnalysisTopics();
     updateTabs(currentAnalysis);
     updateClientFileName();
@@ -598,7 +597,7 @@ function updateGraph() {
 
     if (currentAnalysis === 'retirement-accumulation') {
       console.log('Calling updateRetirementGraph');
-      chartInstance = updateRetirementGraph(chartCanvas, clientData, Chart);
+      chartInstance = updateRetirementGraph(chartCanvas, clientData, Chart, getAge);
       console.log('updateRetirementGraph returned chartInstance:', chartInstance);
     } else if (currentAnalysis === 'personal-finance') {
       console.log('Calling updatePersonalFinanceGraph');
