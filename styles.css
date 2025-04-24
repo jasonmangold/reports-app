@@ -1266,3 +1266,15 @@ body.dark-mode .graph-placeholder {
   font-size: 0.9em;
   color: #555;
 }
+.timeline-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.timeline-table th, .timeline-table td {
+  border: 1px solid #ddd;
+  padding: 8px;
+  text-align: right;
+}
+.timeline-table th:first-child, .timeline-table td:first-child {
+  text-align: left;
+}
