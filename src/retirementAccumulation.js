@@ -585,6 +585,10 @@ export function updateRetirementOutputs(analysisOutputs, clientData, formatCurre
       ` : ''}
       <div class="output-tab-content active" id="output-graph">
         <div class="output-card">
+          <h3>Retirement Income Graph</h3>
+          <canvas id="analysis-chart" style="max-width: 100%;"></canvas>
+        </div>
+        <div class="output-card">
           <h3>Income Goals</h3>
           <p>Your desired monthly retirement income in today's dollars, adjusted for inflation:</p>
           <table class="output-table">
@@ -662,10 +666,6 @@ export function updateRetirementOutputs(analysisOutputs, clientData, formatCurre
             <p>Retirement duration: ${depletionAge - c1RetirementAge} of ${mortalityAge - c1RetirementAge} years</p>
           </div>
           <p class="disclaimer">Values shown are hypothetical and not a promise of future performance.</p>
-        </div>
-        <div class="output-card">
-          <h3>Retirement Income Graph</h3>
-          <canvas id="analysis-chart" style="max-width: 100%;"></canvas>
         </div>
       </div>
       <div class="output-tab-content" id="output-timeline" style="display: none;">
