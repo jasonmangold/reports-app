@@ -308,7 +308,7 @@ function calculateRetirementIncome(clientData, getAge) {
   return result;
 }
 
-export function updateRetirementGraph(chartCanvas, clientData, Chart) {
+export function updateRetirementGraph(chartCanvas, clientData, Chart, getAge) {
   try {
     if (!chartCanvas) {
       console.error('Chart canvas #analysis-chart not found');
@@ -393,7 +393,7 @@ export function updateRetirementGraph(chartCanvas, clientData, Chart) {
   } catch (error) {
     console.error('Error in updateRetirementGraph:', error);
     const ctx = chartCanvas.getContext('2d');
-    chartInstance = new Chart(ctx, {
+    let chartInstance = new Chart(ctx, {
       type: 'bar',
       data: {
         labels: ['Error'],
