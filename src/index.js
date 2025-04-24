@@ -171,7 +171,7 @@ function populateInputFields() {
     // Shared fields
     setInputValue('c1-name', clientData.client1.personal.name, 'Client 1 Name');
     setInputValue('c2-name', clientData.client2.personal.name, 'Client 2 Name');
-    setInputValue('c1-employment', clientData.client1.incomeSources.employment, 'Client 1 Employment', 'currency');
+    setInputValue('c1-employment', clientData.client1.incomeSources.employment, 'Client 1 Employment');
     setInputValue('c2-employment', clientData.client2.incomeSources.employment, 'Client 2 Employment');
     setInputValue('c1-social-security', clientData.client1.incomeSources.socialSecurity, 'Client 1 Social Security');
     setInputValue('c2-social-security', clientData.client2.incomeSources.socialSecurity, 'Client 2 Social Security');
