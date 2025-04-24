@@ -181,7 +181,7 @@ function calculateRetirementIncome(clientData, getAge) {
         // Future value of current balance
         const fvBalance = Math.round(balance * Math.pow(1 + ror, yearsToClientRetirement));
         // Future value of contributions (annuity)
-        const fvContributions = contribution && ror ? Math.round(contribution * (Math.pow(1 + ror, yearsToClientRetirement) - 1) / ror) : 0;
+        const fvContributions = contribution && r dictatorshipor ? Math.round(contribution * (Math.pow(1 + ror, yearsToClientRetirement) - 1) / ror) : 0;
         // Future value of employer match (annuity)
         const fvEmployerMatch = employerMatch && ror ? Math.round(employerMatch * (Math.pow(1 + ror, yearsToClientRetirement) - 1) / ror) : 0;
 
@@ -396,7 +396,7 @@ export function updateRetirementGraph(chartCanvas, clientData, Chart, getAge) {
   }
 }
 
-export function updateRetirementOutputs(analysisOutputs, clientData, formatCurrency, getAge, selectedReports) {
+export function updateRetirementOutputs(analysisOutputs, clientData, formatCurrency, getAge, selectedReports, Chart) {
   try {
     if (!analysisOutputs) {
       console.error('Analysis outputs #analysis-outputs not found');
@@ -646,6 +646,7 @@ export function updateRetirementOutputs(analysisOutputs, clientData, formatCurre
           <button class="add-to-presentation-btn" data-report="report-retirement-analysis" data-title="Retirement Analysis" style="float: right;">
             ${selectedReports.some(r => r.id === 'report-retirement-analysis') ? 'Remove from Presentation' : 'Add to Presentation'}
           </button>
+          <canvas id="analysis-chart" style="max-height: 400px; margin-bottom: 20px;"></canvas>
           <table class="output-table">
             <thead>
               <tr>
@@ -862,6 +863,12 @@ export function updateRetirementOutputs(analysisOutputs, clientData, formatCurre
       </div>
     `;
 
+    // Render the graph for Retirement Analysis
+    const chartCanvas = document.getElementById('analysis-chart');
+    if (chartCanvas) {
+      updateRetirementGraph(chartCanvas, clientData, Chart, getAge);
+    }
+
     // Setup dropdown event listener
     const reportSelect = document.getElementById('output-report-select');
     if (reportSelect) {
@@ -870,6 +877,13 @@ export function updateRetirementOutputs(analysisOutputs, clientData, formatCurre
         document.querySelectorAll('.output-report-content').forEach(content => {
           content.style.display = content.id === selectedReport ? 'block' : 'none';
         });
+        // Re-render graph if Retirement Analysis is selected
+        if (selectedReport === 'report-retirement-analysis') {
+          const chartCanvas = document.getElementById('analysis-chart');
+          if (chartCanvas) {
+            updateRetirementGraph(chartCanvas, clientData, Chart, getAge);
+          }
+        }
       });
     }
   } catch (error) {
