@@ -131,9 +131,9 @@ function calculateRetirementIncome(clientData, getAge) {
       return result; // Empty result for invalid ages
     }
 
-    // Adjust monthly need for inflation until retirement
+    // Adjust annual need for inflation until retirement
     const yearsToRetirement = startAge - c1Age;
-    monthlyNeed = Math.round(monthlyNeed * Math.pow(1 + inflation, yearsToRetirement));
+    let annualNeed = Math.round(monthlyNeed * 12 * Math.pow(1 + inflation, yearsToRetirement));
 
     // Calculate total balance at retirement
     let totalBalance = 0;
@@ -189,34 +189,44 @@ function calculateRetirementIncome(clientData, getAge) {
     result.totalBalance = totalBalance;
     result.depletionAge = startAge;
 
+    // Add starting balance row
+    result.labels.push(startAge);
+    result.needData.push(0);
+    result.incomeData.push(0);
+    result.socialSecurityData.push(0);
+    result.withdrawalData.push(0);
+    result.earningsData.push(0);
+    result.balanceData.push(totalBalance);
+    result.shortfallData.push(0);
+
     // Calculate timeline data
-    for (let i = 0; i <= mortalityAge - startAge; i++) {
-      const currentAge = startAge + i;
+    for (let i = 0; i < mortalityAge - startAge; i++) {
+      const currentAge = startAge + i + 1;
       result.labels.push(currentAge);
 
       // Need (inflation-adjusted from retirement start)
-      const adjustedNeed = Math.round(monthlyNeed * Math.pow(1 + inflation, i));
+      const adjustedNeed = Math.round(annualNeed * Math.pow(1 + inflation, i));
       result.needData.push(adjustedNeed);
 
       // Income (Employment + Other)
       let employmentIncome = 0;
       if (currentAge < c1RetirementAge) {
-        employmentIncome += Math.round(parseFloat(clientData.client1.incomeSources.employment) / 12 || 0);
+        employmentIncome += Math.round(parseFloat(clientData.client1.incomeSources.employment) || 0);
       }
       if (clientData.isMarried && currentAge < c2RetirementAge) {
-        employmentIncome += Math.round(parseFloat(clientData.client2.incomeSources.employment) / 12 || 0);
+        employmentIncome += Math.round(parseFloat(clientData.client2.incomeSources.employment) || 0);
       }
-      const otherIncome = Math.round(parseFloat(clientData.client1.incomeSources.other) || 0);
+      const otherIncome = Math.round(parseFloat(clientData.client1.incomeSources.other) * 12 || 0);
       const totalIncome = Math.round(employmentIncome + otherIncome);
       result.incomeData.push(totalIncome);
 
       // Social Security
       let socialSecurity = 0;
       if (currentAge >= c1RetirementAge) {
-        socialSecurity += Math.round(parseFloat(clientData.client1.incomeSources.socialSecurity) || 0);
+        socialSecurity += Math.round(parseFloat(clientData.client1.incomeSources.socialSecurity) * 12 || 0);
       }
       if (clientData.isMarried && currentAge >= c2RetirementAge) {
-        socialSecurity += Math.round(parseFloat(clientData.client2.incomeSources.socialSecurity) || 0);
+        socialSecurity += Math.round(parseFloat(clientData.client2.incomeSources.socialSecurity) * 12 || 0);
       }
       result.socialSecurityData.push(socialSecurity);
 
@@ -225,19 +235,18 @@ function calculateRetirementIncome(clientData, getAge) {
 
       // Asset Earnings
       const earnings = Math.round(balance * rorRetirement);
-      result.earningsData.push(Math.round(earnings / 12)); // Monthly earnings
+      result.earningsData.push(earnings);
 
       // Withdrawal and Shortfall
       let withdrawal = 0;
       let shortfall = 0;
       if (remainingNeed > 0) {
-        const annualWithdrawal = Math.round(remainingNeed * 12);
         const availableBalance = Math.round(balance + earnings);
-        if (availableBalance >= annualWithdrawal) {
+        if (availableBalance >= remainingNeed) {
           withdrawal = Math.round(remainingNeed);
-          balance = Math.round(availableBalance - annualWithdrawal);
+          balance = Math.round(availableBalance - remainingNeed);
         } else {
-          withdrawal = availableBalance > 0 ? Math.round(availableBalance / 12) : 0;
+          withdrawal = availableBalance > 0 ? Math.round(availableBalance) : 0;
           shortfall = Math.round(remainingNeed - withdrawal);
           balance = 0;
         }
@@ -299,29 +308,29 @@ export function updateRetirementGraph(chartCanvas, clientData, Chart) {
     chartInstance = new Chart(ctx, {
       type: 'bar',
       data: {
-        labels: incomeData.labels,
+        labels: incomeData.labels.slice(1), // Skip starting balance row
         datasets: [
           {
             label: 'Social Security',
-            data: incomeData.socialSecurityData.map(Math.round),
+            data: incomeData.socialSecurityData.slice(1).map(Math.round),
             backgroundColor: '#22c55e',
             stack: 'Stack0'
           },
           {
             label: 'Income',
-            data: incomeData.incomeData.map(Math.round),
+            data: incomeData.incomeData.slice(1).map(Math.round),
             backgroundColor: '#3b82f6',
             stack: 'Stack0'
           },
           {
             label: 'Withdrawal',
-            data: incomeData.withdrawalData.map(Math.round),
+            data: incomeData.withdrawalData.slice(1).map(Math.round),
             backgroundColor: '#f97316',
             stack: 'Stack0'
           },
           {
             label: 'Shortfall',
-            data: incomeData.shortfallData.map(Math.round),
+            data: incomeData.shortfallData.slice(1).map(Math.round),
             backgroundColor: '#ef4444',
             stack: 'Stack0'
           }
@@ -335,7 +344,7 @@ export function updateRetirementGraph(chartCanvas, clientData, Chart) {
         },
         scales: {
           x: { title: { display: true, text: 'Client 1 Age' }, stacked: true },
-          y: { title: { display: true, text: 'Monthly Income ($)' }, stacked: true, beginAtZero: true }
+          y: { title: { display: true, text: 'Annual Income ($)' }, stacked: true, beginAtZero: true }
         }
       }
     });
@@ -689,26 +698,26 @@ export function updateRetirementOutputs(analysisOutputs, clientData, formatCurre
             <thead>
               <tr>
                 <th>Age</th>
-                <th>Need ($)</th>
-                <th>Income ($)</th>
-                <th>Social Security ($)</th>
-                <th>Withdrawal ($)</th>
-                <th>Asset Earnings ($)</th>
-                <th>Balance ($)</th>
-                <th>Shortfall ($)</th>
+                <th>Need ($/yr)</th>
+                <th>Income ($/yr)</th>
+                <th>Social Security ($/yr)</th>
+                <th>Withdrawal ($/yr)</th>
+                <th>Asset Earnings ($/yr)</th>
+                <th>Balance ($/yr)</th>
+                <th>Shortfall ($/yr)</th>
               </tr>
             </thead>
             <tbody>
               ${incomeData.labels.map((age, i) => `
-                <tr style="${age === c1Age ? 'font-weight: bold; background: #eff6ff;' : age === c1RetirementAge ? 'font-weight: bold; background: #d1e7ff;' : age === incomeData.depletionAge ? 'font-weight: bold; background: #ffe4e1;' : ''}">
-                  <td>${age}${age === c1Age ? ' (Current)' : age === c1RetirementAge ? ' (Retirement)' : age === incomeData.depletionAge ? ' (Depletion)' : ''}</td>
-                  <td>${formatCurrency(incomeData.needData[i])}</td>
-                  <td>${formatCurrency(incomeData.incomeData[i])}</td>
-                  <td>${formatCurrency(incomeData.socialSecurityData[i])}</td>
-                  <td>${formatCurrency(incomeData.withdrawalData[i])}</td>
-                  <td>${formatCurrency(incomeData.earningsData[i])}</td>
+                <tr style="${i === 0 ? 'font-weight: bold; background: #d1e7ff;' : age === c1Age ? 'font-weight: bold; background: #eff6ff;' : age === incomeData.depletionAge ? 'font-weight: bold; background: #ffe4e1;' : ''}">
+                  <td>${i === 0 ? 'Starting Balance' : age}${i === 0 ? ` (Age ${age})` : age === c1Age ? ' (Current)' : age === incomeData.depletionAge ? ' (Depletion)' : ''}</td>
+                  <td>${i === 0 ? '-' : formatCurrency(incomeData.needData[i])}</td>
+                  <td>${i === 0 ? '-' : formatCurrency(incomeData.incomeData[i])}</td>
+                  <td>${i === 0 ? '-' : formatCurrency(incomeData.socialSecurityData[i])}</td>
+                  <td>${i === 0 ? '-' : formatCurrency(incomeData.withdrawalData[i])}</td>
+                  <td>${i === 0 ? '-' : formatCurrency(incomeData.earningsData[i])}</td>
                   <td>${formatCurrency(incomeData.balanceData[i])}</td>
-                  <td>${formatCurrency(incomeData.shortfallData[i])}</td>
+                  <td>${i === 0 ? '-' : formatCurrency(incomeData.shortfallData[i])}</td>
                 </tr>
               `).join('')}
             </tbody>
