@@ -36,6 +36,7 @@ let accountCount = { c1: 1, c2: 1 };
 let assetCount = { c1: 0, c2: 0 };
 let currentAnalysis = 'retirement-accumulation';
 let reportCount = 0;
+let selectedReports = []; // Track selected reports
 let isTyping = false; // Prevent re-rendering during typing
 
 // DOM elements
@@ -80,6 +81,7 @@ document.addEventListener('DOMContentLoaded', () => {
     updateTabs(currentAnalysis);
     updateClientFileName();
     setupEventDelegation();
+    renderPresentationPreview();
     // Ensure outputs (including canvas) are rendered before graph
     updateOutputs();
     setTimeout(() => {
@@ -323,7 +325,7 @@ function tabClickHandler() {
   }
 }
 
-// Event delegation for inputs and checkboxes
+// Event delegation for inputs, buttons, and presentation actions
 function setupEventDelegation() {
   try {
     let graphTimeout;
@@ -353,10 +355,24 @@ function setupEventDelegation() {
         if (currentAnalysis === 'retirement-accumulation') {
           setupAgeDisplayListeners(getAge);
         }
-      } else if (e.target.classList.contains('report-checkbox')) {
-        reportCount += e.target.checked ? 1 : -1;
+      }
+    });
+
+    document.addEventListener('click', (e) => {
+      if (e.target.classList.contains('add-to-presentation-btn')) {
+        const reportId = e.target.dataset.report;
+        const reportTitle = e.target.dataset.title;
+        toggleReportSelection(reportId, reportTitle);
+        renderPresentationPreview();
+      } else if (e.target.classList.contains('remove-report-btn')) {
+        const reportId = e.target.dataset.report;
+        selectedReports = selectedReports.filter(report => report.id !== reportId);
+        reportCount = selectedReports.length;
         presentationCount.textContent = reportCount;
         presentationCount.classList.toggle('active', reportCount > 0);
+        renderPresentationPreview();
+      } else if (e.target.id === 'finalize-presentation-btn') {
+        finalizePresentation();
       }
     });
   } catch (error) {
@@ -619,7 +635,7 @@ function updateGraph() {
 function updateOutputs() {
   try {
     if (currentAnalysis === 'retirement-accumulation') {
-      updateRetirementOutputs(analysisOutputs, clientData, formatCurrency, getAge);
+      updateRetirementOutputs(analysisOutputs, clientData, formatCurrency, getAge, selectedReports);
     } else if (currentAnalysis === 'personal-finance') {
       updatePersonalFinanceOutputs(analysisOutputs, clientData, formatCurrency);
     } else {
@@ -666,6 +682,92 @@ function outputTabClickHandler() {
     }
   } catch (error) {
     console.error('Error in outputTabClickHandler:', error);
+  }
+}
+
+// Toggle report selection
+function toggleReportSelection(reportId, reportTitle) {
+  try {
+    const existingReport = selectedReports.find(report => report.id === reportId);
+    if (existingReport) {
+      selectedReports = selectedReports.filter(report => report.id !== reportId);
+      reportCount--;
+    } else {
+      selectedReports.push({ id: reportId, title: reportTitle, order: selectedReports.length });
+      reportCount++;
+    }
+    presentationCount.textContent = reportCount;
+    presentationCount.classList.toggle('active', reportCount > 0);
+    console.log('Selected reports:', selectedReports);
+  } catch (error) {
+    console.error('Error in toggleReportSelection:', error);
+  }
+}
+
+// Render presentation preview panel
+function renderPresentationPreview() {
+  try {
+    let previewPanel = document.getElementById('presentation-preview');
+    if (!previewPanel) {
+      previewPanel = document.createElement('div');
+      previewPanel.id = 'presentation-preview';
+      previewPanel.classList.add('presentation-preview');
+      document.body.appendChild(previewPanel);
+    }
+
+    previewPanel.innerHTML = `
+      <h3>Presentation Preview (${reportCount})</h3>
+      <div class="report-list" id="report-list">
+        ${selectedReports.length ? selectedReports.sort((a, b) => a.order - b.order).map(report => `
+          <div class="report-item" draggable="true" data-report-id="${report.id}">
+            <span>${report.title}</span>
+            <button class="remove-report-btn" data-report="${report.id}">Remove</button>
+          </div>
+        `).join('') : '<p>No reports selected.</p>'}
+      </div>
+      <button id="finalize-presentation-btn" ${reportCount === 0 ? 'disabled' : ''}>Finalize Presentation</button>
+    `;
+
+    // Setup drag-and-drop
+    const reportItems = previewPanel.querySelectorAll('.report-item');
+    reportItems.forEach(item => {
+      item.addEventListener('dragstart', (e) => {
+        e.dataTransfer.setData('text/plain', e.target.dataset.reportId);
+        e.target.classList.add('dragging');
+      });
+      item.addEventListener('dragend', (e) => {
+        e.target.classList.remove('dragging');
+      });
+      item.addEventListener('dragover', (e) => {
+        e.preventDefault();
+      });
+      item.addEventListener('drop', (e) => {
+        e.preventDefault();
+        const draggedId = e.dataTransfer.getData('text/plain');
+        const targetId = e.target.closest('.report-item').dataset.reportId;
+        if (draggedId !== targetId) {
+          const draggedReport = selectedReports.find(r => r.id === draggedId);
+          const targetReport = selectedReports.find(r => r.id === targetId);
+          const draggedOrder = draggedReport.order;
+          draggedReport.order = targetReport.order;
+          targetReport.order = draggedOrder;
+          renderPresentationPreview();
+        }
+      });
+    });
+  } catch (error) {
+    console.error('Error in renderPresentationPreview:', error);
+  }
+}
+
+// Finalize presentation (placeholder for export)
+function finalizePresentation() {
+  try {
+    console.log('Finalizing presentation with reports:', selectedReports);
+    alert('Presentation finalized with ' + reportCount + ' reports. Check console for details.');
+    // Future: Implement PDF/slideshow export here
+  } catch (error) {
+    console.error('Error in finalizePresentation:', error);
   }
 }
 
