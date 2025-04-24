@@ -1289,6 +1289,6 @@ body.dark-mode .graph-placeholder {
 canvas#analysis-chart { display: block; width: 600px; height: 400px; max-height: 400px; }
 
 .logo-img {
-  height: 40px; /* Adjust as needed */
+  height: 30px; /* Adjust as needed */
   width: auto;
 }
