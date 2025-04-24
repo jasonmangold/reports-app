@@ -24,7 +24,7 @@ export const retirementAccumulationTabs = [
     id: 'income-needs',
     label: 'Income Needs',
     content: `
-      <label>Monthly Income Needs ($): <input type="number" id="monthly-income" min="0" step="100" placeholder="5000" class="currency-input"></label>
+      <label>Monthly Income Needs ($): <input type="number" id="monthly-income" min="0" step="100" placeholder="5000"></label>
     `
   },
   {
@@ -33,15 +33,15 @@ export const retirementAccumulationTabs = [
     content: `
       <div class="client">
         <h5>Client 1</h5>
-        <label>Employment Income ($/yr): <input type="number" id="c1-employment" min="0" step="1000" placeholder="50000" class="currency-input"></label>
-        <label>Social Security ($/mo): <input type="number" id="c1-social-security" min="0" step="100" placeholder="2000" class="currency-input"></label>
-        <label>Other Income ($/mo): <input type="number" id="c1-other-income" min="0" step="100" placeholder="500" class="currency-input"></label>
+        <label>Employment Income ($/yr): <input type="number" id="c1-employment" min="0" step="1000" placeholder="50000"></label>
+        <label>Social Security ($/mo): <input type="number" id="c1-social-security" min="0" step="100" placeholder="2000"></label>
+        <label>Other Income ($/mo): <input type="number" id="c1-other-income" min="0" step="100" placeholder="500"></label>
       </div>
       <div class="client" id="client2-income-section" style="display: none;">
         <h5>Client 2</h5>
-        <label>Employment Income ($/yr): <input type="number" id="c2-employment" min="0" step="1000" placeholder="40000" class="currency-input"></label>
-        <label>Social Security ($/mo): <input type="number" id="c2-social-security" min="0" step="100" placeholder="1800" class="currency-input"></label>
-        <label>Other Income ($/mo): <input type="number" id="c2-other-income" min="0" step="100" placeholder="400" class="currency-input"></label>
+        <label>Employment Income ($/yr): <input type="number" id="c2-employment" min="0" step="1000" placeholder="40000"></label>
+        <label>Social Security ($/mo): <input type="number" id="c2-social-security" min="0" step="100" placeholder="1800"></label>
+        <label>Other Income ($/mo): <input type="number" id="c2-other-income" min="0" step="100" placeholder="400"></label>
       </div>
     `
   },
@@ -53,8 +53,8 @@ export const retirementAccumulationTabs = [
         <h5>Client 1 Accounts</h5>
         <div class="account">
           <label>Account Name: <input type="text" id="c1-account-0-name" placeholder="401(k)"></label>
-          <label>Balance ($): <input type="number" id="c1-account-0-balance" min="0" step="1000" placeholder="100000" class="currency-input"></label>
-          <label>Contribution ($/yr): <input type="number" id="c1-account-0-contribution" min="0" step="1000" placeholder="10000" class="currency-input"></label>
+          <label>Balance ($): <input type="number" id="c1-account-0-balance" min="0" step="1000" placeholder="100000"></label>
+          <label>Contribution ($/yr): <input type="number" id="c1-account-0-contribution" min="0" step="1000" placeholder="10000"></label>
           <label>Employer Match (%): <input type="number" id="c1-account-0-employer-match" min="0" max="100" step="0.1" placeholder="3"></label>
           <label>ROR (%): <input type="number" id="c1-account-0-ror" min="0" max="100" step="0.1" placeholder="6"></label>
         </div>
@@ -64,8 +64,8 @@ export const retirementAccumulationTabs = [
         <h5>Client 2 Accounts</h5>
         <div class="account">
           <label>Account Name: <input type="text" id="c2-account-0-name" placeholder="IRA"></label>
-          <label>Balance ($): <input type="number" id="c2-account-0-balance" min="0" step="1000" placeholder="80000" class="currency-input"></label>
-          <label>Contribution ($/yr): <input type="number" id="c2-account-0-contribution" min="0" step="1000" placeholder="8000" class="currency-input"></label>
+          <label>Balance ($): <input type="number" id="c2-account-0-balance" min="0" step="1000" placeholder="80000"></label>
+          <label>Contribution ($/yr): <input type="number" id="c2-account-0-contribution" min="0" step="1000" placeholder="8000"></label>
           <label>Employer Match (%): <input type="number" id="c2-account-0-employer-match" min="0" max="100" step="0.1" placeholder="2"></label>
           <label>ROR (%): <input type="number" id="c2-account-0-ror" min="0" max="100" step="0.1" placeholder="5"></label>
         </div>
@@ -728,111 +728,4 @@ export function updateRetirementOutputs(analysisOutputs, clientData, formatCurre
         <div class="output-card">
           <h3>Alternatives to Achieve Retirement Goals</h3>
           <ul class="alternatives-list">
-            <li><strong>Save More:</strong> Increase monthly savings by ${formatCurrency(additionalSavings)} to meet retirement needs.</li>
-            <li><strong>Earn Greater Rate of Return:</strong> Target a ${Math.round(targetROR * 100)}% annual return during retirement to avoid shortfall.</li>
-            <li><strong>Reduce Expenses:</strong> Lower monthly income needs to ${formatCurrency(reducedMonthlyNeed)} to sustain funds until age ${mortalityAge}.</li>
-            <li><strong>Retire Later:</strong> Delay retirement to age ${newRetirementAge} to extend funds to age ${mortalityAge}.</li>
-          </ul>
-        </div>
-      </div>
-    `;
-
-    // Render the graph after the canvas is added to the DOM
-    const chartCanvas = document.getElementById('analysis-chart');
-    if (chartCanvas) {
-      updateRetirementGraph(chartCanvas, clientData, window.Chart);
-    }
-
-    console.log('Retirement outputs with tabs rendered');
-  } catch (error) {
-    console.error('Error in updateRetirementOutputs:', error);
-    analysisOutputs.innerHTML = '<p class="output-card">Unable to render outputs. Please ensure all required fields (DOB, retirement age, mortality age, income needs) are filled correctly.</p>';
-    if (tabContainer) tabContainer.innerHTML = ''; // Clear tabs on error
-  }
-}
-
-// Helper function to set up age display and currency input formatting
-export function setupAgeDisplayListeners(getAge) {
-  try {
-    console.log('Setting up age display listeners');
-    // Age display for DOB inputs
-    const c1DobInput = document.getElementById('c1-dob');
-    const c2DobInput = document.getElementById('c2-dob');
-    const c1AgeDisplay = document.getElementById('c1-age-display');
-    const c2AgeDisplay = document.getElementById('c2-age-display');
-
-    console.log('c1-dob:', c1DobInput, 'c1-age-display:', c1AgeDisplay);
-    console.log('c2-dob:', c2DobInput, 'c2-age-display:', c2AgeDisplay);
-
-    if (c1DobInput && c1AgeDisplay) {
-      c1DobInput.addEventListener('input', () => {
-        const dob = c1DobInput.value;
-        const age = getAge(dob);
-        console.log('Client 1 DOB:', dob, 'Age:', age);
-        c1AgeDisplay.textContent = dob && age > 0 ? `Current Age: ${age}` : '';
-      });
-      if (c1DobInput.value) {
-        const age = getAge(c1DobInput.value);
-        console.log('Client 1 Initial DOB:', c1DobInput.value, 'Age:', age);
-        c1AgeDisplay.textContent = age > 0 ? `Current Age: ${age}` : '';
-      }
-    }
-
-    if (c2DobInput && c2AgeDisplay) {
-      c2DobInput.addEventListener('input', () => {
-        const dob = c2DobInput.value;
-        const age = getAge(dob);
-        console.log('Client 2 DOB:', dob, 'Age:', age);
-        c2AgeDisplay.textContent = dob && age > 0 ? `Current Age: ${age}` : '';
-      });
-      if (c2DobInput.value) {
-        const age = getAge(c2DobInput.value);
-        console.log('Client 2 Initial DOB:', c2DobInput.value, 'Age:', age);
-        c2AgeDisplay.textContent = age > 0 ? `Current Age: ${age}` : '';
-      }
-    }
-
-    // Currency formatting for inputs
-    const currencyInputs = document.querySelectorAll('.currency-input');
-    currencyInputs.forEach(input => {
-      input.addEventListener('focus', () => {
-        if (input.value) {
-          // Strip formatting for editing
-          input.value = parseFloat(input.value.replace(/[^0-9.-]+/g, '')) || '';
-        }
-      });
-      input.addEventListener('blur', () => {
-        if (input.value) {
-          const value = parseFloat(input.value);
-          if (!isNaN(value)) {
-            // Format as $X,XXX
-            input.value = new Intl.NumberFormat('en-US', {
-              style: 'currency',
-              currency: 'USD',
-              minimumFractionDigits: 0,
-              maximumFractionDigits: 0
-            }).format(Math.round(value));
-          }
-        }
-      });
-    });
-  } catch (error) {
-    console.error('Error in setupAgeDisplayListeners:', error);
-  }
-}
-
-// Helper function (temporary until moved to utils.js or imported from index.js)
-function getAge(dob) {
-  try {
-    if (!dob) return 0;
-    const today = new Date();
-    const birthDate = new Date(dob);
-    let age = today.getFullYear() - birthDate.getFullYear();
-    const m = today.getMonth() - birthDate.getMonth();
-    if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) age--;
-    return Math.max(0, age);
-  } catch (error) {
-    console.error('Error in getAge:', error);
-    return 0;
-  }
-}
+            <li><strong
