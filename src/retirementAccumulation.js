@@ -396,17 +396,16 @@ export function updateRetirementGraph(chartCanvas, clientData, Chart, getAge) {
   }
 }
 
-export function updateRetirementOutputs(analysisOutputs, clientData, formatCurrency, getAge, selectedReports) {
+export function updateRetirementOutputs(analysisOutputs, clientData, formatCurrency, getAge, selectedReports, Chart) {
   try {
     if (!analysisOutputs) {
       console.error('Analysis outputs #analysis-outputs not found');
       return;
     }
 
-    // Get the tab container
     const tabContainer = document.getElementById('output-tabs-container');
     if (!tabContainer) {
-      console.warn('Tab container #output-tabs-container not found; dropdown will be rendered in analysis-outputs');
+      console.warn('Tab container #output-tabs-container not found; tabs will be rendered in analysis-outputs');
     }
 
     const c1Age = getAge(clientData.client1.personal.dob);
@@ -419,31 +418,23 @@ export function updateRetirementOutputs(analysisOutputs, clientData, formatCurre
     const rorRetirement = isNaN(parseFloat(clientData.assumptions.rorRetirement)) ? 0.04 : parseFloat(clientData.assumptions.rorRetirement) / 100;
     let monthlyNeed = Math.round(parseFloat(clientData.incomeNeeds.monthly) || 5000);
 
-    // Add defensive checks for missing properties
     clientData.client1.other = clientData.client1.other || { assets: [] };
     clientData.client2 = clientData.client2 || { other: { assets: [] } };
     const currentSavings = Math.round(parseFloat(clientData.savingsExpenses?.monthlySavings) || 0);
 
     if (c1Age >= c1RetirementAge || (clientData.isMarried && c2Age >= c2RetirementAge)) {
       analysisOutputs.innerHTML = '<p class="output-card">Client(s) already at or past retirement age. Please adjust retirement age or DOB.</p>';
-      if (tabContainer) tabContainer.innerHTML = ''; // Clear tabs on error
+      if (tabContainer) tabContainer.innerHTML = '';
       return;
     }
     if (c1RetirementAge >= mortalityAge || (clientData.isMarried && c2RetirementAge >= mortalityAge)) {
       analysisOutputs.innerHTML = '<p class="output-card">Retirement age must be less than mortality age.</p>';
-      if (tabContainer) tabContainer.innerHTML = ''; // Clear tabs on error
+      if (tabContainer) tabContainer.innerHTML = '';
       return;
     }
 
-    // Adjust monthly need for inflation until retirement
     const yearsToRetirement = startAge - c1Age;
     monthlyNeed = Math.round(monthlyNeed * Math.pow(1 + inflation, yearsToRetirement));
-
-    const incomeGoals = [
-      { age: c1RetirementAge, percentage: 100, amount: Math.round(monthlyNeed) },
-      { age: c1RetirementAge + 10, percentage: 80, amount: Math.round(monthlyNeed * 0.8) },
-      { age: c1RetirementAge + 15, percentage: 70, amount: Math.round(monthlyNeed * 0.7) }
-    ];
 
     const incomeSources = [];
     if (clientData.client1.incomeSources.employment && c1Age < c1RetirementAge) {
@@ -482,7 +473,6 @@ export function updateRetirementOutputs(analysisOutputs, clientData, formatCurre
       });
     }
 
-    // Calculate future value of assets at retirement
     let totalAssets = 0;
     const assets = [];
     const clients = [clientData.client1, clientData.isMarried ? clientData.client2 : null];
@@ -500,11 +490,8 @@ export function updateRetirementOutputs(analysisOutputs, clientData, formatCurre
         const employerMatch = Math.round(employerMatchPercent * employmentIncome);
         const ror = isNaN(parseFloat(account.ror)) ? 0.06 : parseFloat(account.ror) / 100;
 
-        // Future value of current balance
         const fvBalance = Math.round(balance * Math.pow(1 + ror, yearsToClientRetirement));
-        // Future value of contributions (annuity)
         const fvContributions = contribution && ror ? Math.round(contribution * (Math.pow(1 + ror, yearsToClientRetirement) - 1) / ror) : 0;
-        // Future value of employer match (annuity)
         const fvEmployerMatch = employerMatch && ror ? Math.round(employerMatch * (Math.pow(1 + ror, yearsToClientRetirement) - 1) / ror) : 0;
 
         let accountBalance = Math.round(fvBalance + fvContributions + fvEmployerMatch);
@@ -565,12 +552,11 @@ export function updateRetirementOutputs(analysisOutputs, clientData, formatCurre
       additionalSavings = Math.round(requiredAtRetirement / ((Math.pow(1 + rorRetirement, yearsToRetirement) - 1) / rorRetirement));
     }
 
-    // Calculate Alternatives
     const incomeData = calculateRetirementIncome(clientData, getAge);
     let targetROR = rorRetirement;
     if (depletionAge < mortalityAge) {
       let low = rorRetirement;
-      let high = 0.2; // Max 20% ROR
+      let high = 0.2;
       for (let i = 0; i < 20; i++) {
         const mid = (low + high) / 2;
         let tempBalance = incomeData.totalBalance;
@@ -610,37 +596,40 @@ export function updateRetirementOutputs(analysisOutputs, clientData, formatCurre
       if (newRetirementAge > mortalityAge) newRetirementAge = mortalityAge;
     }
 
-    // Define report options for dropdown
-    const reportOptions = [
+    const reportTabs = [
       { id: 'report-retirement-analysis', label: 'Retirement Analysis' },
-      { id: 'report-retirement-timeline', label: 'Retirement Timeline' },
-      { id: 'report-alternatives-retirement', label: 'Alternatives to Achieving Retirement Goals' },
       { id: 'report-social-security-optimizer', label: 'Social Security Optimizer' },
       { id: 'report-capital-available', label: 'Capital Available' },
+      { id: 'report-alternatives-retirement', label: 'Alternatives' },
+      { id: 'report-retirement-timeline', label: 'Retirement Timeline' },
       { id: 'report-retirement-fact-finder', label: 'Fact Finder' }
     ];
 
-    // Render Dropdown in output-tabs-container
     if (tabContainer) {
       tabContainer.innerHTML = `
-        <select id="output-report-select" class="output-select">
-          ${reportOptions.map(option => `
-            <option value="${option.id}" ${option.id === 'report-retirement-analysis' ? 'selected' : ''}>${option.label}</option>
+        <div class="output-tabs">
+          <button class="output-tab-btn active" data-tab="report-retirement-analysis">Retirement Analysis</button>
+          <button class="output-tab-btn" data-tab="output-timeline">Timeline</button>
+          <button class="output-tab-btn" data-tab="output-alternatives">Alternatives</button>
+          ${reportTabs.filter(tab => tab.id !== 'report-retirement-analysis').map(tab => `
+            <button class="output-tab-btn" data-tab="${tab.id}">${tab.label}</button>
           `).join('')}
-        </select>
+        </div>
       `;
     }
 
-    // Render Content in analysis-outputs
     analysisOutputs.innerHTML = `
       ${!tabContainer ? `
-        <select id="output-report-select" class="output-select">
-          ${reportOptions.map(option => `
-            <option value="${option.id}" ${option.id === 'report-retirement-analysis' ? 'selected' : ''}>${option.label}</option>
+        <div class="output-tabs">
+          <button class="output-tab-btn active" data-tab="report-retirement-analysis">Retirement Analysis</button>
+          <button class="output-tab-btn" data-tab="output-timeline">Timeline</button>
+          <button class="output-tab-btn" data-tab="output-alternatives">Alternatives</button>
+          ${reportTabs.filter(tab => tab.id !== 'report-retirement-analysis').map(tab => `
+            <button class="output-tab-btn" data-tab="${tab.id}">${tab.label}</button>
           `).join('')}
-        </select>
+        </div>
       ` : ''}
-      <div class="output-report-content" id="report-retirement-analysis">
+      <div class="output-tab-content active" id="report-retirement-analysis">
         <div class="output-card">
           <h3>Retirement Analysis</h3>
           <button class="add-to-presentation-btn" data-report="report-retirement-analysis" data-title="Retirement Analysis" style="float: right;">
@@ -672,12 +661,14 @@ export function updateRetirementOutputs(analysisOutputs, clientData, formatCurre
               </tr>
             </tbody>
           </table>
+          <h4>Retirement Income Sources by Age</h4>
+          <canvas id="analysis-chart" style="max-height: 400px;"></canvas>
         </div>
       </div>
-      <div class="output-report-content" id="report-retirement-timeline" style="display: none;">
+      <div class="output-tab-content" id="output-timeline" style="display: none;">
         <div class="output-card">
-          <h3>Retirement Timeline</h3>
-          <button class="add-to-presentation-btn" data-report="report-retirement-timeline" data-title="Retirement Timeline" style="float: right;">
+          <h3>Retirement Income Timeline</h3>
+          <button class="add-to-presentation-btn" data-report="report-retirement-timeline" data-title="Retirement Income Timeline" style="float: right;">
             ${selectedReports.some(r => r.id === 'report-retirement-timeline') ? 'Remove from Presentation' : 'Add to Presentation'}
           </button>
           <table class="output-table">
@@ -708,10 +699,10 @@ export function updateRetirementOutputs(analysisOutputs, clientData, formatCurre
           </table>
         </div>
       </div>
-      <div class="output-report-content" id="report-alternatives-retirement" style="display: none;">
+      <div class="output-tab-content" id="output-alternatives" style="display: none;">
         <div class="output-card">
-          <h3>Alternatives to Achieving Retirement Goals</h3>
-          <button class="add-to-presentation-btn" data-report="report-alternatives-retirement" data-title="Alternatives to Achieving Retirement Goals" style="float: right;">
+          <h3>Retirement Alternatives</h3>
+          <button class="add-to-presentation-btn" data-report="report-alternatives-retirement" data-title="Retirement Alternatives" style="float: right;">
             ${selectedReports.some(r => r.id === 'report-alternatives-retirement') ? 'Remove from Presentation' : 'Add to Presentation'}
           </button>
           <table class="output-table">
@@ -738,7 +729,7 @@ export function updateRetirementOutputs(analysisOutputs, clientData, formatCurre
           </table>
         </div>
       </div>
-      <div class="output-report-content" id="report-social-security-optimizer" style="display: none;">
+      <div class="output-tab-content" id="report-social-security-optimizer" style="display: none;">
         <div class="output-card">
           <h3>Social Security Optimizer</h3>
           <button class="add-to-presentation-btn" data-report="report-social-security-optimizer" data-title="Social Security Optimizer" style="float: right;">
@@ -747,7 +738,7 @@ export function updateRetirementOutputs(analysisOutputs, clientData, formatCurre
           <p>Optimized Social Security strategies will be displayed here. (Placeholder: Optimization logic not implemented.)</p>
         </div>
       </div>
-      <div class="output-report-content" id="report-capital-available" style="display: none;">
+      <div class="output-tab-content" id="report-capital-available" style="display: none;">
         <div class="output-card">
           <h3>Capital Available at Retirement</h3>
           <button class="add-to-presentation-btn" data-report="report-capital-available" data-title="Capital Available at Retirement" style="float: right;">
@@ -775,7 +766,71 @@ export function updateRetirementOutputs(analysisOutputs, clientData, formatCurre
           </table>
         </div>
       </div>
-      <div class="output-report-content" id="report-retirement-fact-finder" style="display: none;">
+      <div class="output-tab-content" id="report-alternatives-retirement" style="display: none;">
+        <div class="output-card">
+          <h3>Retirement Alternatives</h3>
+          <button class="add-to-presentation-btn" data-report="report-alternatives-retirement" data-title="Retirement Alternatives" style="float: right;">
+            ${selectedReports.some(r => r.id === 'report-alternatives-retirement') ? 'Remove from Presentation' : 'Add to Presentation'}
+          </button>
+          <table class="output-table">
+            <thead>
+              <tr>
+                <th>Option</th>
+                <th>Details</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Increase Rate of Return</td>
+                <td>Increase portfolio ROR to ${(targetROR * 100).toFixed(1)}% from ${(rorRetirement * 100).toFixed(1)}%</td>
+              </tr>
+              <tr>
+                <td>Reduce Income Needs</td>
+                <td>Reduce monthly income needs to ${formatCurrency(reducedMonthlyNeed)} from ${formatCurrency(monthlyNeed)}</td>
+              </tr>
+              <tr>
+                <td>Delay Retirement</td>
+                <td>Delay retirement to age ${newRetirementAge} from age ${c1RetirementAge}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="output-tab-content" id="report-retirement-timeline" style="display: none;">
+        <div class="output-card">
+          <h3>Retirement Income Timeline</h3>
+          <button class="add-to-presentation-btn" data-report="report-retirement-timeline" data-title="Retirement Income Timeline" style="float: right;">
+            ${selectedReports.some(r => r.id === 'report-retirement-timeline') ? 'Remove from Presentation' : 'Add to Presentation'}
+          </button>
+          <table class="output-table">
+            <thead>
+              <tr>
+                <th>Age</th>
+                <th>Need</th>
+                <th>Income</th>
+                <th>Social Security</th>
+                <th>Withdrawal</th>
+                <th>Shortfall</th>
+                <th>Balance</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${incomeData.labels.slice(1).map((age, i) => `
+                <tr>
+                  <td>${age}</td>
+                  <td>${formatCurrency(incomeData.needData[i + 1])}</td>
+                  <td>${formatCurrency(incomeData.incomeData[i + 1])}</td>
+                  <td>${formatCurrency(incomeData.socialSecurityData[i + 1])}</td>
+                  <td>${formatCurrency(incomeData.withdrawalData[i + 1])}</td>
+                  <td>${formatCurrency(incomeData.shortfallData[i + 1])}</td>
+                  <td>${formatCurrency(incomeData.balanceData[i + 1])}</td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="output-tab-content" id="report-retirement-fact-finder" style="display: none;">
         <div class="output-card">
           <h3>Retirement Fact Finder</h3>
           <button class="add-to-presentation-btn" data-report="report-retirement-fact-finder" data-title="Retirement Fact Finder" style="float: right;">
@@ -862,15 +917,12 @@ export function updateRetirementOutputs(analysisOutputs, clientData, formatCurre
       </div>
     `;
 
-    // Setup dropdown event listener
-    const reportSelect = document.getElementById('output-report-select');
-    if (reportSelect) {
-      reportSelect.addEventListener('change', () => {
-        const selectedReport = reportSelect.value;
-        document.querySelectorAll('.output-report-content').forEach(content => {
-          content.style.display = content.id === selectedReport ? 'block' : 'none';
-        });
-      });
+    // Render the chart in the Retirement Analysis tab
+    const chartCanvas = document.getElementById('analysis-chart');
+    if (chartCanvas) {
+      updateRetirementGraph(chartCanvas, clientData, Chart, getAge);
+    } else {
+      console.error('Chart canvas #analysis-chart not found after rendering');
     }
   } catch (error) {
     console.error('Error in updateRetirementOutputs:', error);
