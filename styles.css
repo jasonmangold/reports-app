@@ -1281,4 +1281,10 @@ body.dark-mode .graph-placeholder {
 .output-dropdown { margin-bottom: 16px; }
 .output-select { padding: 8px; font-size: 16px; width: 100%; max-width: 300px; }
 .output-tab-content { display: none; }
-.output-tab-content.active { display: block; }
+.output-tab-content:first-child { display: block; }
+.output-error { color: red; font-style: italic; }
+.output-card { padding: 16px; border: 1px solid #ccc; border-radius: 4px; }
+.output-table { width: 100%; border-collapse: collapse; margin-top: 8px; }
+.output-table th, .output-table td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+canvas#analysis-chart { display: block; width: 600px; height: 400px; max-height: 400px; }
+
