@@ -587,10 +587,6 @@ export function updateRetirementOutputs(analysisOutputs, clientData, formatCurre
       ` : ''}
       <div class="output-tab-content active" id="output-graph">
         <div class="output-card">
-          <h3>Retirement Income Graph</h3>
-          <canvas id="analysis-chart" style="max-width: 100%;"></canvas>
-        </div>
-        <div class="output-card">
           <h3>Income Goals</h3>
           <p>Your desired monthly retirement income in today's dollars, adjusted for inflation:</p>
           <table class="output-table">
@@ -669,6 +665,10 @@ export function updateRetirementOutputs(analysisOutputs, clientData, formatCurre
           </div>
           <p class="disclaimer">Values shown are hypothetical and not a promise of future performance.</p>
         </div>
+        <div class="output-card">
+          <h3>Retirement Income Graph</h3>
+          <canvas id="analysis-chart" style="max-width: 100%;"></canvas>
+        </div>
       </div>
       <div class="output-tab-content" id="output-timeline" style="display: none;">
         <div class="output-card">
@@ -727,6 +727,44 @@ export function updateRetirementOutputs(analysisOutputs, clientData, formatCurre
     console.error('Error in updateRetirementOutputs:', error);
     analysisOutputs.innerHTML = '<p class="output-card">Unable to render outputs. Please ensure all required fields (DOB, retirement age, mortality age, income needs) are filled correctly.</p>';
     if (tabContainer) tabContainer.innerHTML = ''; // Clear tabs on error
+  }
+}
+
+// Helper function to set up age display listeners for DOB inputs
+export function setupAgeDisplayListeners(getAge) {
+  try {
+    const c1DobInput = document.getElementById('c1-dob');
+    const c2DobInput = document.getElementById('c2-dob');
+    const c1AgeDisplay = document.getElementById('c1-age-display');
+    const c2AgeDisplay = document.getElementById('c2-age-display');
+
+    if (c1DobInput && c1AgeDisplay) {
+      c1DobInput.addEventListener('input', () => {
+        const dob = c1DobInput.value;
+        const age = getAge(dob);
+        c1AgeDisplay.textContent = dob && age > 0 ? `Current Age: ${age}` : '';
+      });
+      // Trigger initial update if DOB is pre-filled
+      if (c1DobInput.value) {
+        const age = getAge(c1DobInput.value);
+        c1AgeDisplay.textContent = age > 0 ? `Current Age: ${age}` : '';
+      }
+    }
+
+    if (c2DobInput && c2AgeDisplay) {
+      c2DobInput.addEventListener('input', () => {
+        const dob = c2DobInput.value;
+        const age = getAge(dob);
+        c2AgeDisplay.textContent = dob && age > 0 ? `Current Age: ${age}` : '';
+      });
+      // Trigger initial update if DOB is pre-filled
+      if (c2DobInput.value) {
+        const age = getAge(c2DobInput.value);
+        c2AgeDisplay.textContent = age > 0 ? `Current Age: ${age}` : '';
+      }
+    }
+  } catch (error) {
+    console.error('Error in setupAgeDisplayListeners:', error);
   }
 }
 
