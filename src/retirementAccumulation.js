@@ -235,7 +235,7 @@ function calculateRetirementIncome(clientData, getAge) {
           withdrawal = remainingNeed;
           balance = availableBalance - annualWithdrawal;
         } else {
-          withdrawal = availableBalance / 12;
+          withdrawal = availableBalance > 0 ? availableBalance / 12 : 0;
           shortfall = remainingNeed - withdrawal;
           balance = 0;
         }
@@ -244,13 +244,13 @@ function calculateRetirementIncome(clientData, getAge) {
       result.shortfallData.push(shortfall);
       result.balanceData.push(balance);
 
-      // Update depletion age
-      if (balance <= 0 && withdrawal === 0 && shortfall > 0) {
+      // Update depletion age (only set once, when balance first depletes)
+      if (balance <= 0 && result.depletionAge === startAge) {
         result.depletionAge = currentAge;
-        break;
       }
-      result.depletionAge = balance > 0 ? mortalityAge : currentAge;
     }
+    // Ensure depletionAge is mortalityAge if balance remains positive
+    result.depletionAge = balance > 0 ? mortalityAge : result.depletionAge;
   } catch (error) {
     console.error('Error in calculateRetirementIncome:', error);
   }
@@ -587,6 +587,10 @@ export function updateRetirementOutputs(analysisOutputs, clientData, formatCurre
       ` : ''}
       <div class="output-tab-content active" id="output-graph">
         <div class="output-card">
+          <h3>Retirement Income Graph</h3>
+          <canvas id="analysis-chart" style="max-width: 100%;"></canvas>
+        </div>
+        <div class="output-card">
           <h3>Income Goals</h3>
           <p>Your desired monthly retirement income in today's dollars, adjusted for inflation:</p>
           <table class="output-table">
@@ -664,10 +668,6 @@ export function updateRetirementOutputs(analysisOutputs, clientData, formatCurre
             <p>Retirement duration: ${depletionAge - c1RetirementAge} of ${mortalityAge - c1RetirementAge} years</p>
           </div>
           <p class="disclaimer">Values shown are hypothetical and not a promise of future performance.</p>
-        </div>
-        <div class="output-card">
-          <h3>Retirement Income Graph</h3>
-          <canvas id="analysis-chart" style="max-width: 100%;"></canvas>
         </div>
       </div>
       <div class="output-tab-content" id="output-timeline" style="display: none;">
