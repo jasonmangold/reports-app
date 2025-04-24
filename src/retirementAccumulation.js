@@ -8,7 +8,7 @@ export const retirementAccumulationTabs = [
         <h5>Client 1</h5>
         <label>Name: <input type="text" id="c1-name" placeholder="John Doe"></label>
         <label>Date of Birth: <input type="date" id="c1-dob"></label>
-        <label>Age:<div id="c1-age-display" class="age-display"></div></label>
+        <div id="c1-age-display" class="age-display"></div>
         <label>Retirement Age: <input type="number" id="c1-retirement-age" min="1" max="120" placeholder="65"></label>
       </div>
       <div class="client" id="client2-section" style="display: none;">
@@ -754,20 +754,26 @@ export function updateRetirementOutputs(analysisOutputs, clientData, formatCurre
 // Helper function to set up age display and currency input formatting
 export function setupAgeDisplayListeners(getAge) {
   try {
+    console.log('Setting up age display listeners');
     // Age display for DOB inputs
     const c1DobInput = document.getElementById('c1-dob');
     const c2DobInput = document.getElementById('c2-dob');
     const c1AgeDisplay = document.getElementById('c1-age-display');
     const c2AgeDisplay = document.getElementById('c2-age-display');
 
+    console.log('c1-dob:', c1DobInput, 'c1-age-display:', c1AgeDisplay);
+    console.log('c2-dob:', c2DobInput, 'c2-age-display:', c2AgeDisplay);
+
     if (c1DobInput && c1AgeDisplay) {
       c1DobInput.addEventListener('input', () => {
         const dob = c1DobInput.value;
         const age = getAge(dob);
+        console.log('Client 1 DOB:', dob, 'Age:', age);
         c1AgeDisplay.textContent = dob && age > 0 ? `Current Age: ${age}` : '';
       });
       if (c1DobInput.value) {
         const age = getAge(c1DobInput.value);
+        console.log('Client 1 Initial DOB:', c1DobInput.value, 'Age:', age);
         c1AgeDisplay.textContent = age > 0 ? `Current Age: ${age}` : '';
       }
     }
@@ -776,10 +782,12 @@ export function setupAgeDisplayListeners(getAge) {
       c2DobInput.addEventListener('input', () => {
         const dob = c2DobInput.value;
         const age = getAge(dob);
+        console.log('Client 2 DOB:', dob, 'Age:', age);
         c2AgeDisplay.textContent = dob && age > 0 ? `Current Age: ${age}` : '';
       });
       if (c2DobInput.value) {
         const age = getAge(c2DobInput.value);
+        console.log('Client 2 Initial DOB:', c2DobInput.value, 'Age:', age);
         c2AgeDisplay.textContent = age > 0 ? `Current Age: ${age}` : '';
       }
     }
