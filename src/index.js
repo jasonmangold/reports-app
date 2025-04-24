@@ -35,6 +35,8 @@ let clientData = {
 let accountCount = { c1: 1, c2: 1 };
 let assetCount = { c1: 0, c2: 1 };
 let currentAnalysis = 'retirement-accumulation';
+let reportCount = 0;
+let isTyping = false; // Flag to prevent re-rendering during typing
 
 // DOM elements
 const analysisTopics = document.querySelector('.analysis-topics');
@@ -47,7 +49,6 @@ const clientFileName = document.getElementById('client-file-name');
 const presentationCount = document.getElementById('presentation-count');
 const analysisOutputs = document.getElementById('analysis-outputs');
 let chartInstance = null;
-let reportCount = 0;
 
 // Analysis topics list
 const analysisTopicsList = [
@@ -154,7 +155,6 @@ function updateTabs(analysis) {
 
     setupTabSwitching();
     setupAddButtons();
-    // Initialize age display listeners for DOB inputs
     if (analysis === 'retirement-accumulation') {
       setupAgeDisplayListeners(getAge);
     }
@@ -166,9 +166,12 @@ function updateTabs(analysis) {
 // Populate input fields with clientData
 function populateInputFields() {
   try {
+    if (isTyping) {
+      console.log('Skipping populateInputFields during typing');
+      return;
+    }
     console.log('Populating input fields with clientData:', JSON.stringify(clientData, null, 2));
 
-    // Shared fields
     setInputValue('c1-name', clientData.client1.personal.name, 'Client 1 Name');
     setInputValue('c2-name', clientData.client2.personal.name, 'Client 2 Name');
     setInputValue('c1-employment', clientData.client1.incomeSources.employment, 'Client 1 Employment', 'currency');
@@ -179,7 +182,6 @@ function populateInputFields() {
     setInputValue('c2-other-income', clientData.client2.incomeSources.other, 'Client 2 Other Income', 'currency');
     setInputValue('is-married', clientData.isMarried, 'Is Married', 'checked');
 
-    // Retirement Accumulation specific
     setInputValue('c1-dob', clientData.client1.personal.dob, 'Client 1 DOB');
     setInputValue('c2-dob', clientData.client2.personal.dob, 'Client 2 DOB');
     setInputValue('c1-retirement-age', clientData.client1.personal.retirementAge, 'Client 1 Retirement Age');
@@ -189,7 +191,6 @@ function populateInputFields() {
     setInputValue('inflation', clientData.assumptions.inflation, 'Inflation', 'percentage');
     setInputValue('ror-retirement', clientData.assumptions.rorRetirement, 'ROR Retirement', 'percentage');
 
-    // Personal Finance specific
     setInputValue('interest-dividends', clientData.client1.incomeSources.interestDividends, 'Interest and Dividends', 'currency');
     setInputValue('household-expenses', clientData.savingsExpenses.householdExpenses, 'Household Expenses', 'currency');
     setInputValue('taxes', clientData.savingsExpenses.taxes, 'Taxes', 'currency');
@@ -200,7 +201,6 @@ function populateInputFields() {
     setInputValue('residence-mortgage', clientData.other.residenceMortgage, 'Residence/Mortgage', 'currency');
     setInputValue('other-debt', clientData.other.otherDebt, 'Other Debt', 'currency');
 
-    // Accounts
     ['c1', 'c2'].forEach(client => {
       const clientKey = client === 'c1' ? 'client1' : 'client2';
       const accounts = clientData[clientKey].accounts;
@@ -242,7 +242,6 @@ function populateInputFields() {
       console.log(`Populated ${client} accounts:`, accounts);
     });
 
-    // Assets
     ['c1', 'c2'].forEach(client => {
       const clientKey = client === 'c1' ? 'client1' : 'client2';
       const assets = clientData[clientKey].other?.assets || [];
@@ -280,20 +279,20 @@ function populateInputFields() {
 function setInputValue(id, value, label, format = 'text') {
   try {
     const input = document.getElementById(id);
-    if (input) {
-      if (format === 'currency' && value !== '' && value != null && !isNaN(value)) {
-        input.value = formatCurrency(parseFloat(value));
-      } else if (format === 'percentage' && value !== '' && value != null && !isNaN(value)) {
-        input.value = `${parseFloat(value)}%`;
-      } else if (format === 'checked') {
-        input.checked = value;
-      } else {
-        input.value = value ?? '';
-      }
-      console.log(`Set ${label} (#${id}) to: ${input.value || 'empty'} (format: ${format})`);
-    } else {
+    if (!input) {
       console.warn(`Input #${id} not found for ${label}`);
+      return;
     }
+    if (format === 'currency' && value !== '' && value != null && !isNaN(value)) {
+      input.value = formatCurrency(parseFloat(value));
+    } else if (format === 'percentage' && value !== '' && value != null && !isNaN(value)) {
+      input.value = `${parseFloat(value)}%`;
+    } else if (format === 'checked') {
+      input.checked = value;
+    } else {
+      input.value = value ?? '';
+    }
+    console.log(`Set ${label} (#${id}) to: ${input.value || 'empty'} (format: ${format})`);
   } catch (error) {
     console.error(`Error setting input #${id}:`, error);
   }
@@ -318,7 +317,6 @@ function tabClickHandler() {
     inputContent.querySelectorAll('.tab-content').forEach(content => {
       content.style.display = content.id === this.dataset.tab ? 'block' : 'none';
     });
-    // Re-attach age display listeners when switching tabs in retirement-accumulation
     if (currentAnalysis === 'retirement-accumulation') {
       setupAgeDisplayListeners(getAge);
     }
@@ -330,23 +328,24 @@ function tabClickHandler() {
 // Format input value based on input type
 function formatInput(input) {
   try {
-    const originalValue = input.value; // Preserve raw input
+    const selectionStart = input.selectionStart;
+    const selectionEnd = input.selectionEnd;
     if (input.classList.contains('currency-input')) {
-      let value = originalValue.replace(/[^0-9.]/g, '');
-      if (value !== '' && !isNaN(value)) {
+      let value = input.value.replace(/[^0-9.]/g, '');
+      if (value !== '' && !isNaN(value) && value.match(/^\d*\.?\d*$/)) {
         input.value = formatCurrency(parseFloat(value));
-      } else {
-        input.value = originalValue; // Retain raw input if invalid
+        // Adjust cursor position
+        const newLength = input.value.length;
+        input.setSelectionRange(selectionStart + (newLength - value.length), selectionEnd + (newLength - value.length));
       }
     } else if (input.classList.contains('percentage-input')) {
-      let value = originalValue.replace(/[^0-9.]/g, '');
+      let value = input.value.replace(/[^0-9.]/g, '');
       if (value !== '' && !isNaN(value)) {
         input.value = `${parseFloat(value)}%`;
-      } else {
-        input.value = originalValue;
+        input.setSelectionRange(selectionStart, selectionEnd);
       }
     }
-    console.log(`Formatted ${input.id}: ${originalValue} -> ${input.value}`);
+    console.log(`Formatted ${input.id}: ${input.value}`);
   } catch (error) {
     console.error(`Error formatting input #${input.id}:`, error);
   }
@@ -358,8 +357,9 @@ function setupEventDelegation() {
     let graphTimeout;
     document.addEventListener('input', (e) => {
       if (e.target.closest('#client-input-form')) {
+        isTyping = true;
         const activeElement = document.activeElement;
-        // Apply formatting and update client data
+        console.log(`Input event on ${e.target.id}: ${e.target.value}`);
         formatInput(e.target);
         updateClientData(e);
         clearTimeout(graphTimeout);
@@ -367,6 +367,7 @@ function setupEventDelegation() {
           updateGraph();
           updateOutputs();
           setupOutputTabSwitching();
+          isTyping = false;
           if (activeElement) activeElement.focus();
         }, 500);
       }
@@ -378,7 +379,6 @@ function setupEventDelegation() {
         updateGraph();
         updateOutputs();
         setupOutputTabSwitching();
-        // Re-attach age display listeners after toggling Client 2
         if (currentAnalysis === 'retirement-accumulation') {
           setupAgeDisplayListeners(getAge);
         }
@@ -388,14 +388,6 @@ function setupEventDelegation() {
         presentationCount.classList.toggle('active', reportCount > 0);
       }
     });
-
-    // Add blur event listener to ensure value is saved
-    document.addEventListener('blur', (e) => {
-      if (e.target.closest('#client-input-form') && e.target.classList.contains('currency-input')) {
-        updateClientData({ target: e.target });
-        console.log(`Blur on ${e.target.id}, clientData updated:`, clientData);
-      }
-    }, true);
   } catch (error) {
     console.error('Error in setupEventDelegation:', error);
   }
