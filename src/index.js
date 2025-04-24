@@ -1,6 +1,5 @@
 import { retirementAccumulationTabs, updateRetirementGraph, updateRetirementOutputs, setupAgeDisplayListeners } from './retirementAccumulation.js';
 import { personalFinanceTabs, updatePersonalFinanceGraph, updatePersonalFinanceOutputs } from './personalFinance.js';
-import Chart from 'chart.js/auto'; // Import Chart.js
 
 // Client data structure
 let clientData = {
@@ -559,7 +558,7 @@ function updateGraph() {
     console.log('chartCanvas:', chartCanvas);
 
     if (typeof Chart === 'undefined') {
-      console.error('Chart.js is not loaded.');
+      console.error('Chart.js is not loaded. Ensure the CDN script is included in analysis.html.');
       return;
     }
 
@@ -607,7 +606,7 @@ function updateGraph() {
 function updateOutputs() {
   try {
     if (currentAnalysis === 'retirement-accumulation') {
-      updateRetirementOutputs(analysisOutputs, clientData, formatCurrency, getAge, selectedReports, Chart);
+      updateRetirementOutputs(analysisOutputs, clientData, formatCurrency, getAge, selectedReports, window.Chart);
     } else if (currentAnalysis === 'personal-finance') {
       updatePersonalFinanceOutputs(analysisOutputs, clientData, formatCurrency);
     } else {
