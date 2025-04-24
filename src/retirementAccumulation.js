@@ -162,25 +162,27 @@ function calculateRetirementIncome(clientData, getAge) {
         let accountBalance = fvBalance + fvContributions + fvEmployerMatch;
 
         // Apply rorRetirement if client retires before startAge
-        if (yearsToClientRetirement < yearsToRetirement) {
-          const additionalYears = yearsToRetirement - yearsToClientRetirement;
+        if (clientRetirementAge < startAge) {
+          const additionalYears = startAge - clientRetirementAge;
           accountBalance *= Math.pow(1 + rorRetirement, additionalYears);
         }
 
         totalBalance += accountBalance;
       });
-    });
 
-    // Calculate future value of other assets
-    clients.forEach((client, idx) => {
-      if (!client || !client.other || !client.other.assets) return;
-      const clientAge = idx === 0 ? c1Age : c2Age;
-      client.other.assets.forEach(asset => {
-        let balance = parseFloat(asset.balance) || 0;
-        const ror = parseFloat(asset.ror) / 100 || 0.06;
-        const fvBalance = balance * Math.pow(1 + ror, yearsToRetirement);
-        totalBalance += fvBalance;
-      });
+      // Calculate future value of other assets
+      if (client.other && client.other.assets) {
+        client.other.assets.forEach(asset => {
+          let balance = parseFloat(asset.balance) || 0;
+          const ror = parseFloat(asset.ror) / 100 || 0.06;
+          let fvBalance = balance * Math.pow(1 + ror, yearsToClientRetirement);
+          if (clientRetirementAge < startAge) {
+            const additionalYears = startAge - clientRetirementAge;
+            fvBalance *= Math.pow(1 + rorRetirement, additionalYears);
+          }
+          totalBalance += fvBalance;
+        });
+      }
     });
 
     let balance = totalBalance;
@@ -378,6 +380,7 @@ export function updateRetirementOutputs(analysisOutputs, clientData, formatCurre
     const c2Age = clientData.isMarried ? getAge(clientData.client2.personal.dob) : c1Age;
     const c1RetirementAge = parseFloat(clientData.client1.personal.retirementAge) || 65;
     const c2RetirementAge = clientData.isMarried ? parseFloat(clientData.client2.personal.retirementAge) || 65 : c1RetirementAge;
+    const startAge = Math.max(c1RetirementAge, c2RetirementAge);
     const mortalityAge = parseFloat(clientData.assumptions.mortalityAge) || 90;
     const inflation = parseFloat(clientData.assumptions.inflation) / 100 || 0.02;
     const rorRetirement = parseFloat(clientData.assumptions.rorRetirement) / 100 || 0.04;
@@ -400,7 +403,7 @@ export function updateRetirementOutputs(analysisOutputs, clientData, formatCurre
     }
 
     // Adjust monthly need for inflation until retirement
-    const yearsToRetirement = Math.max(c1RetirementAge - c1Age, clientData.isMarried ? c2RetirementAge - c2Age : 0);
+    const yearsToRetirement = startAge - c1Age;
     monthlyNeed *= Math.pow(1 + inflation, yearsToRetirement);
 
     const incomeGoals = [
@@ -471,7 +474,12 @@ export function updateRetirementOutputs(analysisOutputs, clientData, formatCurre
         // Future value of employer match (annuity)
         const fvEmployerMatch = employerMatch && ror ? employerMatch * (Math.pow(1 + ror, yearsToClientRetirement) - 1) / ror : 0;
 
-        const accountBalance = fvBalance + fvContributions + fvEmployerMatch;
+        let accountBalance = fvBalance + fvContributions + fvEmployerMatch;
+
+        if (clientRetirementAge < startAge) {
+          const additionalYears = startAge - clientRetirementAge;
+          accountBalance *= Math.pow(1 + rorRetirement, additionalYears);
+        }
 
         if (accountBalance > 0) {
           assets.push({
@@ -486,7 +494,11 @@ export function updateRetirementOutputs(analysisOutputs, clientData, formatCurre
         client.other.assets.forEach(asset => {
           let balance = parseFloat(asset.balance) || 0;
           const ror = parseFloat(asset.ror) / 100 || 0.06;
-          const fvBalance = balance * Math.pow(1 + ror, yearsToRetirement);
+          let fvBalance = balance * Math.pow(1 + ror, yearsToClientRetirement);
+          if (clientRetirementAge < startAge) {
+            const additionalYears = startAge - clientRetirementAge;
+            fvBalance *= Math.pow(1 + rorRetirement, additionalYears);
+          }
           if (fvBalance > 0) {
             assets.push({
               name: asset.name || 'Other Asset',
