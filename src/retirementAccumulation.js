@@ -98,6 +98,46 @@ export const retirementAccumulationTabs = [
   }
 ];
 
+// Setup age display listeners for DOB inputs
+export function setupAgeDisplayListeners(getAge) {
+  try {
+    const dobInputs = document.querySelectorAll('#c1-dob, #c2-dob');
+    const isMarriedInput = document.getElementById('is-married');
+
+    dobInputs.forEach(input => {
+      input.addEventListener('change', () => {
+        const clientPrefix = input.id.split('-')[0];
+        const ageDisplay = document.getElementById(`${clientPrefix}-age-display`);
+        const dob = input.value;
+        const age = getAge(dob);
+        if (age > 0) {
+          ageDisplay.textContent = `Current Age: ${age}`;
+        } else {
+          ageDisplay.textContent = '';
+        }
+      });
+
+      // Trigger initial age display
+      if (input.value) {
+        const event = new Event('change');
+        input.dispatchEvent(event);
+      }
+    });
+
+    if (isMarriedInput) {
+      isMarriedInput.addEventListener('change', () => {
+        const c2Dob = document.getElementById('c2-dob');
+        if (c2Dob && isMarriedInput.checked && c2Dob.value) {
+          const event = new Event('change');
+          c2Dob.dispatchEvent(event);
+        }
+      });
+    }
+  } catch (error) {
+    console.error('Error in setupAgeDisplayListeners:', error);
+  }
+}
+
 // Helper function to calculate retirement income data
 function calculateRetirementIncome(clientData, getAge) {
   const result = {
@@ -727,5 +767,24 @@ export function updateRetirementOutputs(analysisOutputs, clientData, formatCurre
       <div class="output-tab-content" id="output-alternatives" style="display: none;">
         <div class="output-card">
           <h3>Alternatives to Achieve Retirement Goals</h3>
+          <p>Based on your current plan, funds may deplete at age ${depletionAge}. Consider these strategies to extend your retirement funds to age ${mortalityAge}:</p>
           <ul class="alternatives-list">
-            <li><strong
+            ${depletionAge < mortalityAge ? `
+              <li><strong>Increase Savings:</strong> Save an additional ${formatCurrency(additionalSavings)} monthly, starting now, at ${Math.round(rorRetirement * 100)}% ROR to accumulate the needed ${formatCurrency(requiredAtRetirement)} by retirement.</li>
+              <li><strong>Higher Investment Returns:</strong> Target a ${Math.round(targetROR * 100)}% annual return (instead of ${Math.round(rorRetirement * 100)}%) through more aggressive investments, though this increases risk.</li>
+              <li><strong>Reduce Retirement Income Needs:</strong> Lower your monthly income need to ${formatCurrency(reducedMonthlyNeed)} (from ${formatCurrency(monthlyNeed)}) by adjusting lifestyle or expenses.</li>
+              <li><strong>Delay Retirement:</strong> Postpone retirement to age ${newRetirementAge} to allow more time to save and reduce the withdrawal period.</li>
+            ` : `
+              <li><strong>Maintain Current Plan:</strong> Your funds are projected to last until age ${mortalityAge}, meeting your retirement goals. Continue current savings and investment strategy.</li>
+            `}
+          </ul>
+          <p class="disclaimer">These alternatives are hypothetical. Consult a financial advisor to assess risks and feasibility.</p>
+        </div>
+      </div>
+    `;
+  } catch (error) {
+    console.error('Error in updateRetirementOutputs:', error);
+    analysisOutputs.innerHTML = '<p class="output-card">Error generating retirement outputs. Please check input data.</p>';
+    if (tabContainer) tabContainer.innerHTML = '';
+  }
+}
