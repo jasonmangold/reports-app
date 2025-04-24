@@ -410,11 +410,14 @@ export function updateRetirementOutputs(analysisOutputs, clientData, formatCurre
 
     // Validate clientData
     if (!clientData || !clientData.client1 || !clientData.client1.personal) {
-      console.error('Invalid clientData structure');
+      console.error('Invalid clientData structure:', clientData);
       analysisOutputs.innerHTML = '<p class="output-card">Error: Invalid client data. Please check input.</p>';
       if (tabContainer) tabContainer.innerHTML = '';
       return;
     }
+
+    // Log clientData for debugging
+    console.log('clientData:', JSON.stringify(clientData, null, 2));
 
     const c1Age = getAge(clientData.client1.personal.dob);
     const c2Age = clientData.isMarried ? getAge(clientData.client2?.personal?.dob) : c1Age;
@@ -429,6 +432,13 @@ export function updateRetirementOutputs(analysisOutputs, clientData, formatCurre
     clientData.client1.other = clientData.client1.other || { assets: [] };
     clientData.client2 = clientData.client2 || { other: { assets: [] } };
     const currentSavings = Math.round(parseFloat(clientData.savingsExpenses?.monthlySavings) || 0);
+
+    if (isNaN(c1Age) || (clientData.isMarried && isNaN(c2Age))) {
+      console.error('Invalid age calculation:', { c1Age, c2Age });
+      analysisOutputs.innerHTML = '<p class="output-card">Error: Invalid date of birth. Please check input.</p>';
+      if (tabContainer) tabContainer.innerHTML = '';
+      return;
+    }
 
     if (c1Age >= c1RetirementAge || (clientData.isMarried && c2Age >= c2RetirementAge)) {
       analysisOutputs.innerHTML = '<p class="output-card">Client(s) already at or past retirement age. Please adjust retirement age or DOB.</p>';
@@ -588,7 +598,7 @@ export function updateRetirementOutputs(analysisOutputs, clientData, formatCurre
         let tempBalance = incomeData.totalBalance;
         for (let j = 0; j < mortalityAge - c1RetirementAge; j++) {
           const currentNeed = Math.round(mid * Math.pow(1 + inflation, j) - monthlySources);
-          tempBalance = Math.round(tempBalance * (1 + rorRetention) - (currentNeed > 0 ? currentNeed * 12 : 0));
+          tempBalance = Math.round(tempBalance * (1 + rorRetirement) - (currentNeed > 0 ? currentNeed * 12 : 0));
           if (tempBalance <= 0) break;
         }
         if (tempBalance > 0) high = mid;
