@@ -612,24 +612,30 @@ export function updateRetirementOutputs(analysisOutputs, clientData, formatCurre
 
     // Define report options for dropdown
     const reportOptions = [
-      { id: 'output-graph', label: 'Retirement Analysis' },
-      { id: 'report-social-security-optimizer', label: 'Social Security Optimizer' },
-      { id: 'report-capital-available', label: 'Capital Available at Retirement' },
-      { id: 'output-alternatives', label: 'Alternatives to Acheiving Retirement Goals' },
-      { id: 'output-timeline', label: 'Retirement Timeline' },
-      { id: 'report-retirement-fact-finder', label: 'Fact Finder' }
+      { id: 'output-graph', label: 'Retirement Analysis', reportId: 'report-graph', title: 'Retirement Income Graph' },
+      { id: 'report-social-security-optimizer', label: 'Social Security Optimizer', reportId: 'report-social-security-optimizer', title: 'Social Security Optimizer' },
+      { id: 'report-capital-available', label: 'Capital Available at Retirement', reportId: 'report-capital-available', title: 'Capital Available at Retirement' },
+      { id: 'output-alternatives', label: 'Alternatives to Achieving Retirement Goals', reportId: 'report-alternatives-retirement', title: 'Retirement Alternatives' },
+      { id: 'output-timeline', label: 'Retirement Timeline', reportId: 'report-retirement-timeline', title: 'Retirement Income Timeline' },
+      { id: 'report-retirement-fact-finder', label: 'Fact Finder', reportId: 'report-retirement-fact-finder', title: 'Retirement Fact Finder' }
     ];
 
-    // Render Dropdown in output-tabs-container
+    // Render Dropdown and Checkbox in output-tabs-container
     if (tabContainer) {
       tabContainer.innerHTML = `
-        <div class="output-dropdown">
-          <label for="output-select">Select View: </label>
-          <select id="output-select" class="output-select">
-            ${reportOptions.map(option => `
-              <option value="${option.id}" ${option.id === 'output-graph' ? 'selected' : ''}>${option.label}</option>
-            `).join('')}
-          </select>
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <div class="output-dropdown">
+            <label for="output-select">Select View: </label>
+            <select id="output-select" class="output-select">
+              ${reportOptions.map(option => `
+                <option value="${option.id}" ${option.id === 'output-graph' ? 'selected' : ''}>${option.label}</option>
+              `).join('')}
+            </select>
+          </div>
+          <label class="add-to-presentation-checkbox">
+            <input type="checkbox" id="add-to-presentation" data-report="${reportOptions[0].reportId}" data-title="${reportOptions[0].title}">
+            Add to Presentation
+          </label>
         </div>
       `;
     }
@@ -637,30 +643,30 @@ export function updateRetirementOutputs(analysisOutputs, clientData, formatCurre
     // Render Content in analysis-outputs
     analysisOutputs.innerHTML = `
       ${!tabContainer ? `
-        <div class="output-dropdown">
-          <label for="output-select">Select View: </label>
-          <select id="output-select" class="output-select">
-            ${reportOptions.map(option => `
-              <option value="${option.id}" ${option.id === 'output-graph' ? 'selected' : ''}>${option.label}</option>
-            `).join('')}
-          </select>
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <div class="output-dropdown">
+            <label for="output-select">Select View: </label>
+            <select id="output-select" class="output-select">
+              ${reportOptions.map(option => `
+                <option value="${option.id}" ${option.id === 'output-graph' ? 'selected' : ''}>${option.label}</option>
+              `).join('')}
+            </select>
+          </div>
+          <label class="add-to-presentation-checkbox">
+            <input type="checkbox" id="add-to-presentation" data-report="${reportOptions[0].reportId}" data-title="${reportOptions[0].title}">
+            Add to Presentation
+          </label>
         </div>
       ` : ''}
       <div class="output-tab-content active" id="output-graph">
         <div class="output-card">
           <h3>Retirement Income Graph</h3>
-          <button class="add-to-presentation-btn" data-report="report-graph" data-title="Retirement Income Graph" style="float: right;">
-            ${selectedReports.some(r => r.id === 'report-graph') ? 'Remove from Presentation' : 'Add to Presentation'}
-          </button>
           <canvas id="analysis-chart" style="max-height: 400px;"></canvas>
         </div>
       </div>
       <div class="output-tab-content" id="output-timeline" style="display: none;">
         <div class="output-card">
           <h3>Retirement Income Timeline</h3>
-          <button class="add-to-presentation-btn" data-report="report-retirement-timeline" data-title="Retirement Income Timeline" style="float: right;">
-            ${selectedReports.some(r => r.id === 'report-retirement-timeline') ? 'Remove from Presentation' : 'Add to Presentation'}
-          </button>
           <table class="output-table">
             <thead>
               <tr>
@@ -692,9 +698,6 @@ export function updateRetirementOutputs(analysisOutputs, clientData, formatCurre
       <div class="output-tab-content" id="output-alternatives" style="display: none;">
         <div class="output-card">
           <h3>Retirement Alternatives</h3>
-          <button class="add-to-presentation-btn" data-report="report-alternatives-retirement" data-title="Retirement Alternatives" style="float: right;">
-            ${selectedReports.some(r => r.id === 'report-alternatives-retirement') ? 'Remove from Presentation' : 'Add to Presentation'}
-          </button>
           <table class="output-table">
             <thead>
               <tr>
@@ -722,18 +725,12 @@ export function updateRetirementOutputs(analysisOutputs, clientData, formatCurre
       <div class="output-tab-content" id="report-social-security-optimizer" style="display: none;">
         <div class="output-card">
           <h3>Social Security Optimizer</h3>
-          <button class="add-to-presentation-btn" data-report="report-social-security-optimizer" data-title="Social Security Optimizer" style="float: right;">
-            ${selectedReports.some(r => r.id === 'report-social-security-optimizer') ? 'Remove from Presentation' : 'Add to Presentation'}
-          </button>
           <p>Optimized Social Security strategies will be displayed here. (Placeholder: Optimization logic not implemented.)</p>
         </div>
       </div>
       <div class="output-tab-content" id="report-capital-available" style="display: none;">
         <div class="output-card">
           <h3>Capital Available at Retirement</h3>
-          <button class="add-to-presentation-btn" data-report="report-capital-available" data-title="Capital Available at Retirement" style="float: right;">
-            ${selectedReports.some(r => r.id === 'report-capital-available') ? 'Remove from Presentation' : 'Add to Presentation'}
-          </button>
           <table class="output-table">
             <thead>
               <tr>
@@ -759,10 +756,6 @@ export function updateRetirementOutputs(analysisOutputs, clientData, formatCurre
       <div class="output-tab-content" id="report-retirement-fact-finder" style="display: none;">
         <div class="output-card">
           <h3>Retirement Fact Finder</h3>
-          <button class="add-to-presentation-btn" data-report="report-retirement-fact-finder" data-title="Retirement Fact Finder" style="float: right;">
-            ${selectedReports.some(r => r.id === 'report-retirement-fact-finder') ? 'Remove from Presentation' : 'Add to Presentation'}
-          </button>
-          <h4>Client Information</h4>
           <table class="output-table">
             <thead>
               <tr>
@@ -843,8 +836,8 @@ export function updateRetirementOutputs(analysisOutputs, clientData, formatCurre
       </div>
     `;
 
-    // Setup dropdown switching
-    setupOutputDropdownSwitching();
+    // Setup dropdown and checkbox interactions
+    setupOutputControls(reportOptions, selectedReports);
   } catch (error) {
     console.error('Error in updateRetirementOutputs:', error);
     analysisOutputs.innerHTML = '<p class="output-card">Error rendering outputs. Please check input data.</p>';
@@ -852,21 +845,53 @@ export function updateRetirementOutputs(analysisOutputs, clientData, formatCurre
   }
 }
 
-// Setup dropdown switching
-function setupOutputDropdownSwitching() {
+// Setup dropdown and checkbox interactions
+function setupOutputControls(reportOptions, selectedReports) {
   try {
     const select = document.getElementById('output-select');
-    if (!select) {
-      console.warn('Dropdown #output-select not found');
+    const checkbox = document.getElementById('add-to-presentation');
+    if (!select || !checkbox) {
+      console.warn('Dropdown #output-select or checkbox #add-to-presentation not found');
       return;
     }
+
+    // Function to update checkbox state based on selected option
+    const updateCheckboxState = () => {
+      const selectedOption = reportOptions.find(option => option.id === select.value);
+      if (selectedOption) {
+        checkbox.dataset.report = selectedOption.reportId;
+        checkbox.dataset.title = selectedOption.title;
+        checkbox.checked = selectedReports.some(r => r.id === selectedOption.reportId);
+      }
+    };
+
+    // Initial state
+    updateCheckboxState();
+
+    // Update checkbox state when dropdown changes
     select.removeEventListener('change', outputDropdownChangeHandler);
-    select.addEventListener('change', outputDropdownChangeHandler);
+    select.addEventListener('change', function() {
+      outputDropdownChangeHandler.call(this);
+      updateCheckboxState();
+    });
+
+    // Handle checkbox change by dispatching a custom event
+    checkbox.addEventListener('change', () => {
+      const event = new CustomEvent('addToPresentationToggle', {
+        detail: {
+          reportId: checkbox.dataset.report,
+          reportTitle: checkbox.dataset.title
+        },
+        bubbles: true
+      });
+      checkbox.dispatchEvent(event);
+    });
   } catch (error) {
-    console.error('Error in setupOutputDropdownSwitching:', error);
+    console.error('Error in setupOutputControls:', error);
   }
 }
 
+// Dropdown change handler
 function outputDropdownChangeHandler() {
   try {
     const selectedTab = this.value;
