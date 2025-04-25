@@ -755,106 +755,84 @@ function outputDropdownChangeHandler() {
   } catch (error) {
     console.error('Error in outputDropdownChangeHandler:', error);
   }
-  export function updateRetirementGraph(chartCanvas, clientData, Chart, getAge) {
+export function updateSummaryGraph(chartCanvas, clientData, Chart, getAge) {
   try {
-    if (!chartCanvas) {
-      console.error('Chart canvas #analysis-chart not found');
-      return null;
-    }
-    if (typeof Chart === 'undefined') {
-      console.error('Chart.js not loaded');
-      return null;
-    }
+    // Calculate total income (Client 1 + Client 2 if married)
+    const totalIncomeC1 = (parseFloat(clientData.client1.incomeSources.employment) || 0) +
+                         (parseFloat(clientData.client1.incomeSources.socialSecurity) || 0) +
+                         (parseFloat(clientData.client1.incomeSources.other) || 0) +
+                         (parseFloat(clientData.client1.incomeSources.interestDividends) || 0);
+    
+    const totalIncomeC2 = clientData.isMarried ? 
+                         (parseFloat(clientData.client2.incomeSources.employment) || 0) +
+                         (parseFloat(clientData.client2.incomeSources.socialSecurity) || 0) +
+                         (parseFloat(clientData.client2.incomeSources.other) || 0) +
+                         (parseFloat(clientData.client2.incomeSources.interestDividends) || 0) : 0;
 
-    const ctx = chartCanvas.getContext('2d');
-    let chartInstance = null;
+    // Calculate total expenses
+    const totalExpenses = (parseFloat(clientData.savingsExpenses.householdExpenses) || 0) +
+                          (parseFloat(clientData.savingsExpenses.taxes) || 0) +
+                          (parseFloat(clientData.savingsExpenses.otherExpenses) || 0);
 
-    const incomeData = calculateRetirementIncome(clientData, getAge);
-    if (!incomeData.labels.length) {
-      chartInstance = new Chart(ctx, {
-        type: 'bar',
-        data: {
-          labels: ['Error'],
-          datasets: [{
-            label: 'Error',
-            data: [0],
-            backgroundColor: '#ef4444'
-          }]
-        },
-        options: {
-          responsive: true,
-          plugins: {
-            title: { display: true, text: 'Please enter valid DOB and retirement age' }
-          }
-        }
-      });
-      console.log('Invalid inputs for graph');
-      return chartInstance;
-    }
+    // Calculate net savings
+    const totalIncome = totalIncomeC1 + totalIncomeC2;
+    const netSavings = totalIncome - totalExpenses;
 
-    chartInstance = new Chart(ctx, {
+    // Prepare data for the chart
+    const labels = ['Total Income', 'Total Expenses', 'Net Savings'];
+    const data = [totalIncome, totalExpenses, netSavings];
+
+    // Create the chart
+    return new Chart(chartCanvas, {
       type: 'bar',
       data: {
-        labels: incomeData.labels.slice(1), // Skip starting balance row
-        datasets: [
-          {
-            label: 'Social Security',
-            data: incomeData.socialSecurityData.slice(1).map(Math.round),
-            backgroundColor: '#22c55e',
-            stack: 'Stack0'
-          },
-          {
-            label: 'Income',
-            data: incomeData.incomeData.slice(1).map(Math.round),
-            backgroundColor: '#3b82f6',
-            stack: 'Stack0'
-          },
-          {
-            label: 'Withdrawal',
-            data: incomeData.withdrawalData.slice(1).map(Math.round),
-            backgroundColor: '#f97316',
-            stack: 'Stack0'
-          },
-          {
-            label: 'Shortfall',
-            data: incomeData.shortfallData.slice(1).map(Math.round),
-            backgroundColor: '#ef4444',
-            stack: 'Stack0'
-          }
-        ]
-      },
-      options: {
-        responsive: true,
-        plugins: {
-          legend: { display: true, position: 'top' },
-          title: { display: true, text: 'Retirement Income Sources by Age' }
-        },
-        scales: {
-          x: { title: { display: true, text: 'Client 1 Age' }, stacked: true },
-          y: { title: { display: true, text: 'Annual Income ($)' }, stacked: true, beginAtZero: true }
-        }
-      }
-    });
-    console.log('Retirement Accumulation bar graph rendered');
-    return chartInstance;
-  } catch (error) {
-    console.error('Error in updateRetirementGraph:', error);
-    const ctx = chartCanvas.getContext('2d');
-    let chartInstance = new Chart(ctx, {
-      type: 'bar',
-      data: {
-        labels: ['Error'],
+        labels: labels,
         datasets: [{
-          label: 'Error',
-          data: [0],
-          backgroundColor: '#ef4444'
+          label: 'Financial Summary',
+          data: data,
+          backgroundColor: [
+            'rgba(54, 162, 235, 0.2)',  // Total Income
+            'rgba(255, 99, 132, 0.2)',  // Total Expenses
+            'rgba(75, 192, 192, 0.2)'   // Net Savings
+          ],
+          borderColor: [
+            'rgba(54, 162, 235, 1)',
+            'rgba(255, 99, 132, 1)',
+            'rgba(75, 192, 192, 1)'
+          ],
+          borderWidth: 1
         }]
       },
       options: {
-        responsive: true,
-        plugins: { title: { display: true, text: 'Error rendering graph' } }
+        scales: {
+          y: {
+            beginAtZero: true,
+            title: {
+              display: true,
+              text: 'Amount ($)'
+            }
+          },
+          x: {
+            title: {
+              display: true,
+              text: 'Category'
+            }
+          }
+        },
+        plugins: {
+          legend: {
+            display: false  // Hide legend since we only have one dataset
+          },
+          title: {
+            display: true,
+            text: 'Financial Summary Overview'
+          }
+        }
       }
     });
-    return chartInstance;
+  } catch (error) {
+    console.error('Error in updateSummaryGraph:', error);
+    return null;
   }
+}
 }
