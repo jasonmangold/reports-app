@@ -321,9 +321,11 @@ export function updateRetirementGraph(chartCanvas, clientData, Chart, getAge) {
         options: {
           responsive: true,
           plugins: {
-            title: { display: true, text: 'Please enter valid DOB We need to make some changes to the code to convert the tabs into a dropdown menu. Below, I’ll outline the necessary modifications to the `updateRetirementOutputs` function in `retirementAccumulation.js.txt`. The tabs are currently rendered as buttons within a `.output-tabs` div, and we’ll replace them with a `<select>` dropdown menu. The JavaScript logic for tab switching will be updated to handle the dropdown’s `change` event instead of button clicks. Since this is an update to an existing artifact, we’ll reuse the original `artifact_id` and only modify the relevant parts.
+            title: { display: true, text: 'Please enter valid DOB'}
+          }
+        }
 
-<xaiArtifact artifact_id="b476c54d-a153-4ba0-9295-78723398536c" artifact_version_id="70a81822-7993-4b57-815c-addf206e9089" title="retirementAccumulation.js" contentType="text/javascript">
+
 export const retirementAccumulationTabs = [
   {
     id: 'personal',
