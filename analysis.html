@@ -6,9 +6,19 @@
   <title>Analysis - Advisys</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="styles.css" onerror="console.error('Failed to load styles.css');">
   <!-- Chart.js CDN (single version, UMD for global Chart object) -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <!-- Inline CSS fallback for basic visibility if styles.css fails -->
+  <style>
+    body { font-family: 'Inter', sans-serif; margin: 0; padding: 0; }
+    .analysis-page { display: flex; }
+    .analysis-topics { width: 200px; }
+    .analysis-workspace { flex: 1; padding: 20px; }
+    .client-inputs, .analysis-outputs { margin-bottom: 20px; }
+    button { padding: 8px 16px; margin-right: 10px; }
+    #analysis-outputs:empty::after { content: 'Loading analysis outputs...'; color: #666; }
+  </style>
 </head>
 <body>
   <header>
@@ -57,16 +67,26 @@
           </form>
         </div>
       </div>
-    <div class="analysis-outputs">
-      <h2>Analysis Outputs</h2>
-      <div id="output-tabs-container"></div> <!-- For the dropdown -->
-      <div id="analysis-outputs"></div> <!-- Where outputs will render -->
-      <button id="recalculate-btn">Recalculate</button>
-      <button id="export-graph-btn">Export Graph</button>
-    </div>
+      <div class="analysis-outputs">
+        <h2>Analysis Outputs</h2>
+        <div id="output-tabs-container"></div> <!-- For the dropdown -->
+        <div id="analysis-outputs">
+          <!-- Placeholder content -->
+          <p>Loading analysis outputs...</p>
+        </div>
+        <button id="recalculate-btn">Recalculate</button>
+        <button id="export-graph-btn">Export Graph</button>
+      </div>
     </div>
   </div>
 
-  <script type="module" src="src/index.js"></script>
+  <!-- Inline script for debugging -->
+  <script>
+    console.log('Chart.js loaded:', typeof Chart !== 'undefined' ? 'Yes' : 'No');
+    console.log('analysis-outputs element:', document.getElementById('analysis-outputs') ? 'Found' : 'Not found');
+  </script>
+
+  <!-- Adjust script path for GitHub Pages -->
+  <script type="module" src="./src/index.js"></script>
 </body>
 </html>
