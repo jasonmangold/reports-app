@@ -7,20 +7,53 @@ let currentAnalysis = 'retirement-accumulation';
 let selectedReports = [];
 
 document.addEventListener('DOMContentLoaded', () => {
+  console.log('DOM fully loaded, initializing UI...');
   initializeUI();
   loadClientData();
 });
 
 function initializeUI() {
-  setupAnalysisDropdown();
-  setupTabs();
-  setupEventListeners();
-  updateOutputs();
-  updatePresentationCount();
+  try {
+    setupAnalysisDropdown();
+  } catch (error) {
+    console.error('Failed to setup analysis dropdown:', error);
+  }
+
+  try {
+    setupTabs();
+  } catch (error) {
+    console.error('Failed to setup tabs:', error);
+  }
+
+  try {
+    setupEventListeners();
+  } catch (error) {
+    console.error('Failed to setup event listeners:', error);
+  }
+
+  try {
+    updateOutputs();
+  } catch (error) {
+    console.error('Failed to update outputs:', error);
+    const analysisOutputs = document.getElementById('analysis-outputs');
+    if (analysisOutputs) {
+      analysisOutputs.innerHTML = '<p class="output-card">Error loading outputs. Please check the console for details.</p>';
+    }
+  }
+
+  try {
+    updatePresentationCount();
+  } catch (error) {
+    console.error('Failed to update presentation count:', error);
+  }
 }
 
 function setupAnalysisDropdown() {
   const analysisDropdown = document.getElementById('analysis-dropdown');
+  if (!analysisDropdown) {
+    console.error('Analysis dropdown #analysis-dropdown not found. Please ensure the element exists in the HTML.');
+    throw new Error('Analysis dropdown not found');
+  }
   analysisDropdown.addEventListener('change', (e) => {
     currentAnalysis = e.target.value;
     setupTabs();
@@ -37,6 +70,12 @@ function setupTabs() {
 
   const tabContainer = document.getElementById('input-tabs');
   const inputContent = document.querySelector('.input-content');
+  if (!tabContainer || !inputContent) {
+    const errorMsg = 'Input tabs #input-tabs or .input-content not found.';
+    console.error(errorMsg);
+    throw new Error(errorMsg);
+  }
+
   tabContainer.innerHTML = '';
   inputContent.innerHTML = '';
 
@@ -159,15 +198,24 @@ function populateInputFields(clientData) {
     });
   });
 
-  document.getElementById('client2-section').style.display = clientData.isMarried ? 'block' : 'none';
-  document.getElementById('client2-income-section').style.display = clientData.isMarried ? 'block' : 'none';
-  document.getElementById('c2-accounts').style.display = clientData.isMarried ? 'block' : 'none';
+  const client2Section = document.getElementById('client2-section');
+  const client2IncomeSection = document.getElementById('client2-income-section');
+  const c2Accounts = document.getElementById('c2-accounts');
   const c2Assets = document.getElementById('c2-assets');
-  if (c2Assets) c2Assets.style.display = clientData.isMarried ? 'block' : 'none';
+  const displayStyle = clientData.isMarried ? 'block' : 'none';
+  if (client2Section) client2Section.style.display = displayStyle;
+  if (client2IncomeSection) client2IncomeSection.style.display = displayStyle;
+  if (c2Accounts) c2Accounts.style.display = displayStyle;
+  if (c2Assets) c2Assets.style.display = displayStyle;
 }
 
 function setupEventListeners() {
   const inputContent = document.querySelector('.input-content');
+  if (!inputContent) {
+    console.error('.input-content not found for event listeners.');
+    return;
+  }
+
   inputContent.addEventListener('change', (e) => {
     const clientData = collectClientData();
     localStorage.setItem('clientData', JSON.stringify(clientData));
@@ -217,6 +265,31 @@ function setupEventListeners() {
     }
     updatePresentationCount();
   });
+
+  const recalculateBtn = document.getElementById('recalculate-btn');
+  if (recalculateBtn) {
+    recalculateBtn.addEventListener('click', () => {
+      const clientData = collectClientData();
+      localStorage.setItem('clientData', JSON.stringify(clientData));
+      updateOutputs();
+      updateGraph();
+    });
+  }
+
+  const exportGraphBtn = document.getElementById('export-graph-btn');
+  if (exportGraphBtn) {
+    exportGraphBtn.addEventListener('click', () => {
+      const chartCanvas = document.getElementById('analysis-chart');
+      if (!chartCanvas) {
+        alert('No graph available to export.');
+        return;
+      }
+      const link = document.createElement('a');
+      link.href = chartCanvas.toDataURL('image/png');
+      link.download = 'analysis-graph.png';
+      link.click();
+    });
+  }
 }
 
 function collectClientData() {
@@ -319,6 +392,11 @@ function loadClientData() {
 
 function updateOutputs() {
   const analysisOutputs = document.getElementById('analysis-outputs');
+  if (!analysisOutputs) {
+    console.error('Analysis outputs #analysis-outputs not found.');
+    return;
+  }
+
   const clientData = JSON.parse(localStorage.getItem('clientData') || '{}');
 
   const formatCurrency = (value) => {
