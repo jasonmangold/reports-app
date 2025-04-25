@@ -64,10 +64,10 @@ export const retirementAccumulationTabs = [
         <h5>Client 2 Accounts</h5>
         <div class="account">
           <label>Account Name: <input type="text" id="c2-account-0-name" placeholder="IRA"></label>
-          <label>Balance ($): <input type="number" id="c2-account-0-balance" min="0" step="1000" placeholder="80000"></label>
-          <label>Contribution ($/yr): <input type="number" id="c2-account-0-contribution" min="0" step="1000" placeholder="8000"></label>
-          <label>Employer Match (%): <input type="number" id="c2-account-0-employer-match" min="0" max="100" step="0.1" placeholder="2"></label>
-          <label>ROR (%): <input type="number" id="c2-account-0-ror" min="0" max="100" step="0.1" placeholder="5"></label>
+          <label>Balance ($): <input type="number" id="c1-account-0-balance" min="0" step="1000" placeholder="80000"></label>
+          <label>Contribution ($/yr): <input type="number" id="c1-account-0-contribution" min="0" step="1000" placeholder="8000"></label>
+          <label>Employer Match (%): <input type="number" id="c1-account-0-employer-match" min="0" max="100" step="0.1" placeholder="2"></label>
+          <label>ROR (%): <input type="number" id="c1-account-0-ror" min="0" max="100" step="0.1" placeholder="5"></label>
         </div>
         <button type="button" class="add-account-btn" data-client="c2">Add Account</button>
       </div>
@@ -213,7 +213,7 @@ function calculateRetirementIncome(clientData, getAge) {
 
     let balance = totalBalance;
     result.totalBalance = totalBalance;
-    result.depletionAge = startAge;
+    result.de determinateAge = startAge;
 
     // Add starting balance row
     result.labels.push(startAge);
@@ -643,7 +643,7 @@ export function updateRetirementOutputs(analysisOutputs, clientData, formatCurre
             <div class="add-to-presentation-checkbox">
               <label>
                 <input type="checkbox" id="add-to-presentation-checkbox" ${selectedReports.some(r => r.id === selectedOption.reportId) ? 'checked' : ''}>
-                Add "${selectedOption.label}" to Presentation
+                <span id="checkbox-label-text">Add "${selectedOption.label}" to Presentation</span>
               </label>
             </div>
           </div>
@@ -669,7 +669,7 @@ export function updateRetirementOutputs(analysisOutputs, clientData, formatCurre
             <div class="add-to-presentation-checkbox">
               <label>
                 <input type="checkbox" id="add-to-presentation-checkbox" ${selectedReports.some(r => r.id === reportOptions[0].reportId) ? 'checked' : ''}>
-                Add "${reportOptions[0].label}" to Presentation
+                <span id="checkbox-label-text">Add "${reportOptions[0].label}" to Presentation</span>
               </label>
             </div>
           </div>
@@ -882,14 +882,12 @@ function setupOutputControls(reportOptions, selectedReports, clientData, formatC
       console.log('Selected tab ID:', selectedTabId); // Debug: Log the selected tab ID
       const selectedOption = reportOptions.find(option => option.id === selectedTabId);
       if (selectedOption) {
-        // Update checkbox label and state
-        const checkboxLabel = checkbox.parentElement;
-        checkboxLabel.innerHTML = `
-          <input type="checkbox" id="add-to-presentation-checkbox" ${selectedReports.some(r => r.id === selectedOption.reportId) ? 'checked' : ''}>
-          Add "${selectedOption.label}" to Presentation
-        `;
-        const newCheckbox = document.getElementById('add-to-presentation-checkbox');
-        newCheckbox.addEventListener('change', () => handleCheckboxChange(selectedOption, selectedReports, clientData, formatCurrency, getAge));
+        // Update checkbox state and label text
+        checkbox.checked = selectedReports.some(r => r.id === selectedOption.reportId);
+        const checkboxLabelText = document.getElementById('checkbox-label-text');
+        if (checkboxLabelText) {
+          checkboxLabelText.textContent = `Add "${selectedOption.label}" to Presentation`;
+        }
 
         // Update dropdown options to show included reports
         const currentValue = select.value;
