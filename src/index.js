@@ -731,7 +731,7 @@ function updateOutputs() {
     }
 
     if (currentAnalysis === 'retirement-accumulation') {
-      updateRetirementOutputs(analysisOutputs, clientData, formatCurrency, getAge, selectedReports);
+      updateRetirementOutputs(analysisOutputs, clientData, formatCurrency, getAge, selectedReports, Chart);
     } else if (currentAnalysis === 'personal-finance') {
       updatePersonalFinanceOutputs(analysisOutputs, clientData, formatCurrency);
     } else {
