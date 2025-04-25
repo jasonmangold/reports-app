@@ -612,14 +612,11 @@ export function updateRetirementOutputs(analysisOutputs, clientData, formatCurre
 
     // Define report options for dropdown
     const reportOptions = [
-      { id: 'output-graph', label: 'Graph' },
-      { id: 'output-timeline', label: 'Timeline' },
-      { id: 'output-alternatives', label: 'Alternatives' },
-      { id: 'report-retirement-analysis', label: 'Retirement Analysis' },
+      { id: 'output-graph', label: 'Retirement Analysis' },
       { id: 'report-social-security-optimizer', label: 'Social Security Optimizer' },
-      { id: 'report-capital-available', label: 'Capital Available' },
-      { id: 'report-alternatives-retirement', label: 'Alternatives' },
-      { id: 'report-retirement-timeline', label: 'Retirement Timeline' },
+      { id: 'report-capital-available', label: 'Capital Available at Retirement' },
+      { id: 'output-alternatives', label: 'Alternatives to Acheiving Retirement Goals' },
+      { id: 'output-timeline', label: 'Retirement Timeline' },
       { id: 'report-retirement-fact-finder', label: 'Fact Finder' }
     ];
 
@@ -722,40 +719,6 @@ export function updateRetirementOutputs(analysisOutputs, clientData, formatCurre
           </table>
         </div>
       </div>
-      <div class="output-tab-content" id="report-retirement-analysis" style="display: none;">
-        <div class="output-card">
-          <h3>Retirement Analysis</h3>
-          <button class="add-to-presentation-btn" data-report="report-retirement-analysis" data-title="Retirement Analysis" style="float: right;">
-            ${selectedReports.some(r => r.id === 'report-retirement-analysis') ? 'Remove from Presentation' : 'Add to Presentation'}
-          </button>
-          <table class="output-table">
-            <thead>
-              <tr>
-                <th>Metric</th>
-                <th>Value</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td>Total Assets at Retirement</td>
-                <td>${formatCurrency(totalAssets)}</td>
-              </tr>
-              <tr>
-                <td>Depletion Age</td>
-                <td>${depletionAge}</td>
-              </tr>
-              <tr>
-                <td>Additional Savings Needed (Annual)</td>
-                <td>${formatCurrency(additionalSavings)}</td>
-              </tr>
-              <tr>
-                <td>Amount Needed at Retirement</td>
-                <td>${formatCurrency(requiredAtRetirement)}</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
       <div class="output-tab-content" id="report-social-security-optimizer" style="display: none;">
         <div class="output-card">
           <h3>Social Security Optimizer</h3>
@@ -789,70 +752,6 @@ export function updateRetirementOutputs(analysisOutputs, clientData, formatCurre
                 <td><strong>Total</strong></td>
                 <td><strong>${formatCurrency(totalAssets)}</strong></td>
               </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-      <div class="output-tab-content" id="report-alternatives-retirement" style="display: none;">
-        <div class="output-card">
-          <h3>Retirement Alternatives</h3>
-          <button class="add-to-presentation-btn" data-report="report-alternatives-retirement" data-title="Retirement Alternatives" style="float: right;">
-            ${selectedReports.some(r => r.id === 'report-alternatives-retirement') ? 'Remove from Presentation' : 'Add to Presentation'}
-          </button>
-          <table class="output-table">
-            <thead>
-              <tr>
-                <th>Option</th>
-                <th>Details</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td>Increase Rate of Return</td>
-                <td>Increase portfolio ROR to ${(targetROR * 100).toFixed(1)}% from ${(rorRetirement * 100).toFixed(1)}%</td>
-              </tr>
-              <tr>
-                <td>Reduce Income Needs</td>
-                <td>Reduce monthly income needs to ${formatCurrency(reducedMonthlyNeed)} from ${formatCurrency(monthlyNeed)}</td>
-              </tr>
-              <tr>
-                <td>Delay Retirement</td>
-                <td>Delay retirement to age ${newRetirementAge} from age ${c1RetirementAge}</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-      <div class="output-tab-content" id="report-retirement-timeline" style="display: none;">
-        <div class="output-card">
-          <h3>Retirement Income Timeline</h3>
-          <button class="add-to-presentation-btn" data-report="report-retirement-timeline" data-title="Retirement Income Timeline" style="float: right;">
-            ${selectedReports.some(r => r.id === 'report-retirement-timeline') ? 'Remove from Presentation' : 'Add to Presentation'}
-          </button>
-          <table class="output-table">
-            <thead>
-              <tr>
-                <th>Age</th>
-                <th>Need</th>
-                <th>Income</th>
-                <th>Social Security</th>
-                <th>Withdrawal</th>
-                <th>Shortfall</th>
-                <th>Balance</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${incomeData.labels.slice(1).map((age, i) => `
-                <tr>
-                  <td>${age}</td>
-                  <td>${formatCurrency(incomeData.needData[i + 1])}</td>
-                  <td>${formatCurrency(incomeData.incomeData[i + 1])}</td>
-                  <td>${formatCurrency(incomeData.socialSecurityData[i + 1])}</td>
-                  <td>${formatCurrency(incomeData.withdrawalData[i + 1])}</td>
-                  <td>${formatCurrency(incomeData.shortfallData[i + 1])}</td>
-                  <td>${formatCurrency(incomeData.balanceData[i + 1])}</td>
-                </tr>
-              `).join('')}
             </tbody>
           </table>
         </div>
