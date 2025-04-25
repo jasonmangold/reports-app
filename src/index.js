@@ -97,7 +97,6 @@ document.addEventListener('DOMContentLoaded', () => {
     updateTabs(currentAnalysis);
     updateClientFileName();
     setupEventDelegation();
-    renderPresentationPreview();
     updateOutputs();
     setTimeout(() => {
       updateGraph();
@@ -339,7 +338,7 @@ function tabClickHandler() {
   }
 }
 
-// Event delegation for inputs, buttons, and presentation actions
+// Event delegation for inputs and buttons
 function setupEventDelegation() {
   try {
     let graphTimeout;
@@ -374,25 +373,10 @@ function setupEventDelegation() {
       }
     });
 
-    document.addEventListener('click', (e) => {
-      if (e.target.classList.contains('remove-report-btn')) {
-        const reportId = e.target.dataset.report;
-        selectedReports = selectedReports.filter(report => report.id !== reportId);
-        reportCount = selectedReports.length;
-        presentationCount.textContent = reportCount;
-        presentationCount.classList.toggle('active', reportCount > 0);
-        renderPresentationPreview();
-        updateOutputs(); // Re-render outputs to update checkbox state
-      } else if (e.target.id === 'finalize-presentation-btn') {
-        finalizePresentation();
-      }
-    });
-
-    // Listen for custom event from checkbox
+    // Listen for custom event from checkbox to update report counter
     document.addEventListener('addToPresentationToggle', (e) => {
       const { reportId, reportTitle } = e.detail;
       toggleReportSelection(reportId, reportTitle);
-      renderPresentationPreview();
       updateOutputs(); // Re-render outputs to update checkbox state
     });
   } catch (error) {
@@ -798,71 +782,6 @@ function toggleReportSelection(reportId, reportTitle) {
     console.log('Selected reports:', selectedReports);
   } catch (error) {
     console.error('Error in toggleReportSelection:', error);
-  }
-}
-
-// Render presentation preview panel
-function renderPresentationPreview() {
-  try {
-    let previewPanel = document.getElementById('presentation-preview');
-    if (!previewPanel) {
-      previewPanel = document.createElement('div');
-      previewPanel.id = 'presentation-preview';
-      previewPanel.classList.add('presentation-preview');
-      document.body.appendChild(previewPanel);
-    }
-
-    previewPanel.innerHTML = `
-      <h3>Presentation Preview (${reportCount})</h3>
-      <div class="report-list" id="report-list">
-        ${selectedReports.length ? selectedReports.sort((a, b) => a.order - b.order).map(report => `
-          <div class="report-item" draggable="true" data-report-id="${report.id}">
-            <span>${report.title}</span>
-            <button class="remove-report-btn" data-report="${report.id}">Remove</button>
-          </div>
-        `).join('') : '<p>No reports selected.</p>'}
-      </div>
-      <button id="finalize-presentation-btn" ${reportCount === 0 ? 'disabled' : ''}>Finalize Presentation</button>
-    `;
-
-    const reportItems = previewPanel.querySelectorAll('.report-item');
-    reportItems.forEach(item => {
-      item.addEventListener('dragstart', (e) => {
-        e.dataTransfer.setData('text/plain', e.target.dataset.reportId);
-        e.target.classList.add('dragging');
-      });
-      item.addEventListener('dragend', (e) => {
-        e.target.classList.remove('dragging');
-      });
-      item.addEventListener('dragover', (e) => {
-        e.preventDefault();
-      });
-      item.addEventListener('drop', (e) => {
-        e.preventDefault();
-        const draggedId = e.dataTransfer.getData('text/plain');
-        const targetId = e.target.closest('.report-item').dataset.reportId;
-        if (draggedId !== targetId) {
-          const draggedReport = selectedReports.find(r => r.id === draggedId);
-          const targetReport = selectedReports.find(r => r.id === targetId);
-          const draggedOrder = draggedReport.order;
-          draggedReport.order = targetReport.order;
-          targetReport.order = draggedOrder;
-          renderPresentationPreview();
-        }
-      });
-    });
-  } catch (error) {
-    console.error('Error in renderPresentationPreview:', error);
-  }
-}
-
-// Finalize presentation (placeholder for export)
-function finalizePresentation() {
-  try {
-    console.log('Finalizing presentation with reports:', selectedReports);
-    alert('Presentation finalized with ' + reportCount + ' reports. Check console for details.');
-  } catch (error) {
-    console.error('Error in finalizePresentation:', error);
   }
 }
 
