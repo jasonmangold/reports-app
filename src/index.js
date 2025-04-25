@@ -1,3 +1,4 @@
+import { summaryTabs, updateSummaryInputs, updateSummaryOutputs } from './summary.js';
 import { retirementAccumulationTabs, updateRetirementGraph, updateRetirementOutputs, setupAgeDisplayListeners } from './retirementAccumulation.js';
 import { personalFinanceTabs, updatePersonalFinanceGraph, updatePersonalFinanceOutputs } from './personalFinance.js';
 
@@ -144,7 +145,10 @@ function updateTabs(analysis) {
     inputTabs.innerHTML = '';
     inputContent.innerHTML = '';
 
-    const config = analysis === 'retirement-accumulation' ? retirementAccumulationTabs : analysis === 'personal-finance' ? personalFinanceTabs : retirementAccumulationTabs;
+    const config = analysis === 'retirement-accumulation' ? retirementAccumulationTabs :
+              analysis === 'personal-finance' ? personalFinanceTabs :
+              analysis === 'summary' ? summaryTabs :
+              retirementAccumulationTabs;
 
     config.forEach((tab, index) => {
       const btn = document.createElement('button');
@@ -169,7 +173,9 @@ function updateTabs(analysis) {
       isMarriedInput.checked = clientData.isMarried;
       toggleClient2({ target: isMarriedInput });
     }
-
+    if (analysis === 'summary') {
+      updateSummaryInputs(inputContent, clientData, document.getElementById('output-select')?.value || 'financial-fitness');
+    }
     setupTabSwitching();
     setupAddButtons();
     if (analysis === 'retirement-accumulation') {
@@ -684,17 +690,15 @@ function updateGraph() {
       return;
     }
 
-    if (currentAnalysis === 'retirement-accumulation') {
-      console.log('Calling updateRetirementGraph');
-      chartInstance = updateRetirementGraph(chartCanvas, clientData, Chart, getAge);
-      console.log('updateRetirementGraph returned chartInstance:', chartInstance);
-    } else if (currentAnalysis === 'personal-finance') {
-      console.log('Calling updatePersonalFinanceGraph');
-      chartInstance = updatePersonalFinanceGraph(chartCanvas, clientData, Chart);
-      console.log('updatePersonalFinanceGraph returned chartInstance:', chartInstance);
-    } else {
-      console.warn(`No graph rendering for analysis type: ${currentAnalysis}`);
-    }
+if (currentAnalysis === 'retirement-accumulation') {
+  chartInstance = updateRetirementGraph(chartCanvas, clientData, Chart, getAge);
+} else if (currentAnalysis === 'personal-finance') {
+  chartInstance = updatePersonalFinanceGraph(chartCanvas, clientData, Chart);
+} else if (currentAnalysis === 'summary') {
+  // No graph for Summary
+} else {
+  console.warn(`No graph rendering for analysis type: ${currentAnalysis}`);
+}
 
     if (!chartInstance) {
       console.warn('No chart instance created');
@@ -714,18 +718,16 @@ function updateOutputs() {
       return;
     }
 
-    if (currentAnalysis === 'retirement-accumulation') {
-      updateRetirementOutputs(analysisOutputs, clientData, formatCurrency, getAge, selectedReports, Chart);
-    } else if (currentAnalysis === 'personal-finance') {
-      updatePersonalFinanceOutputs(analysisOutputs, clientData, formatCurrency);
-    } else {
-      analysisOutputs.innerHTML = `<p class="output-card">Outputs not available for ${currentAnalysis}.</p>`;
-    }
-    setupOutputTabSwitching();
-  } catch (error) {
-    console.error('Error in updateOutputs:', error);
-    analysisOutputs.innerHTML = '<p class="output-error">Error rendering outputs. Please check console for details.</p>';
-  }
+if (currentAnalysis === 'retirement-accumulation') {
+  updateRetirementOutputs(analysisOutputs, clientData, formatCurrency, getAge, selectedReports, Chart);
+} else if (currentAnalysis === 'personal-finance') {
+  updatePersonalFinanceOutputs(analysisOutputs, clientData, formatCurrency, selectedReports, Chart);
+} else if (currentAnalysis === 'summary') {
+  updateSummaryOutputs(analysisOutputs, clientData, formatCurrency, selectedReports, getAge);
+} else {
+  analysisOutputs.innerHTML = `<p class="output-card">Outputs not available for ${currentAnalysis}.</p>`;
+}
+  
 }
 
 // Output tab switching
