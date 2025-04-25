@@ -755,4 +755,106 @@ function outputDropdownChangeHandler() {
   } catch (error) {
     console.error('Error in outputDropdownChangeHandler:', error);
   }
+  export function updateRetirementGraph(chartCanvas, clientData, Chart, getAge) {
+  try {
+    if (!chartCanvas) {
+      console.error('Chart canvas #analysis-chart not found');
+      return null;
+    }
+    if (typeof Chart === 'undefined') {
+      console.error('Chart.js not loaded');
+      return null;
+    }
+
+    const ctx = chartCanvas.getContext('2d');
+    let chartInstance = null;
+
+    const incomeData = calculateRetirementIncome(clientData, getAge);
+    if (!incomeData.labels.length) {
+      chartInstance = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: ['Error'],
+          datasets: [{
+            label: 'Error',
+            data: [0],
+            backgroundColor: '#ef4444'
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            title: { display: true, text: 'Please enter valid DOB and retirement age' }
+          }
+        }
+      });
+      console.log('Invalid inputs for graph');
+      return chartInstance;
+    }
+
+    chartInstance = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: incomeData.labels.slice(1), // Skip starting balance row
+        datasets: [
+          {
+            label: 'Social Security',
+            data: incomeData.socialSecurityData.slice(1).map(Math.round),
+            backgroundColor: '#22c55e',
+            stack: 'Stack0'
+          },
+          {
+            label: 'Income',
+            data: incomeData.incomeData.slice(1).map(Math.round),
+            backgroundColor: '#3b82f6',
+            stack: 'Stack0'
+          },
+          {
+            label: 'Withdrawal',
+            data: incomeData.withdrawalData.slice(1).map(Math.round),
+            backgroundColor: '#f97316',
+            stack: 'Stack0'
+          },
+          {
+            label: 'Shortfall',
+            data: incomeData.shortfallData.slice(1).map(Math.round),
+            backgroundColor: '#ef4444',
+            stack: 'Stack0'
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: { display: true, position: 'top' },
+          title: { display: true, text: 'Retirement Income Sources by Age' }
+        },
+        scales: {
+          x: { title: { display: true, text: 'Client 1 Age' }, stacked: true },
+          y: { title: { display: true, text: 'Annual Income ($)' }, stacked: true, beginAtZero: true }
+        }
+      }
+    });
+    console.log('Retirement Accumulation bar graph rendered');
+    return chartInstance;
+  } catch (error) {
+    console.error('Error in updateRetirementGraph:', error);
+    const ctx = chartCanvas.getContext('2d');
+    let chartInstance = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: ['Error'],
+        datasets: [{
+          label: 'Error',
+          data: [0],
+          backgroundColor: '#ef4444'
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: { title: { display: true, text: 'Error rendering graph' } }
+      }
+    });
+    return chartInstance;
+  }
 }
