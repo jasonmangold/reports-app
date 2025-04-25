@@ -6,17 +6,40 @@ let chartInstance = null;
 let currentAnalysis = 'retirement-accumulation';
 let selectedReports = [];
 
+// Analysis topics list
+const analysisTopicsList = [
+  { id: 'summary', label: 'Summary' },
+  { id: 'education-funding', label: 'Education Funding' },
+  { id: 'survivor-needs', label: 'Survivor Needs' },
+  { id: 'retirement-accumulation', label: 'Retirement Accumulation' },
+  { id: 'retirement-distribution', label: 'Retirement Distribution' },
+  { id: 'social-security', label: 'Social Security' },
+  { id: 'disability-income-needs', label: 'Disability Income Needs' },
+  { id: 'critical-illness', label: 'Critical Illness' },
+  { id: 'long-term-care-needs', label: 'Long-Term Care Needs' },
+  { id: 'estate-analysis', label: 'Estate Analysis' },
+  { id: 'accumulation-funding', label: 'Accumulation Funding' },
+  { id: 'asset-allocation', label: 'Asset Allocation' },
+  { id: 'charitable-remainder-trust', label: 'Charitable Remainder Trust' },
+  { id: 'personal-finance', label: 'Personal Finance' },
+  { id: 'debt-repayment', label: 'Debt Repayment' },
+  { id: 'business-continuation', label: 'Business Continuation' },
+  { id: 'key-employee', label: 'Key Employee' }
+];
+
 document.addEventListener('DOMContentLoaded', () => {
   console.log('DOM fully loaded, initializing UI...');
+  console.log('input-tabs element:', document.getElementById('input-tabs'));
+  console.log('input-content element:', document.querySelector('.input-content'));
   initializeUI();
   loadClientData();
 });
 
 function initializeUI() {
   try {
-    setupAnalysisDropdown();
+    setupAnalysisTopics();
   } catch (error) {
-    console.error('Failed to setup analysis dropdown:', error);
+    console.error('Failed to setup analysis topics:', error);
   }
 
   try {
@@ -48,18 +71,41 @@ function initializeUI() {
   }
 }
 
-function setupAnalysisDropdown() {
-  const analysisDropdown = document.getElementById('analysis-dropdown');
-  if (!analysisDropdown) {
-    console.error('Analysis dropdown #analysis-dropdown not found. Please ensure the element exists in the HTML.');
-    throw new Error('Analysis dropdown not found');
+function setupAnalysisTopics() {
+  const analysisTopics = document.getElementById('analysis-topics');
+  if (!analysisTopics) {
+    console.error('Analysis topics #analysis-topics not found. Please ensure the element exists in the HTML.');
+    throw new Error('Analysis topics container not found');
   }
-  analysisDropdown.addEventListener('change', (e) => {
-    currentAnalysis = e.target.value;
-    setupTabs();
-    updateOutputs();
-    updateGraph();
-  });
+  populateAnalysisTopics(analysisTopics);
+}
+
+function populateAnalysisTopics(analysisTopics) {
+  try {
+    analysisTopics.innerHTML = '';
+    analysisTopicsList.forEach(topic => {
+      const btn = document.createElement('button');
+      btn.classList.add('topic-btn');
+      btn.textContent = topic.label;
+      btn.dataset.analysis = topic.id;
+      if (topic.id === currentAnalysis) btn.classList.add('active');
+      analysisTopics.appendChild(btn);
+    });
+
+    document.querySelectorAll('.topic-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.topic-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        currentAnalysis = btn.dataset.analysis;
+        setupTabs();
+        updateOutputs();
+        setTimeout(updateGraph, 100);
+        // setupOutputTabSwitching(); // Commented out as it's not defined in the current code
+      });
+    });
+  } catch (error) {
+    console.error('Error in populateAnalysisTopics:', error);
+  }
 }
 
 function setupTabs() {
@@ -71,6 +117,8 @@ function setupTabs() {
   const tabContainer = document.getElementById('input-tabs');
   const inputContent = document.querySelector('.input-content');
   if (!tabContainer || !inputContent) {
+    console.error('tabContainer:', tabContainer);
+    console.error('inputContent:', inputContent);
     const errorMsg = 'Input tabs #input-tabs or .input-content not found.';
     console.error(errorMsg);
     throw new Error(errorMsg);
@@ -429,6 +477,11 @@ function updateOutputs() {
 
 function updateGraph() {
   const chartCanvas = document.getElementById('analysis-chart');
+  if (!chartCanvas) {
+    console.warn('Chart canvas #analysis-chart not found. Skipping graph update.');
+    return;
+  }
+
   const clientData = JSON.parse(localStorage.getItem('clientData') || '{}');
 
   const getAge = (dob) => {
@@ -444,6 +497,7 @@ function updateGraph() {
   };
 
   if (chartInstance) {
+    console.log('Destroying existing chart instance...');
     chartInstance.destroy();
     chartInstance = null;
   }
@@ -454,6 +508,7 @@ function updateGraph() {
     chartInstance = updatePersonalFinanceGraph(chartCanvas, clientData, Chart);
   } else if (currentAnalysis === 'summary') {
     // No graph for Summary
+    chartCanvas.style.display = 'none';
   } else {
     console.warn(`No graph rendering for analysis type: ${currentAnalysis}`);
   }
