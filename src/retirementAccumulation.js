@@ -64,10 +64,10 @@ export const retirementAccumulationTabs = [
         <h5>Client 2 Accounts</h5>
         <div class="account">
           <label>Account Name: <input type="text" id="c2-account-0-name" placeholder="IRA"></label>
-          <label>Balance ($): <input type="number" id="c1-account-0-balance" min="0" step="1000" placeholder="80000"></label>
-          <label>Contribution ($/yr): <input type="number" id="c1-account-0-contribution" min="0" step="1000" placeholder="8000"></label>
-          <label>Employer Match (%): <input type="number" id="c1-account-0-employer-match" min="0" max="100" step="0.1" placeholder="2"></label>
-          <label>ROR (%): <input type="number" id="c1-account-0-ror" min="0" max="100" step="0.1" placeholder="5"></label>
+          <label>Balance ($): <input type="number" id="c2-account-0-balance" min="0" step="1000" placeholder="80000"></label>
+          <label>Contribution ($/yr): <input type="number" id="c2-account-0-contribution" min="0" step="1000" placeholder="8000"></label>
+          <label>Employer Match (%): <input type="number" id="c2-account-0-employer-match" min="0" max="100" step="0.1" placeholder="2"></label>
+          <label>ROR (%): <input type="number" id="c2-account-0-ror" min="0" max="100" step="0.1" placeholder="5"></label>
         </div>
         <button type="button" class="add-account-btn" data-client="c2">Add Account</button>
       </div>
@@ -213,7 +213,7 @@ function calculateRetirementIncome(clientData, getAge) {
 
     let balance = totalBalance;
     result.totalBalance = totalBalance;
-    result.de determinateAge = startAge;
+    result.depletionAge = startAge;
 
     // Add starting balance row
     result.labels.push(startAge);
@@ -304,10 +304,7 @@ export function updateRetirementGraph(chartCanvas, clientData, Chart, getAge) {
     }
 
     const ctx = chartCanvas.getContext('2d');
-    let chartInstance = Chart.getChart(chartCanvas);
-    if (chartInstance) {
-      chartInstance.destroy();
-    }
+    let chartInstance = null;
 
     const incomeData = calculateRetirementIncome(clientData, getAge);
     if (!incomeData.labels.length) {
@@ -615,250 +612,239 @@ export function updateRetirementOutputs(analysisOutputs, clientData, formatCurre
 
     // Define report options for dropdown
     const reportOptions = [
-      { id: 'output-graph', label: 'Retirement Analysis', reportId: 'report-graph', title: 'Retirement Income Graph' },
-      { id: 'report-social-security-optimizer', label: 'Social Security Optimizer', reportId: 'report-social-security-optimizer', title: 'Social Security Optimizer' },
-      { id: 'report-capital-available', label: 'Capital Available at Retirement', reportId: 'report-capital-available', title: 'Capital Available at Retirement' },
-      { id: 'output-alternatives', label: 'Alternatives to Achieving Retirement Goals', reportId: 'report-alternatives-retirement', title: 'Retirement Alternatives' },
-      { id: 'output-timeline', label: 'Retirement Timeline', reportId: 'report-retirement-timeline', title: 'Retirement Income Timeline' },
-      { id: 'report-retirement-fact-finder', label: 'Fact Finder', reportId: 'report-retirement-fact-finder', title: 'Retirement Fact Finder' }
+      { id: 'output-graph', label: 'Retirement Analysis' },
+      { id: 'report-social-security-optimizer', label: 'Social Security Optimizer' },
+      { id: 'report-capital-available', label: 'Capital Available at Retirement' },
+      { id: 'output-alternatives', label: 'Alternatives to Acheiving Retirement Goals' },
+      { id: 'output-timeline', label: 'Retirement Timeline' },
+      { id: 'report-retirement-fact-finder', label: 'Fact Finder' }
     ];
 
-    // Only render the DOM if it hasn't been rendered yet
-    if (!tabContainer.querySelector('.output-controls')) {
-      if (tabContainer) {
-        const selectedTabId = 'output-graph';
-        const selectedOption = reportOptions.find(option => option.id === selectedTabId) || reportOptions[0];
-        tabContainer.innerHTML = `
-          <div class="output-controls" style="display: flex; align-items: center; gap: 20px;">
-            <div class="output-dropdown">
-              <label for="output-select">Select View: </label>
-              <select id="output-select" class="output-select">
-                ${reportOptions.map(option => `
-                  <option value="${option.id}" ${option.id === selectedTabId ? 'selected' : ''}>
-                    ${option.label}${selectedReports.some(r => r.id === option.reportId) ? ' ✅' : ''}
-                  </option>
-                `).join('')}
-              </select>
-            </div>
-            <div class="add-to-presentation-checkbox">
-              <label>
-                <input type="checkbox" id="add-to-presentation-checkbox" ${selectedReports.some(r => r.id === selectedOption.reportId) ? 'checked' : ''}>
-                <span id="checkbox-label-text">Add "${selectedOption.label}" to Presentation</span>
-              </label>
-            </div>
-          </div>
-        `;
-      }
-    }
-
-    // Only render the analysis outputs if they haven't been rendered yet
-    if (!document.querySelector('.output-tab-content')) {
-      analysisOutputs.innerHTML = `
-        ${!tabContainer ? `
-          <div class="output-controls" style="display: flex; align-items: center; gap: 20px;">
-            <div class="output-dropdown">
-              <label for="output-select">Select View: </label>
-              <select id="output-select" class="output-select">
-                ${reportOptions.map(option => `
-                  <option value="${option.id}" ${option.id === 'output-graph' ? 'selected' : ''}>
-                    ${option.label}${selectedReports.some(r => r.id === option.reportId) ? ' ✅' : ''}
-                  </option>
-                `).join('')}
-              </select>
-            </div>
-            <div class="add-to-presentation-checkbox">
-              <label>
-                <input type="checkbox" id="add-to-presentation-checkbox" ${selectedReports.some(r => r.id === reportOptions[0].reportId) ? 'checked' : ''}>
-                <span id="checkbox-label-text">Add "${reportOptions[0].label}" to Presentation</span>
-              </label>
-            </div>
-          </div>
-        ` : ''}
-        <div class="output-tab-content active" id="output-graph">
-          <div class="output-card">
-            <h3>Retirement Income Graph</h3>
-            <canvas id="analysis-chart" style="max-height: 400px;"></canvas>
-          </div>
-        </div>
-        <div class="output-tab-content" id="output-timeline" style="display: none;">
-          <div class="output-card">
-            <h3>Retirement Income Timeline</h3>
-            <table class="output-table">
-              <thead>
-                <tr>
-                  <th>Age</th>
-                  <th>Need</th>
-                  <th>Income</th>
-                  <th>Social Security</th>
-                  <th>Withdrawal</th>
-                  <th>Shortfall</th>
-                  <th>Balance</th>
-                </tr>
-              </thead>
-              <tbody>
-                ${incomeData.labels.slice(1).map((age, i) => `
-                  <tr>
-                    <td>${age}</td>
-                    <td>${formatCurrency(incomeData.needData[i + 1])}</td>
-                    <td>${formatCurrency(incomeData.incomeData[i + 1])}</td>
-                    <td>${formatCurrency(incomeData.socialSecurityData[i + 1])}</td>
-                    <td>${formatCurrency(incomeData.withdrawalData[i + 1])}</td>
-                    <td>${formatCurrency(incomeData.shortfallData[i + 1])}</td>
-                    <td>${formatCurrency(incomeData.balanceData[i + 1])}</td>
-                  </tr>
-                `).join('')}
-              </tbody>
-            </table>
-          </div>
-        </div>
-        <div class="output-tab-content" id="output-alternatives" style="display: none;">
-          <div class="output-card">
-            <h3>Retirement Alternatives</h3>
-            <table class="output-table">
-              <thead>
-                <tr>
-                  <th>Option</th>
-                  <th>Details</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td>Increase Rate of Return</td>
-                  <td>Increase portfolio ROR to ${(targetROR * 100).toFixed(1)}% from ${(rorRetirement * 100).toFixed(1)}%</td>
-                </tr>
-                <tr>
-                  <td>Reduce Income Needs</td>
-                  <td>Reduce monthly income needs to ${formatCurrency(reducedMonthlyNeed)} from ${formatCurrency(monthlyNeed)}</td>
-                </tr>
-                <tr>
-                  <td>Delay Retirement</td>
-                  <td>Delay retirement to age ${newRetirementAge} from age ${c1RetirementAge}</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-        <div class="output-tab-content" id="report-social-security-optimizer" style="display: none;">
-          <div class="output-card">
-            <h3>Social Security Optimizer</h3>
-            <p>Optimized Social Security strategies will be displayed here. (Placeholder: Optimization logic not implemented.)</p>
-          </div>
-        </div>
-        <div class="output-tab-content" id="report-capital-available" style="display: none;">
-          <div class="output-card">
-            <h3>Capital Available at Retirement</h3>
-            <table class="output-table">
-              <thead>
-                <tr>
-                  <th>Asset</th>
-                  <th>Balance</th>
-                </tr>
-              </thead>
-              <tbody>
-                ${assets.map(asset => `
-                  <tr>
-                    <td>${asset.name}</td>
-                    <td>${formatCurrency(asset.balance)}</td>
-                  </tr>
-                `).join('')}
-                <tr>
-                  <td><strong>Total</strong></td>
-                  <td><strong>${formatCurrency(totalAssets)}</strong></td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-        <div class="output-tab-content" id="report-retirement-fact-finder" style="display: none;">
-          <div class="output-card">
-            <h3>Retirement Fact Finder</h3>
-            <h4>Client Information</h4>
-            <table class="output-table">
-              <thead>
-                <tr>
-                  <th>Field</th>
-                  <th>Client 1</th>
-                  ${clientData.isMarried ? '<th>Client 2</th>' : ''}
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td>Name</td>
-                  <td>${clientData.client1.personal.name || 'N/A'}</td>
-                  ${clientData.isMarried ? `<td>${clientData.client2.personal.name || 'N/A'}</td>` : ''}
-                </tr>
-                <tr>
-                  <td>Date of Birth</td>
-                  <td>${clientData.client1.personal.dob || 'N/A'}</td>
-                  ${clientData.isMarried ? `<td>${clientData.client2.personal.dob || 'N/A'}</td>` : ''}
-                </tr>
-                <tr>
-                  <td>Retirement Age</td>
-                  <td>${clientData.client1.personal.retirementAge || 'N/A'}</td>
-                  ${clientData.isMarried ? `<td>${clientData.client2.personal.retirementAge || 'N/A'}</td>` : ''}
-                </tr>
-              </tbody>
-            </table>
-            <h4>Income Sources</h4>
-            <table class="output-table">
-              <thead>
-                <tr>
-                  <th>Source</th>
-                  <th>Client 1</th>
-                  ${clientData.isMarried ? '<th>Client 2</th>' : ''}
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td>Employment ($/yr)</td>
-                  <td>${formatCurrency(parseFloat(clientData.client1.incomeSources.employment) || 0)}</td>
-                  ${clientData.isMarried ? `<td>${formatCurrency(parseFloat(clientData.client2.incomeSources.employment) || 0)}</td>` : ''}
-                </tr>
-                <tr>
-                  <td>Social Security ($/mo)</td>
-                  <td>${formatCurrency(parseFloat(clientData.client1.incomeSources.socialSecurity) || 0)}</td>
-                  ${clientData.isMarried ? `<td>${formatCurrency(parseFloat(clientData.client2.incomeSources.socialSecurity) || 0)}</td>` : ''}
-                </tr>
-                <tr>
-                  <td>Other Income ($/mo)</td>
-                  <td>${formatCurrency(parseFloat(clientData.client1.incomeSources.other) || 0)}</td>
-                  ${clientData.isMarried ? `<td>${formatCurrency(parseFloat(clientData.client2.incomeSources.other) || 0)}</td>` : ''}
-                </tr>
-              </tbody>
-            </table>
-            <h4>Assumptions</h4>
-            <table class="output-table">
-              <thead>
-                <tr>
-                  <th>Assumption</th>
-                  <th>Value</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td>Mortality Age</td>
-                  <td>${clientData.assumptions.mortalityAge || 'N/A'}</td>
-                </tr>
-                <tr>
-                  <td>Inflation (%)</td>
-                  <td>${clientData.assumptions.inflation || 'N/A'}</td>
-                </tr>
-                <tr>
-                  <td>ROR During Retirement (%)</td>
-                  <td>${clientData.assumptions.rorRetirement || 'N/A'}</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
+    // Render Dropdown in output-tabs-container
+    if (tabContainer) {
+      tabContainer.innerHTML = `
+        <div class="output-dropdown">
+          <label for="output-select">Select View: </label>
+          <select id="output-select" class="output-select">
+            ${reportOptions.map(option => `
+              <option value="${option.id}" ${option.id === 'output-graph' ? 'selected' : ''}>${option.label}</option>
+            `).join('')}
+          </select>
         </div>
       `;
     }
 
-    // Setup controls and update UI
-    setupOutputControls(reportOptions, selectedReports, clientData, formatCurrency, getAge);
+    // Render Content in analysis-outputs
+    analysisOutputs.innerHTML = `
+      ${!tabContainer ? `
+        <div class="output-dropdown">
+          <label for="output-select">Select View: </label>
+          <select id="output-select" class="output-select">
+            ${reportOptions.map(option => `
+              <option value="${option.id}" ${option.id === 'output-graph' ? 'selected' : ''}>${option.label}</option>
+            `).join('')}
+          </select>
+        </div>
+      ` : ''}
+      <div class="output-tab-content active" id="output-graph">
+        <div class="output-card">
+          <h3>Retirement Income Graph</h3>
+          <button class="add-to-presentation-btn" data-report="report-graph" data-title="Retirement Income Graph" style="float: right;">
+            ${selectedReports.some(r => r.id === 'report-graph') ? 'Remove from Presentation' : 'Add to Presentation'}
+          </button>
+          <canvas id="analysis-chart" style="max-height: 400px;"></canvas>
+        </div>
+      </div>
+      <div class="output-tab-content" id="output-timeline" style="display: none;">
+        <div class="output-card">
+          <h3>Retirement Income Timeline</h3>
+          <button class="add-to-presentation-btn" data-report="report-retirement-timeline" data-title="Retirement Income Timeline" style="float: right;">
+            ${selectedReports.some(r => r.id === 'report-retirement-timeline') ? 'Remove from Presentation' : 'Add to Presentation'}
+          </button>
+          <table class="output-table">
+            <thead>
+              <tr>
+                <th>Age</th>
+                <th>Need</th>
+                <th>Income</th>
+                <th>Social Security</th>
+                <th>Withdrawal</th>
+                <th>Shortfall</th>
+                <th>Balance</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${incomeData.labels.slice(1).map((age, i) => `
+                <tr>
+                  <td>${age}</td>
+                  <td>${formatCurrency(incomeData.needData[i + 1])}</td>
+                  <td>${formatCurrency(incomeData.incomeData[i + 1])}</td>
+                  <td>${formatCurrency(incomeData.socialSecurityData[i + 1])}</td>
+                  <td>${formatCurrency(incomeData.withdrawalData[i + 1])}</td>
+                  <td>${formatCurrency(incomeData.shortfallData[i + 1])}</td>
+                  <td>${formatCurrency(incomeData.balanceData[i + 1])}</td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="output-tab-content" id="output-alternatives" style="display: none;">
+        <div class="output-card">
+          <h3>Retirement Alternatives</h3>
+          <button class="add-to-presentation-btn" data-report="report-alternatives-retirement" data-title="Retirement Alternatives" style="float: right;">
+            ${selectedReports.some(r => r.id === 'report-alternatives-retirement') ? 'Remove from Presentation' : 'Add to Presentation'}
+          </button>
+          <table class="output-table">
+            <thead>
+              <tr>
+                <th>Option</th>
+                <th>Details</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Increase Rate of Return</td>
+                <td>Increase portfolio ROR to ${(targetROR * 100).toFixed(1)}% from ${(rorRetirement * 100).toFixed(1)}%</td>
+              </tr>
+              <tr>
+                <td>Reduce Income Needs</td>
+                <td>Reduce monthly income needs to ${formatCurrency(reducedMonthlyNeed)} from ${formatCurrency(monthlyNeed)}</td>
+              </tr>
+              <tr>
+                <td>Delay Retirement</td>
+                <td>Delay retirement to age ${newRetirementAge} from age ${c1RetirementAge}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="output-tab-content" id="report-social-security-optimizer" style="display: none;">
+        <div class="output-card">
+          <h3>Social Security Optimizer</h3>
+          <button class="add-to-presentation-btn" data-report="report-social-security-optimizer" data-title="Social Security Optimizer" style="float: right;">
+            ${selectedReports.some(r => r.id === 'report-social-security-optimizer') ? 'Remove from Presentation' : 'Add to Presentation'}
+          </button>
+          <p>Optimized Social Security strategies will be displayed here. (Placeholder: Optimization logic not implemented.)</p>
+        </div>
+      </div>
+      <div class="output-tab-content" id="report-capital-available" style="display: none;">
+        <div class="output-card">
+          <h3>Capital Available at Retirement</h3>
+          <button class="add-to-presentation-btn" data-report="report-capital-available" data-title="Capital Available at Retirement" style="float: right;">
+            ${selectedReports.some(r => r.id === 'report-capital-available') ? 'Remove from Presentation' : 'Add to Presentation'}
+          </button>
+          <table class="output-table">
+            <thead>
+              <tr>
+                <th>Asset</th>
+                <th>Balance</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${assets.map(asset => `
+                <tr>
+                  <td>${asset.name}</td>
+                  <td>${formatCurrency(asset.balance)}</td>
+                </tr>
+              `).join('')}
+              <tr>
+                <td><strong>Total</strong></td>
+                <td><strong>${formatCurrency(totalAssets)}</strong></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="output-tab-content" id="report-retirement-fact-finder" style="display: none;">
+        <div class="output-card">
+          <h3>Retirement Fact Finder</h3>
+          <button class="add-to-presentation-btn" data-report="report-retirement-fact-finder" data-title="Retirement Fact Finder" style="float: right;">
+            ${selectedReports.some(r => r.id === 'report-retirement-fact-finder') ? 'Remove from Presentation' : 'Add to Presentation'}
+          </button>
+          <h4>Client Information</h4>
+          <table class="output-table">
+            <thead>
+              <tr>
+                <th>Field</th>
+                <th>Client 1</th>
+                ${clientData.isMarried ? '<th>Client 2</th>' : ''}
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Name</td>
+                <td>${clientData.client1.personal.name || 'N/A'}</td>
+                ${clientData.isMarried ? `<td>${clientData.client2.personal.name || 'N/A'}</td>` : ''}
+              </tr>
+              <tr>
+                <td>Date of Birth</td>
+                <td>${clientData.client1.personal.dob || 'N/A'}</td>
+                ${clientData.isMarried ? `<td>${clientData.client2.personal.dob || 'N/A'}</td>` : ''}
+              </tr>
+              <tr>
+                <td>Retirement Age</td>
+                <td>${clientData.client1.personal.retirementAge || 'N/A'}</td>
+                ${clientData.isMarried ? `<td>${clientData.client2.personal.retirementAge || 'N/A'}</td>` : ''}
+              </tr>
+            </tbody>
+          </table>
+          <h4>Income Sources</h4>
+          <table class="output-table">
+            <thead>
+              <tr>
+                <th>Source</th>
+                <th>Client 1</th>
+                ${clientData.isMarried ? '<th>Client 2</th>' : ''}
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Employment ($/yr)</td>
+                <td>${formatCurrency(parseFloat(clientData.client1.incomeSources.employment) || 0)}</td>
+                ${clientData.isMarried ? `<td>${formatCurrency(parseFloat(clientData.client2.incomeSources.employment) || 0)}</td>` : ''}
+              </tr>
+              <tr>
+                <td>Social Security ($/mo)</td>
+                <td>${formatCurrency(parseFloat(clientData.client1.incomeSources.socialSecurity) || 0)}</td>
+                ${clientData.isMarried ? `<td>${formatCurrency(parseFloat(clientData.client2.incomeSources.socialSecurity) || 0)}</td>` : ''}
+              </tr>
+              <tr>
+                <td>Other Income ($/mo)</td>
+                <td>${formatCurrency(parseFloat(clientData.client1.incomeSources.other) || 0)}</td>
+                ${clientData.isMarried ? `<td>${formatCurrency(parseFloat(clientData.client2.incomeSources.other) || 0)}</td>` : ''}
+              </tr>
+            </tbody>
+          </table>
+          <h4>Assumptions</h4>
+          <table class="output-table">
+            <thead>
+              <tr>
+                <th>Assumption</th>
+                <th>Value</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Mortality Age</td>
+                <td>${clientData.assumptions.mortalityAge || 'N/A'}</td>
+              </tr>
+              <tr>
+                <td>Inflation (%)</td>
+                <td>${clientData.assumptions.inflation || 'N/A'}</td>
+              </tr>
+              <tr>
+                <td>ROR During Retirement (%)</td>
+                <td>${clientData.assumptions.rorRetirement || 'N/A'}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    `;
 
-    // Update presentation preview and count initially
-    updatePresentationUI(selectedReports);
+    // Setup dropdown switching
+    setupOutputDropdownSwitching();
   } catch (error) {
     console.error('Error in updateRetirementOutputs:', error);
     analysisOutputs.innerHTML = '<p class="output-card">Error rendering outputs. Please check input data.</p>';
@@ -866,138 +852,36 @@ export function updateRetirementOutputs(analysisOutputs, clientData, formatCurre
   }
 }
 
-// Setup dropdown switching and checkbox functionality
-function setupOutputControls(reportOptions, selectedReports, clientData, formatCurrency, getAge) {
+// Setup dropdown switching
+function setupOutputDropdownSwitching() {
   try {
     const select = document.getElementById('output-select');
-    const checkbox = document.getElementById('add-to-presentation-checkbox');
-    if (!select || !checkbox) {
-      console.warn('Dropdown #output-select or checkbox #add-to-presentation-checkbox not found');
+    if (!select) {
+      console.warn('Dropdown #output-select not found');
       return;
     }
-
-    // Function to update the UI without re-rendering the entire DOM
-    const updateUI = () => {
-      const selectedTabId = select.value;
-      console.log('Selected tab ID:', selectedTabId); // Debug: Log the selected tab ID
-      const selectedOption = reportOptions.find(option => option.id === selectedTabId);
-      if (selectedOption) {
-        // Update checkbox state and label text
-        checkbox.checked = selectedReports.some(r => r.id === selectedOption.reportId);
-        const checkboxLabelText = document.getElementById('checkbox-label-text');
-        if (checkboxLabelText) {
-          checkboxLabelText.textContent = `Add "${selectedOption.label}" to Presentation`;
-        }
-
-        // Update dropdown options to show included reports
-        const currentValue = select.value;
-        select.innerHTML = reportOptions.map(option => `
-          <option value="${option.id}" ${option.id === currentValue ? 'selected' : ''}>
-            ${option.label}${selectedReports.some(r => r.id === option.reportId) ? ' ✅' : ''}
-          </option>
-        `).join('');
-
-        // Show the selected tab content
-        const contents = document.querySelectorAll('.output-tab-content');
-        console.log('Found output-tab-content elements:', contents.length); // Debug: Log the number of content elements
-        contents.forEach(content => {
-          console.log('Checking content ID:', content.id, 'against selectedTabId:', selectedTabId); // Debug: Log each content ID
-          if (content.id === selectedTabId) {
-            content.style.display = 'block';
-            console.log(`Showing content with ID: ${content.id}`);
-          } else {
-            content.style.display = 'none';
-            console.log(`Hiding content with ID: ${content.id}`);
-          }
-        });
-
-        // Re-render graph if needed
-        if (selectedTabId === 'output-graph') {
-          setTimeout(() => {
-            const chartCanvas = document.getElementById('analysis-chart');
-            if (chartCanvas && typeof Chart !== 'undefined') {
-              updateRetirementGraph(chartCanvas, clientData, Chart, getAge);
-            }
-          }, 100);
-        }
-      }
-    };
-
-    // Function to handle checkbox changes
-    const handleCheckboxChange = (option, selectedReports, clientData, formatCurrency, getAge) => {
-      const isChecked = checkbox.checked;
-      if (isChecked) {
-        // Add report to presentation
-        if (!selectedReports.some(r => r.id === option.reportId)) {
-          selectedReports.push({ id: option.reportId, title: option.title });
-        }
-      } else {
-        // Remove report from presentation
-        const index = selectedReports.findIndex(r => r.id === option.reportId);
-        if (index !== -1) {
-          selectedReports.splice(index, 1);
-        }
-      }
-
-      // Update presentation UI (count and preview)
-      updatePresentationUI(selectedReports);
-
-      // Update the UI (dropdown and checkbox)
-      updateUI();
-    };
-
-    // Remove existing listeners to prevent duplicates
-    select.removeEventListener('change', updateUI);
-    select.addEventListener('change', updateUI);
-
-    checkbox.removeEventListener('change', () => handleCheckboxChange(reportOptions.find(opt => opt.id === select.value), selectedReports, clientData, formatCurrency, getAge));
-    checkbox.addEventListener('change', () => handleCheckboxChange(reportOptions.find(opt => opt.id === select.value), selectedReports, clientData, formatCurrency, getAge));
-
-    // Initial UI update
-    updateUI();
+    select.removeEventListener('change', outputDropdownChangeHandler);
+    select.addEventListener('change', outputDropdownChangeHandler);
   } catch (error) {
-    console.error('Error in setupOutputControls:', error);
+    console.error('Error in setupOutputDropdownSwitching:', error);
   }
 }
 
-// Function to update presentation count and preview
-function updatePresentationUI(selectedReports) {
+function outputDropdownChangeHandler() {
   try {
-    // Debug: Log the number of selected reports
-    console.log('Updating presentation UI with selectedReports:', selectedReports.length);
-
-    // Update presentation count in header
-    const presentationCount = document.getElementById('presentation-count');
-    if (presentationCount) {
-      presentationCount.textContent = selectedReports.length.toString();
-      console.log('Updated presentation count to:', selectedReports.length);
-    } else {
-      console.warn('Presentation count element #presentation-count not found');
-    }
-
-    // Update presentation preview section
-    const presentationPreview = document.querySelector('.presentation-preview');
-    if (presentationPreview) {
-      if (selectedReports.length === 0) {
-        presentationPreview.innerHTML = `
-          <p>PRESENTATION PREVIEW (0)</p>
-          <p>No reports selected.</p>
-          <p>FindKey Employee</p>
-        `;
-      } else {
-        presentationPreview.innerHTML = `
-          <p>PRESENTATION PREVIEW (${selectedReports.length})</p>
-          <ul>
-            ${selectedReports.map(report => `<li>${report.title}</li>`).join('')}
-          </ul>
-          <p>FindKey Employee</p>
-        `;
-      }
-      console.log('Updated presentation preview');
-    } else {
-      console.warn('Presentation preview element .presentation-preview not found');
+    const selectedTab = this.value;
+    document.querySelectorAll('.output-tab-content').forEach(content => {
+      content.style.display = content.id === selectedTab ? 'block' : 'none';
+    });
+    if (selectedTab === 'output-graph') {
+      setTimeout(() => {
+        const chartCanvas = document.getElementById('analysis-chart');
+        if (chartCanvas && typeof Chart !== 'undefined') {
+          updateRetirementGraph(chartCanvas, clientData, Chart, getAge);
+        }
+      }, 100); // Re-render graph when switching to graph tab
     }
   } catch (error) {
-    console.error('Error in updatePresentationUI:', error);
+    console.error('Error in outputDropdownChangeHandler:', error);
   }
 }
