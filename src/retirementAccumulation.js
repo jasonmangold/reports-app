@@ -321,6 +321,356 @@ export function updateRetirementGraph(chartCanvas, clientData, Chart, getAge) {
         options: {
           responsive: true,
           plugins: {
+            title: { display: true, text: 'Please enter valid DOB We need to make some changes to the code to convert the tabs into a dropdown menu. Below, I’ll outline the necessary modifications to the `updateRetirementOutputs` function in `retirementAccumulation.js.txt`. The tabs are currently rendered as buttons within a `.output-tabs` div, and we’ll replace them with a `<select>` dropdown menu. The JavaScript logic for tab switching will be updated to handle the dropdown’s `change` event instead of button clicks. Since this is an update to an existing artifact, we’ll reuse the original `artifact_id` and only modify the relevant parts.
+
+### Changes Overview
+1. **Replace Tab Buttons with Dropdown**:
+   - In the `updateRetirementOutputs` function, replace the `.output-tabs` div containing buttons with a `<select>` element.
+   - Each tab (Graph, Timeline, etc.) will become an `<option>` in the dropdown.
+   - The `reportTabs` array and static tabs (Graph, Timeline, Alternatives) will be combined into a single list for the dropdown options.
+
+2. **Update Tab Switching Logic**:
+   - Remove the `setupOutputTabSwitching` function that handles button clicks.
+   - Add a new `setupOutputDropdownSwitching` function to handle the dropdown’s `change` event.
+   - Update the `outputTabClickHandler` to work with the dropdown selection.
+
+3. **Preserve Existing Functionality**:
+   - Ensure all existing tab content (Graph, Timeline, etc.) remains unchanged.
+   - Maintain the logic for rendering content, handling errors, and updating the graph when the Graph option is selected.
+   - Keep the `add-to-presentation-btn` functionality intact.
+
+4. **CSS Considerations**:
+   - Add minimal CSS to style the dropdown (e.g., make it visually consistent with the existing UI).
+   - Assume the existing CSS for `.output-tab-content` and other elements will work with the dropdown.
+
+### Updated Code
+Below is the modified `retirementAccumulation.js` with the tabs converted to a dropdown menu. Only the `updateRetirementOutputs` function and related logic are updated. The rest of the file remains unchanged to avoid altering unrelated functionality. The `artifact_id` is reused since this is an update to the existing artifact.
+
+<xaiArtifact artifact_id="b476c54d-a153-4ba0-9295-78723398536c" artifact_version_id="70a81822-7993-4b57-815c-addf206e9089" title="retirementAccumulation.js" contentType="text/javascript">
+export const retirementAccumulationTabs = [
+  {
+    id: 'personal',
+    label: 'Personal',
+    content: `
+      <label>Marital Status: <input type="checkbox" id="is-married"></label>
+      <div class="client">
+        <h5>Client 1</h5>
+        <label>Name: <input type="text" id="c1-name" placeholder="John Doe"></label>
+        <label>Date of Birth: <input type="date" id="c1-dob"></label>
+        <div id="c1-age-display" class="age-display"></div>
+        <label>Retirement Age: <input type="number" id="c1-retirement-age" min="1" max="120" placeholder="65"></label>
+      </div>
+      <div class="client" id="client2-section" style="display: none;">
+        <h5>Client 2</h5>
+        <label>Name: <input type="text" id="c2-name" placeholder="Jane Doe"></label>
+        <label>Date of Birth: <input type="date" id="c2-dob"></label>
+        <div id="c2-age-display" class="age-display"></div>
+        <label>Retirement Age: <input type="number" id="c2-retirement-age" min="1" max="120" placeholder="65"></label>
+      </div>
+    `
+  },
+  {
+    id: 'income-needs',
+    label: 'Income Needs',
+    content: `
+      <label>Monthly Income Needs ($): <input type="number" id="monthly-income" min="0" step="100" placeholder="5000"></label>
+    `
+  },
+  {
+    id: 'income-sources',
+    label: 'Income Sources',
+    content: `
+      <div class="client">
+        <h5>Client 1</h5>
+        <label>Employment Income ($/yr): <input type="number" id="c1-employment" min="0" step="1000" placeholder="50000"></label>
+        <label>Social Security ($/mo): <input type="number" id="c1-social-security" min="0" step="100" placeholder="2000"></label>
+        <label>Other Income ($/mo): <input type="number" id="c1-other-income" min="0" step="100" placeholder="500"></label>
+      </div>
+      <div class="client" id="client2-income-section" style="display: none;">
+        <h5>Client 2</h5>
+        <label>Employment Income ($/yr): <input type="number" id="c2-employment" min="0" step="1000" placeholder="40000"></label>
+        <label>Social Security ($/mo): <input type="number" id="c2-social-security" min="0" step="100" placeholder="1800"></label>
+        <label>Other Income ($/mo): <input type="number" id="c2-other-income" min="0" step="100" placeholder="400"></label>
+      </div>
+    `
+  },
+  {
+    id: 'capital',
+    label: 'Capital',
+    content: `
+      <div id="c1-accounts">
+        <h5>Client 1 invocations
+        <h5>Client 1 Accounts</h5>
+        <div class="account">
+          <label>Account Name: <input type="text" id="c1-account-0-name" placeholder="401(k)"></label>
+          <label>Balance ($): <input type="number" id="c1-account-0-balance" min="0" step="1000" placeholder="100000"></label>
+          <label>Contribution ($/yr): <input type="number" id="c1-account-0-contribution" min="0" step="1000" placeholder="10000"></label>
+          <label>Employer Match (%): <input type="number" id="c1-account-0-employer-match" min="0" max="100" step="0.1" placeholder="3"></label>
+          <label>ROR (%): <input type="number" id="c1-account-0-ror" min="0" max="100" step="0.1" placeholder="6"></label>
+        </div>
+        <button type="button" class="add-account-btn" data-client="c1">Add Account</button>
+      </div>
+      <div id="c2-accounts" style="display: none;">
+        <h5>Client 2 Accounts</h5>
+        <div class="account">
+          <label>Account Name: <input type="text" id="c2-account-0-name" placeholder="IRA"></label>
+          <label>Balance ($): <input type="number" id="c2-account-0-balance" min="0" step="1000" placeholder="80000"></label>
+          <label>Contribution ($/yr): <input type="number" id="c2-account-0-contribution" min="0" step="1000" placeholder="8000"></label>
+          <label>Employer Match (%): <input type="number" id="c2-account-0-employer-match" min="0" max="100" step="0.1" placeholder="2"></label>
+          <label>ROR (%): <input type="number" id="c2-account-0-ror" min="0" max="100" step="0.1" placeholder="5"></label>
+        </div>
+        <button type="button" class="add-account-btn" data-client="c2">Add Account</button>
+      </div>
+    `
+  },
+  {
+    id: 'assumptions',
+    label: 'Assumptions',
+    content: `
+      <label>Mortality Age: <input type="number" id="mortality-age" min="1" max="120" placeholder="90"></label>
+      <label>Inflation (%): <input type="number" id="inflation" min="0" max="100" step="0.1" placeholder="2"></label>
+      <label>ROR During Retirement (%): <input type="number" id="ror-retirement" min="0" max="100" step="0.1" placeholder="4"></label>
+    `
+  }
+];
+
+// Setup age display listeners for DOB inputs
+export function setupAgeDisplayListeners(getAge) {
+  try {
+    const dobInputs = document.querySelectorAll('#c1-dob, #c2-dob');
+    const isMarriedInput = document.getElementById('is-married');
+
+    dobInputs.forEach(input => {
+      input.addEventListener('change', () => {
+        const clientPrefix = input.id.split('-')[0];
+        const ageDisplay = document.getElementById(`${clientPrefix}-age-display`);
+        const dob = input.value;
+        const age = getAge(dob);
+        if (age > 0) {
+          ageDisplay.textContent = `Current Age: ${age}`;
+        } else {
+          ageDisplay.textContent = '';
+        }
+      });
+
+      // Trigger initial age display
+      if (input.value) {
+        const event = new Event('change');
+        input.dispatchEvent(event);
+      }
+    });
+
+    if (isMarriedInput) {
+      isMarriedInput.addEventListener('change', () => {
+        const c2Dob = document.getElementById('c2-dob');
+        if (c2Dob && isMarriedInput.checked && c2Dob.value) {
+          const event = new Event('change');
+          c2Dob.dispatchEvent(event);
+        }
+      });
+    }
+  } catch (error) {
+    console.error('Error in setupAgeDisplayListeners:', error);
+  }
+}
+
+// Helper function to calculate retirement income data
+function calculateRetirementIncome(clientData, getAge) {
+  const result = {
+    labels: [],
+    needData: [],
+    incomeData: [],
+    socialSecurityData: [],
+    withdrawalData: [],
+    earningsData: [],
+    balanceData: [],
+    shortfallData: [],
+    totalBalance: 0,
+    depletionAge: 0
+  };
+
+  try {
+    const c1Age = getAge(clientData.client1.personal.dob);
+    const c2Age = clientData.isMarried ? getAge(clientData.client2.personal.dob) : c1Age;
+    const c1RetirementAge = parseFloat(clientData.client1.personal.retirementAge) || 65;
+    const c2RetirementAge = clientData.isMarried ? parseFloat(clientData.client2.personal.retirementAge) || 65 : c1RetirementAge;
+    const startAge = Math.max(c1RetirementAge, c2RetirementAge);
+    const mortalityAge = parseFloat(clientData.assumptions.mortalityAge) || 90;
+    const inflation = isNaN(parseFloat(clientData.assumptions.inflation)) ? 0.02 : parseFloat(clientData.assumptions.inflation) / 100;
+    const rorRetirement = isNaN(parseFloat(clientData.assumptions.rorRetirement)) ? 0.04 : parseFloat(clientData.assumptions.rorRetirement) / 100;
+    let monthlyNeed = Math.round(parseFloat(clientData.incomeNeeds.monthly) || 5000);
+
+    if (!clientData.client1.personal.dob || c1Age >= c1RetirementAge || (clientData.isMarried && (!clientData.client2.personal.dob || c2Age >= c2RetirementAge))) {
+      return result; // Empty result for invalid inputs
+    }
+    if (startAge >= mortalityAge) {
+      return result; // Empty result for invalid ages
+    }
+
+    // Adjust annual need for inflation until retirement
+    const yearsToRetirement = startAge - c1Age;
+    let annualNeed = Math.round(monthlyNeed * 12 * Math.pow(1 + inflation, yearsToRetirement));
+
+    // Calculate total balance at retirement
+    let totalBalance = 0;
+    const clients = [clientData.client1, clientData.isMarried ? clientData.client2 : null];
+    clients.forEach((client, idx) => {
+      if (!client) return;
+      const clientAge = idx === 0 ? c1Age : c2Age;
+      const clientRetirementAge = idx === 0 ? c1RetirementAge : c2RetirementAge;
+      const yearsToClientRetirement = clientRetirementAge - clientAge;
+
+      client.accounts.forEach(account => {
+        let balance = Math.round(parseFloat(account.balance) || 0);
+        const contribution = Math.round(parseFloat(account.contribution) || 0);
+        const employmentIncome = Math.round(parseFloat(client.incomeSources.employment) || 0);
+        const employerMatchPercent = isNaN(parseFloat(account.employerMatch)) ? 0 : parseFloat(account.employerMatch) / 100;
+        const employerMatch = Math.round(employerMatchPercent * employmentIncome);
+        const ror = isNaN(parseFloat(account.ror)) ? 0.06 : parseFloat(account.ror) / 100;
+
+        // Future value of current balance
+        const fvBalance = Math.round(balance * Math.pow(1 + ror, yearsToClientRetirement));
+        // Future value of contributions (annuity)
+        const fvContributions = contribution && ror ? Math.round(contribution * (Math.pow(1 + ror, yearsToRetirement) - 1) / ror) : 0;
+        // Future value of employer match (annuity)
+        const fvEmployerMatch = employerMatch && ror ? Math.round(employerMatch * (Math.pow(1 + ror, yearsToRetirement) - 1) / ror) : 0;
+
+        let accountBalance = Math.round(fvBalance + fvContributions + fvEmployerMatch);
+
+        // Apply rorRetirement if client retires before startAge
+        if (clientRetirementAge < startAge) {
+          const additionalYears = startAge - clientRetirementAge;
+          accountBalance = Math.round(accountBalance * Math.pow(1 + rorRetirement, additionalYears));
+        }
+
+        totalBalance += accountBalance;
+      });
+
+      // Calculate future value of other assets
+      if (client.other && client.other.assets) {
+        client.other.assets.forEach(asset => {
+          let balance = Math.round(parseFloat(asset.balance) || 0);
+          const ror = isNaN(parseFloat(asset.ror)) ? 0.06 : parseFloat(asset.ror) / 100;
+          let fvBalance = Math.round(balance * Math.pow(1 + ror, yearsToClientRetirement));
+          if (clientRetirementAge < startAge) {
+            const additionalYears = startAge - clientRetirementAge;
+            fvBalance = Math.round(fvBalance * Math.pow(1 + rorRetirement, additionalYears));
+          }
+          totalBalance += fvBalance;
+        });
+      }
+    });
+
+    let balance = totalBalance;
+    result.totalBalance = totalBalance;
+    result.depletionAge = startAge;
+
+    // Add starting balance row
+    result.labels.push(startAge);
+    result.needData.push(0);
+    result.incomeData.push(0);
+    result.socialSecurityData.push(0);
+    result.withdrawalData.push(0);
+    result.earningsData.push(0);
+    result.balanceData.push(totalBalance);
+    result.shortfallData.push(0);
+
+    // Calculate timeline data
+    for (let i = 0; i < mortalityAge - startAge; i++) {
+      const currentAge = startAge + i + 1;
+      result.labels.push(currentAge);
+
+      // Need (inflation-adjusted from retirement start)
+      const adjustedNeed = Math.round(annualNeed * Math.pow(1 + inflation, i));
+      result.needData.push(adjustedNeed);
+
+      // Income (Employment + Other)
+      let employmentIncome = 0;
+      if (currentAge < c1RetirementAge) {
+        employmentIncome += Math.round(parseFloat(clientData.client1.incomeSources.employment) || 0);
+      }
+      if (clientData.isMarried && currentAge < c2RetirementAge) {
+        employmentIncome += Math.round(parseFloat(clientData.client2.incomeSources.employment) || 0);
+      }
+      const otherIncome = Math.round(parseFloat(clientData.client1.incomeSources.other) * 12 || 0);
+      const totalIncome = Math.round(employmentIncome + otherIncome);
+      result.incomeData.push(totalIncome);
+
+      // Social Security
+      let socialSecurity = 0;
+      if (currentAge >= c1RetirementAge) {
+        socialSecurity += Math.round(parseFloat(clientData.client1.incomeSources.socialSecurity) * 12 || 0);
+      }
+      if (clientData.isMarried && currentAge >= c2RetirementAge) {
+        socialSecurity += Math.round(parseFloat(clientData.client2.incomeSources.socialSecurity) * 12 || 0);
+      }
+      result.socialSecurityData.push(socialSecurity);
+
+      // Asset Earnings
+      const earnings = Math.round(balance * rorRetirement);
+      result.earningsData.push(earnings);
+
+      // Withdrawal and Shortfall
+      const remainingNeed = Math.round(adjustedNeed - totalIncome - socialSecurity);
+      let withdrawal = 0;
+      let shortfall = 0;
+      if (remainingNeed > 0) {
+        const availableBalance = Math.round(balance + earnings);
+        if (availableBalance >= remainingNeed) {
+          withdrawal = Math.round(remainingNeed);
+          balance = Math.round(availableBalance - remainingNeed);
+        } else {
+          withdrawal = availableBalance > 0 ? Math.round(availableBalance) : 0;
+          shortfall = Math.round(remainingNeed - withdrawal);
+          balance = 0;
+        }
+      }
+      result.withdrawalData.push(withdrawal);
+      result.shortfallData.push(shortfall);
+      result.balanceData.push(balance);
+
+      // Update depletion age (only set once, when balance first depletes)
+      if (balance <= 0 && result.depletionAge === startAge) {
+        result.depletionAge = currentAge;
+      }
+    }
+    // Ensure depletionAge is mortalityAge if balance remains positive
+    result.depletionAge = balance > 0 ? mortalityAge : result.depletionAge;
+  } catch (error) {
+    console.error('Error in calculateRetirementIncome:', error);
+  }
+  return result;
+}
+
+export function updateRetirementGraph(chartCanvas, clientData, Chart, getAge) {
+  try {
+    if (!chartCanvas) {
+      console.error('Chart canvas #analysis-chart not found');
+      return null;
+    }
+    if (typeof Chart === 'undefined') {
+      console.error('Chart.js not loaded');
+      return null;
+    }
+
+    const ctx = chartCanvas.getContext('2d');
+    let chartInstance = null;
+
+    const incomeData = calculateRetirementIncome(clientData, getAge);
+    if (!incomeData.labels.length) {
+      chartInstance = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: ['Error'],
+          datasets: [{
+            label: 'Error',
+            data: [0],
+            backgroundColor: '#ef4444'
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: {
             title: { display: true, text: 'Please enter valid DOB and retirement age' }
           }
         }
@@ -406,7 +756,7 @@ export function updateRetirementOutputs(analysisOutputs, clientData, formatCurre
     // Get the tab container
     const tabContainer = document.getElementById('output-tabs-container');
     if (!tabContainer) {
-      console.warn('Tab container #output-tabs-container not found; tabs will be rendered in analysis-outputs');
+      console.warn('Tab container #output-tabs-container not found; dropdown will be rendered in analysis-outputs');
     }
 
     const c1Age = getAge(clientData.client1.personal.dob);
@@ -610,8 +960,11 @@ export function updateRetirementOutputs(analysisOutputs, clientData, formatCurre
       if (newRetirementAge > mortalityAge) newRetirementAge = mortalityAge;
     }
 
-    // Define report tabs
-    const reportTabs = [
+    // Define report options for dropdown
+    const reportOptions = [
+      { id: 'output-graph', label: 'Graph' },
+      { id: 'output-timeline', label: 'Timeline' },
+      { id: 'output-alternatives', label: 'Alternatives' },
       { id: 'report-retirement-analysis', label: 'Retirement Analysis' },
       { id: 'report-social-security-optimizer', label: 'Social Security Optimizer' },
       { id: 'report-capital-available', label: 'Capital Available' },
@@ -620,16 +973,16 @@ export function updateRetirementOutputs(analysisOutputs, clientData, formatCurre
       { id: 'report-retirement-fact-finder', label: 'Fact Finder' }
     ];
 
-    // Render Tabs in output-tabs-container
+    // Render Dropdown in output-tabs-container
     if (tabContainer) {
       tabContainer.innerHTML = `
-        <div class="output-tabs">
-          <button class="output-tab-btn active" data-tab="output-graph">Graph</button>
-          <button class="output-tab-btn" data-tab="output-timeline">Timeline</button>
-          <button class="output-tab-btn" data-tab="output-alternatives">Alternatives</button>
-          ${reportTabs.map(tab => `
-            <button class="output-tab-btn" data-tab="${tab.id}">${tab.label}</button>
-          `).join('')}
+        <div class="output-dropdown">
+          <label for="output-select">Select View: </label>
+          <select id="output-select" class="output-select">
+            ${reportOptions.map(option => `
+              <option value="${option.id}" ${option.id === 'output-graph' ? 'selected' : ''}>${option.label}</option>
+            `).join('')}
+          </select>
         </div>
       `;
     }
@@ -637,13 +990,13 @@ export function updateRetirementOutputs(analysisOutputs, clientData, formatCurre
     // Render Content in analysis-outputs
     analysisOutputs.innerHTML = `
       ${!tabContainer ? `
-        <div class="output-tabs">
-          <button class="output-tab-btn active" data-tab="output-graph">Graph</button>
-          <button class="output-tab-btn" data-tab="output-timeline">Timeline</button>
-          <button class="output-tab-btn" data-tab="output-alternatives">Alternatives</button>
-          ${reportTabs.map(tab => `
-            <button class="output-tab-btn" data-tab="${tab.id}">${tab.label}</button>
-          `).join('')}
+        <div class="output-dropdown">
+          <label for="output-select">Select View: </label>
+          <select id="output-select" class="output-select">
+            ${reportOptions.map(option => `
+              <option value="${option.id}" ${option.id === 'output-graph' ? 'selected' : ''}>${option.label}</option>
+            `).join('')}
+          </select>
         </div>
       ` : ''}
       <div class="output-tab-content active" id="output-graph">
@@ -940,9 +1293,46 @@ export function updateRetirementOutputs(analysisOutputs, clientData, formatCurre
         </div>
       </div>
     `;
+
+    // Setup dropdown switching
+    setupOutputDropdownSwitching();
   } catch (error) {
     console.error('Error in updateRetirementOutputs:', error);
     analysisOutputs.innerHTML = '<p class="output-card">Error rendering outputs. Please check input data.</p>';
     if (tabContainer) tabContainer.innerHTML = '';
+  }
+}
+
+// Setup dropdown switching
+function setupOutputDropdownSwitching() {
+  try {
+    const select = document.getElementById('output-select');
+    if (!select) {
+      console.warn('Dropdown #output-select not found');
+      return;
+    }
+    select.removeEventListener('change', outputDropdownChangeHandler);
+    select.addEventListener('change', outputDropdownChangeHandler);
+  } catch (error) {
+    console.error('Error in setupOutputDropdownSwitching:', error);
+  }
+}
+
+function outputDropdownChangeHandler() {
+  try {
+    const selectedTab = this.value;
+    document.querySelectorAll('.output-tab-content').forEach(content => {
+      content.style.display = content.id === selectedTab ? 'block' : 'none';
+    });
+    if (selectedTab === 'output-graph') {
+      setTimeout(() => {
+        const chartCanvas = document.getElementById('analysis-chart');
+        if (chartCanvas && typeof Chart !== 'undefined') {
+          updateRetirementGraph(chartCanvas, clientData, Chart, getAge);
+        }
+      }, 100); // Re-render graph when switching to graph tab
+    }
+  } catch (error) {
+    console.error('Error in outputDropdownChangeHandler:', error);
   }
 }
