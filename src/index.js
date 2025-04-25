@@ -195,9 +195,7 @@ function populateInputFields() {
     setInputValue('c1-employment', clientData.client1.incomeSources.employment, 'Client 1 Employment');
     setInputValue('c2-employment', clientData.client2.incomeSources.employment, 'Client 2 Employment');
     setInputValue('c1-social-security', clientData.client1.incomeSources.socialSecurity, 'Client 1 Social Security');
-    setInputValue
-
-('c2-social-security', clientData.client2.incomeSources.socialSecurity, 'Client 2 Social Security');
+    setInputValue('c2-social-security', clientData.client2.incomeSources.socialSecurity, 'Client 2 Social Security');
     setInputValue('c1-other-income', clientData.client1.incomeSources.other, 'Client 1 Other Income');
     setInputValue('c2-other-income', clientData.client2.incomeSources.other, 'Client 2 Other Income');
     setInputValue('is-married', clientData.isMarried, 'Is Married', 'checked');
@@ -377,21 +375,25 @@ function setupEventDelegation() {
     });
 
     document.addEventListener('click', (e) => {
-      if (e.target.classList.contains('add-to-presentation-btn')) {
-        const reportId = e.target.dataset.report;
-        const reportTitle = e.target.dataset.title;
-        toggleReportSelection(reportId, reportTitle);
-        renderPresentationPreview();
-      } else if (e.target.classList.contains('remove-report-btn')) {
+      if (e.target.classList.contains('remove-report-btn')) {
         const reportId = e.target.dataset.report;
         selectedReports = selectedReports.filter(report => report.id !== reportId);
         reportCount = selectedReports.length;
         presentationCount.textContent = reportCount;
         presentationCount.classList.toggle('active', reportCount > 0);
         renderPresentationPreview();
+        updateOutputs(); // Re-render outputs to update checkbox state
       } else if (e.target.id === 'finalize-presentation-btn') {
         finalizePresentation();
       }
+    });
+
+    // Listen for custom event from checkbox
+    document.addEventListener('addToPresentationToggle', (e) => {
+      const { reportId, reportTitle } = e.detail;
+      toggleReportSelection(reportId, reportTitle);
+      renderPresentationPreview();
+      updateOutputs(); // Re-render outputs to update checkbox state
     });
   } catch (error) {
     console.error('Error in setupEventDelegation:', error);
