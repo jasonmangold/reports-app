@@ -43,7 +43,12 @@
 
   <div class="analysis-page">
     <div class="analysis-topics">
-      <!-- Populated dynamically from JavaScript -->
+      <label for="analysis-dropdown">Analysis Topic: </label>
+      <select id="analysis-dropdown">
+        <option value="retirement-accumulation">Retirement Accumulation</option>
+        <option value="personal-finance">Personal Finance</option>
+        <option value="summary">Summary</option>
+      </select>
     </div>
     <div class="analysis-workspace">
       <div class="client-inputs">
@@ -66,8 +71,6 @@
       </div>
     </div>
   </div>
-
-
 
   <script type="module" src="src/index.js"></script>
 </body>
