@@ -618,7 +618,7 @@ export function updateRetirementOutputs(analysisOutputs, clientData, formatCurre
       { id: 'output-graph', label: 'Retirement Analysis', reportId: 'report-graph', title: 'Retirement Income Graph' },
       { id: 'report-social-security-optimizer', label: 'Social Security Optimizer', reportId: 'report-social-security-optimizer', title: 'Social Security Optimizer' },
       { id: 'report-capital-available', label: 'Capital Available at Retirement', reportId: 'report-capital-available', title: 'Capital Available at Retirement' },
-      { id: 'output-alternatives', label: 'Alternatives to Acheiving Retirement Goals', reportId: 'report-alternatives-retirement', title: 'Retirement Alternatives' },
+      { id: 'output-alternatives', label: 'Alternatives to Achieving Retirement Goals', reportId: 'report-alternatives-retirement', title: 'Retirement Alternatives' },
       { id: 'output-timeline', label: 'Retirement Timeline', reportId: 'report-retirement-timeline', title: 'Retirement Income Timeline' },
       { id: 'report-retirement-fact-finder', label: 'Fact Finder', reportId: 'report-retirement-fact-finder', title: 'Retirement Fact Finder' }
     ];
@@ -879,6 +879,7 @@ function setupOutputControls(reportOptions, selectedReports, clientData, formatC
     // Function to update the UI without re-rendering the entire DOM
     const updateUI = () => {
       const selectedTabId = select.value;
+      console.log('Selected tab ID:', selectedTabId); // Debug: Log the selected tab ID
       const selectedOption = reportOptions.find(option => option.id === selectedTabId);
       if (selectedOption) {
         // Update checkbox label and state
@@ -899,8 +900,17 @@ function setupOutputControls(reportOptions, selectedReports, clientData, formatC
         `).join('');
 
         // Show the selected tab content
-        document.querySelectorAll('.output-tab-content').forEach(content => {
-          content.style.display = content.id === selectedTabId ? 'block' : 'none';
+        const contents = document.querySelectorAll('.output-tab-content');
+        console.log('Found output-tab-content elements:', contents.length); // Debug: Log the number of content elements
+        contents.forEach(content => {
+          console.log('Checking content ID:', content.id, 'against selectedTabId:', selectedTabId); // Debug: Log each content ID
+          if (content.id === selectedTabId) {
+            content.style.display = 'block';
+            console.log(`Showing content with ID: ${content.id}`);
+          } else {
+            content.style.display = 'none';
+            console.log(`Hiding content with ID: ${content.id}`);
+          }
         });
 
         // Re-render graph if needed
@@ -955,10 +965,16 @@ function setupOutputControls(reportOptions, selectedReports, clientData, formatC
 // Function to update presentation count and preview
 function updatePresentationUI(selectedReports) {
   try {
+    // Debug: Log the number of selected reports
+    console.log('Updating presentation UI with selectedReports:', selectedReports.length);
+
     // Update presentation count in header
     const presentationCount = document.getElementById('presentation-count');
     if (presentationCount) {
-      presentationCount.textContent = selectedReports.length;
+      presentationCount.textContent = selectedReports.length.toString();
+      console.log('Updated presentation count to:', selectedReports.length);
+    } else {
+      console.warn('Presentation count element #presentation-count not found');
     }
 
     // Update presentation preview section
@@ -979,6 +995,9 @@ function updatePresentationUI(selectedReports) {
           <p>FindKey Employee</p>
         `;
       }
+      console.log('Updated presentation preview');
+    } else {
+      console.warn('Presentation preview element .presentation-preview not found');
     }
   } catch (error) {
     console.error('Error in updatePresentationUI:', error);
