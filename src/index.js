@@ -30,6 +30,9 @@ let clientData = {
     cash: "20000",
     residenceMortgage: "100000",
     otherDebt: "5000"
+  },
+  summary: {
+    topics: ['Retirement Accumulation', 'Debt'] // Default selected topics for testing
   }
 };
 
@@ -220,7 +223,6 @@ function populateInputFields() {
     setInputValue('cash', clientData.other.cash, 'Cash');
     setInputValue('residence-mortgage', clientData.other.residenceMortgage, 'Residence/Mortgage');
     setInputValue('other-debt', clientData.other.otherDebt, 'Other Debt');
-    setInputValue('summary-amount', clientData.summary?.amount, 'Summary Amount'); // Add for Summary tab
 
     ['c1', 'c2'].forEach(client => {
       const clientKey = client === 'c1' ? 'client1' : 'client2';
@@ -279,7 +281,7 @@ function populateInputFields() {
           <label>Asset Name: <input type="text" id="${client}-asset-${index}-name" placeholder="Asset ${index + 1}"></label>
           <label>Balance ($): <input type="number" id="${client}-asset-${index}-balance" min="0" step="1000" placeholder="0"></label>
           <label>ROR (%): <input type="number" id="${client}-asset-${index}-ror" min="0" max="100" step="0.1" placeholder="0"></label>
-          <label>Asset Debt ($): <input type="number" id="${client}-asset-${index}-debt" min="0" step="1000" placeholder="0"></label>
+          <label>Asset Debt ($): <input type="number" id="${ხ: true;" id="${client}-asset-${index}-debt" min="0" step="1000" placeholder="0"></label>
         `;
         const addButton = container.querySelector('.add-asset-btn');
         container.insertBefore(newAsset, addButton);
@@ -555,10 +557,10 @@ function validateClientData() {
       });
     });
 
-    // Check Summary amount (if Summary tab is active)
+    // Check Summary topics (if Summary tab is active)
     if (currentAnalysis === 'summary') {
-      if (!clientData.summary?.amount || clientData.summary.amount <= 0) {
-        errors.push("Summary amount must be a positive number.");
+      if (!clientData.summary?.topics || clientData.summary.topics.length === 0) {
+        errors.push("At least one topic must be selected for Financial Fitness Score.");
       }
     }
 
@@ -626,10 +628,6 @@ function updateClientData(e) {
       else if (input.id === 'cash') clientData.other.cash = value;
       else if (input.id === 'residence-mortgage') clientData.other.residenceMortgage = value;
       else if (input.id === 'other-debt') clientData.other.otherDebt = value;
-      else if (input.id === 'summary-amount') {
-        if (!clientData.summary) clientData.summary = {};
-        clientData.summary.amount = value;
-      }
     }
 
     if (input.id === 'c1-name' || input.id === 'c2-name') updateClientFileName();
@@ -744,7 +742,7 @@ function updateOutputs() {
     } else if (currentAnalysis === 'personal-finance') {
       updatePersonalFinanceOutputs(analysisOutputs, clientData, formatCurrency, selectedReports, Chart);
     } else if (currentAnalysis === 'summary') {
-      updateSummaryOutputs(analysisOutputs, clientData, formatCurrency, selectedReports);
+      updateSummaryOutputs(analysisOutputs, clientData, formatCurrency, selectedReports, Chart, getAge);
     } else {
       analysisOutputs.innerHTML = `<p class="output-card">Outputs not available for ${currentAnalysis}.</p>`;
     }
