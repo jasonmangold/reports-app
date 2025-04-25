@@ -64,6 +64,7 @@ const exportGraphBtn = document.getElementById('export-graph-btn');
 const clientFileName = document.getElementById('client-file-name');
 const presentationCount = document.getElementById('presentation-count');
 const analysisOutputs = document.getElementById('analysis-outputs');
+const outputTabsContainer = document.getElementById('output-tabs-container');
 let chartInstance = null;
 
 // Analysis topics list
@@ -730,8 +731,13 @@ function updateOutputs() {
     const validationError = validateClientData();
     if (validationError) {
       analysisOutputs.innerHTML = `<p class="output-error">${validationError}</p>`;
+      if (outputTabsContainer) outputTabsContainer.innerHTML = ''; // Clear dropdown
       return;
     }
+
+    // Clear previous output state
+    analysisOutputs.innerHTML = '';
+    if (outputTabsContainer) outputTabsContainer.innerHTML = '';
 
     if (currentAnalysis === 'retirement-accumulation') {
       updateRetirementOutputs(analysisOutputs, clientData, formatCurrency, getAge, selectedReports, Chart);
@@ -746,12 +752,20 @@ function updateOutputs() {
   } catch (error) {
     console.error('Error in updateOutputs:', error);
     analysisOutputs.innerHTML = '<p class="output-error">Error rendering outputs. Please check console for details.</p>';
+    if (outputTabsContainer) outputTabsContainer.innerHTML = '';
   }
 }
 
 // Output tab switching
 function setupOutputTabSwitching() {
   try {
+    // Only apply tab switching for analyses that use tabs (e.g., Retirement Accumulation)
+    // Skip for analyses that use dropdowns (e.g., Personal Finance, Summary)
+    if (currentAnalysis === 'personal-finance' || currentAnalysis === 'summary') {
+      console.log(`Skipping setupOutputTabSwitching for ${currentAnalysis} (uses dropdown)`);
+      return;
+    }
+
     const buttons = document.querySelectorAll('.output-tab-btn');
     if (!buttons.length) {
       console.warn('No output tab buttons found');
