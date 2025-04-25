@@ -1,5 +1,6 @@
 import { retirementAccumulationTabs, updateRetirementGraph, updateRetirementOutputs, setupAgeDisplayListeners } from './retirementAccumulation.js';
 import { personalFinanceTabs, updatePersonalFinanceGraph, updatePersonalFinanceOutputs } from './personalFinance.js';
+import { summaryTabs, updateSummaryOutputs } from './summary.js'; // Add this import
 
 // Client data structure with default values
 let clientData = {
@@ -144,7 +145,10 @@ function updateTabs(analysis) {
     inputTabs.innerHTML = '';
     inputContent.innerHTML = '';
 
-    const config = analysis === 'retirement-accumulation' ? retirementAccumulationTabs : analysis === 'personal-finance' ? personalFinanceTabs : retirementAccumulationTabs;
+    const config = analysis === 'retirement-accumulation' ? retirementAccumulationTabs :
+                  analysis === 'personal-finance' ? personalFinanceTabs :
+                  analysis === 'summary' ? summaryTabs :
+                  retirementAccumulationTabs; // Default to retirement-accumulation
 
     config.forEach((tab, index) => {
       const btn = document.createElement('button');
@@ -215,6 +219,7 @@ function populateInputFields() {
     setInputValue('cash', clientData.other.cash, 'Cash');
     setInputValue('residence-mortgage', clientData.other.residenceMortgage, 'Residence/Mortgage');
     setInputValue('other-debt', clientData.other.otherDebt, 'Other Debt');
+    setInputValue('summary-amount', clientData.summary?.amount, 'Summary Amount'); // Add for Summary tab
 
     ['c1', 'c2'].forEach(client => {
       const clientKey = client === 'c1' ? 'client1' : 'client2';
@@ -549,6 +554,13 @@ function validateClientData() {
       });
     });
 
+    // Check Summary amount (if Summary tab is active)
+    if (currentAnalysis === 'summary') {
+      if (!clientData.summary?.amount || clientData.summary.amount <= 0) {
+        errors.push("Summary amount must be a positive number.");
+      }
+    }
+
     return errors.length ? errors.join('<br>') : null;
   } catch (error) {
     console.error('Error in validateClientData:', error);
@@ -613,6 +625,10 @@ function updateClientData(e) {
       else if (input.id === 'cash') clientData.other.cash = value;
       else if (input.id === 'residence-mortgage') clientData.other.residenceMortgage = value;
       else if (input.id === 'other-debt') clientData.other.otherDebt = value;
+      else if (input.id === 'summary-amount') {
+        if (!clientData.summary) clientData.summary = {};
+        clientData.summary.amount = value;
+      }
     }
 
     if (input.id === 'c1-name' || input.id === 'c2-name') updateClientFileName();
@@ -694,10 +710,13 @@ function updateGraph() {
       console.log('updatePersonalFinanceGraph returned chartInstance:', chartInstance);
     } else {
       console.warn(`No graph rendering for analysis type: ${currentAnalysis}`);
+      chartCanvas.style.display = 'none'; // Hide the canvas for Summary
     }
 
     if (!chartInstance) {
       console.warn('No chart instance created');
+    } else {
+      chartCanvas.style.display = 'block'; // Show the canvas if a chart is created
     }
   } catch (error) {
     console.error('Error in updateGraph:', error);
@@ -718,6 +737,8 @@ function updateOutputs() {
       updateRetirementOutputs(analysisOutputs, clientData, formatCurrency, getAge, selectedReports, Chart);
     } else if (currentAnalysis === 'personal-finance') {
       updatePersonalFinanceOutputs(analysisOutputs, clientData, formatCurrency);
+    } else if (currentAnalysis === 'summary') {
+      updateSummaryOutputs(analysisOutputs, clientData, formatCurrency);
     } else {
       analysisOutputs.innerHTML = `<p class="output-card">Outputs not available for ${currentAnalysis}.</p>`;
     }
