@@ -3,387 +3,70 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Retirement Accumulation Analysis</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      margin: 0;
-      padding: 0;
-    }
-
-    /* Top Navigation (Home, Analysis, Education, etc.) */
-    .top-nav {
-      background-color: #f0f8ff;
-      padding: 10px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-    .top-nav a {
-      margin: 0 10px;
-      text-decoration: none;
-      color: #1e90ff;
-    }
-    .top-nav .user {
-      font-weight: bold;
-    }
-
-    /* Sidebar Topics (Summary, Education Funding, etc.) */
-    .sidebar {
-      background-color: #f0f8ff;
-      padding: 10px;
-      display: flex;
-      flex-direction: row;
-      flex-wrap: wrap;
-      gap: 10px;
-      border-bottom: 1px solid #d3d3d3;
-    }
-    .sidebar a {
-      text-decoration: none;
-      color: #1e90ff;
-      font-size: 14px;
-      padding: 5px 10px;
-      border-radius: 5px;
-    }
-    .sidebar a:hover {
-      background-color: #e0e0e0;
-    }
-    .sidebar a.active {
-      font-weight: bold;
-      color: #000080;
-      text-decoration: underline;
-    }
-
-    /* Main Content Layout */
-    .main-content {
-      display: flex;
-      flex-direction: row;
-      padding: 20px;
-      gap: 20px;
-    }
-
-    /* Client Inputs Section */
-    .client-inputs {
-      flex: 1;
-      max-width: 400px;
-      border: 1px solid #d3d3d3;
-      padding: 15px;
-      border-radius: 5px;
-    }
-    .client-inputs .tab-buttons {
-      display: flex;
-      flex-direction: row;
-      gap: 5px;
-      margin-bottom: 15px;
-    }
-    .client-inputs .tab-button {
-      padding: 5px 10px;
-      border: 1px solid #d3d3d3;
-      background-color: #f0f8ff;
-      cursor: pointer;
-      border-radius: 5px;
-    }
-    .client-inputs .tab-button.active {
-      background-color: #1e90ff;
-      color: white;
-      border-color: #1e90ff;
-    }
-    .client-inputs .tab-content {
-      display: none;
-    }
-    .client-inputs .tab-content.active {
-      display: block;
-    }
-    .client-inputs label {
-      display: block;
-      margin: 10px 0;
-    }
-    .client-inputs input {
-      width: 100%;
-      padding: 5px;
-      box-sizing: border-box;
-    }
-    .client-inputs .client {
-      margin-bottom: 15px;
-    }
-    .client-inputs .buttons {
-      display: flex;
-      gap: 10px;
-      margin-top: 15px;
-    }
-    .client-inputs button {
-      padding: 10px 20px;
-      background-color: #1e90ff;
-      color: white;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-    }
-    .client-inputs button:hover {
-      background-color: #4682b4;
-    }
-
-    /* Analysis Outputs Section */
-    .analysis-outputs {
-      flex: 2;
-      border: 1px solid #d3d3d3;
-      padding: 15px;
-      border-radius: 5px;
-    }
-    .output-dropdown {
-      margin-bottom: 15px;
-    }
-    .output-tab-content {
-      display: none;
-    }
-    .output-tab-content.active {
-      display: block;
-    }
-    .output-card {
-      border: 1px solid #d3d3d3;
-      padding: 15px;
-      border-radius: 5px;
-    }
-    .output-table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 10px;
-    }
-    .output-table th, .output-table td {
-      border: 1px solid #d3d3d3;
-      padding: 8px;
-      text-align: left;
-    }
-    .output-table th {
-      background-color: #f0f8ff;
-    }
-    .add-to-presentation-btn {
-      background-color: #d3d3d3;
-      border: none;
-      padding: 5px 10px;
-      border-radius: 5px;
-      cursor: pointer;
-    }
-    .add-to-presentation-btn:hover {
-      background-color: #c0c0c0;
-    }
-
-    /* Responsive Design */
-    @media (max-width: 768px) {
-      .main-content {
-        flex-direction: column;
-      }
-      .client-inputs, .analysis-outputs {
-        max-width: 100%;
-      }
-      .sidebar {
-        flex-direction: column;
-      }
-    }
-  </style>
+  <title>Analysis - Advisys</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <link rel="stylesheet" href="styles.css">
+  <!-- Chart.js CDN (single version, UMD for global Chart object) -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 </head>
 <body>
-  <!-- Top Navigation -->
-  <div class="top-nav">
-    <div>
-      <span class="user">JOHN DOE</span>
-      <a href="#">Home</a>
-      <a href="#">Analysis</a>
-      <a href="#">Education</a>
-      <a href="#">Calculators</a>
-      <a href="#">Presentation</a>
-      <a href="#">Search</a>
-      <a href="#">Profile</a>
+  <header>
+    <div class="logo">
+      <img src="logo.png" alt="Advisys Logo" class="logo-img">
     </div>
-    <div>
-      <a href="#">🔔</a>
-      <a href="#">❓</a>
-      <a href="#">🌙</a>
+    <div class="client-file">
+      <span id="client-file-name">No Client Selected</span>
     </div>
-  </div>
+    <nav>
+      <ul>
+        <li><a href="home.html">Home</a></li>
+        <li class="dropdown">
+          <a href="analysis.html" class="active">Analysis</a>
+          <div class="dropdown-content" id="analysis-list">
+            <!-- Populated dynamically by JavaScript -->
+          </div>
+        </li>
+        <li><a href="index.html">Education</a></li>
+        <li><a href="#">Calculators</a></li>
+        <li><a href="presentation.html" id="presentation-tab">Presentation <span id="presentation-count" class="count-badge">0</span></a></li>
+        <li><a href="#">Search</a></li>
+        <li><a href="#">Profile</a></li>
+      </ul>
+    </nav>
+    <div class="icons">
+      <i class="fas fa-bell"></i>
+      <i class="fas fa-question-circle"></i>
+      <i class="fas fa-moon dark-mode-toggle"></i>
+    </div>
+  </header>
 
-  <!-- Sidebar Topics -->
-  <div class="sidebar">
-    <a href="#">SURVIVOR NEEDS</a>
-    <a href="#" class="active">RETIREMENT ACCUMULATION</a>
-    <a href="#">RETIREMENT DISTRIBUTION</a>
-    <a href="#">SOCIAL SECURITY</a>
-    <a href="#">DISABILITY INCOME NEEDS</a>
-    <a href="#">CRITICAL ILLNESS</a>
-    <a href="#">LONG-TERM CARE NEEDS</a>
-    <a href="#">ESTATE ANALYSIS</a>
-    <a href="#">EDUCATION FUNDING</a>
-    <a href="#">ASSET ALLOCATION</a>
-    <a href="#">CHARITABLE REMAINDER TRUST</a>
-    <a href="#">PERSONAL FINANCE</a>
-    <a href="#">DEBT REPAYMENT</a>
-  </div>
-
-  <!-- Main Content -->
-  <div class="main-content">
-    <!-- Client Inputs -->
-    <div class="client-inputs">
-      <h2>Client Inputs</h2>
-      <div class="tab-buttons">
-        <button class="tab-button active" data-tab="personal">Personal</button>
-        <button class="tab-button" data-tab="income-needs">Income Needs</button>
-        <button class="tab-button" data-tab="income-sources">Income Sources</button>
-        <button class="tab-button" data-tab="capital">Capital</button>
-        <button class="tab-button" data-tab="assumptions">Assumptions</button>
+  <div class="analysis-page">
+    <div class="analysis-topics">
+      <!-- Populated dynamically from JavaScript -->
+    </div>
+    <div class="analysis-workspace">
+      <div class="client-inputs">
+        <h3>Client Inputs</h3>
+        <div class="input-container">
+          <div class="input-tabs">
+            <!-- Tabs populated dynamically -->
+          </div>
+          <form id="client-input-form" class="input-content">
+            <!-- Tab content populated dynamically -->
+          </form>
+        </div>
       </div>
-      <div id="tab-content"></div>
-      <div class="buttons">
+      <div class="graph-outputs">
+        <h3>Analysis Outputs</h3>
+        <div id="output-tabs-container"></div>
+        <div id="analysis-outputs"></div>
         <button id="recalculate-btn">Recalculate</button>
         <button id="export-graph-btn">Export Graph</button>
       </div>
     </div>
-
-    <!-- Analysis Outputs -->
-    <div class="analysis-outputs">
-      <h2>Analysis Outputs</h2>
-      <div id="output-tabs-container"></div>
-      <div id="analysis-outputs"></div>
-    </div>
   </div>
 
-  <!-- Presentation Preview -->
-  <div style="padding: 20px; background-color: #f0f8ff;">
-    <p>PRESENTATION PREVIEW (0)</p>
-    <p>No reports selected.</p>
-    <p>FindKey Employee</p>
-  </div>
-
-  <!-- Scripts -->
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <script src="retirementAccumulation.js"></script>
-  <script>
-    // Initialize tabs and outputs
-    document.addEventListener('DOMContentLoaded', () => {
-      console.log('Chart.js loaded:', typeof Chart !== 'undefined');
-      console.log('analysis-outputs element:', document.getElementById('analysis-outputs') ? 'Found' : 'Not Found');
-
-      const { retirementAccumulationTabs, setupAgeDisplayListeners, updateRetirementOutputs } = window;
-
-      // Tab switching for Client Inputs
-      const tabButtons = document.querySelectorAll('.tab-button');
-      const tabContent = document.getElementById('tab-content');
-      
-      tabButtons.forEach(button => {
-        button.addEventListener('click', () => {
-          tabButtons.forEach(btn => btn.classList.remove('active'));
-          button.classList.add('active');
-          
-          const tabId = button.getAttribute('data-tab');
-          const tab = retirementAccumulationTabs.find(t => t.id === tabId);
-          tabContent.innerHTML = tab.content;
-          
-          document.querySelectorAll('.tab-content').forEach(content => {
-            content.classList.remove('active');
-          });
-          tabContent.classList.add('active');
-          
-          setupAgeDisplayListeners(getAge);
-        });
-      });
-
-      // Trigger the first tab by default
-      tabButtons[0].click();
-
-      // Recalculate button
-      document.getElementById('recalculate-btn').addEventListener('click', () => {
-        const clientData = collectClientData();
-        updateRetirementOutputs(
-          document.getElementById('analysis-outputs'),
-          clientData,
-          formatCurrency,
-          getAge,
-          []
-        );
-      });
-
-      // Initial render of outputs
-      const clientData = collectClientData();
-      updateRetirementOutputs(
-        document.getElementById('analysis-outputs'),
-        clientData,
-        formatCurrency,
-        getAge,
-        []
-      );
-    });
-
-    // Helper functions (these might be in a separate utils.js file in a real app)
-    function getAge(dob) {
-      if (!dob) return 0;
-      const today = new Date();
-      const birthDate = new Date(dob);
-      let age = today.getFullYear() - birthDate.getFullYear();
-      const monthDiff = today.getMonth() - birthDate.getMonth();
-      if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
-        age--;
-      }
-      return age;
-    }
-
-    function formatCurrency(amount) {
-      return '$' + amount.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
-    }
-
-    function collectClientData() {
-      return {
-        isMarried: document.getElementById('is-married')?.checked || false,
-        client1: {
-          personal: {
-            name: document.getElementById('c1-name')?.value || 'John Doe',
-            dob: document.getElementById('c1-dob')?.value || '1970-01-01',
-            retirementAge: document.getElementById('c1-retirement-age')?.value || '65'
-          },
-          incomeSources: {
-            employment: document.getElementById('c1-employment')?.value || '50000',
-            socialSecurity: document.getElementById('c1-social-security')?.value || '2000',
-            other: document.getElementById('c1-other-income')?.value || '500'
-          },
-          accounts: [
-            {
-              name: document.getElementById('c1-account-0-name')?.value || '401(k)',
-              balance: document.getElementById('c1-account-0-balance')?.value || '100000',
-              contribution: document.getElementById('c1-account-0-contribution')?.value || '10000',
-              employerMatch: document.getElementById('c1-account-0-employer-match')?.value || '3',
-              ror: document.getElementById('c1-account-0-ror')?.value || '6'
-            }
-          ]
-        },
-        client2: {
-          personal: {
-            name: document.getElementById('c2-name')?.value || 'Jane Doe',
-            dob: document.getElementById('c2-dob')?.value || '',
-            retirementAge: document.getElementById('c2-retirement-age')?.value || '65'
-          },
-          incomeSources: {
-            employment: document.getElementById('c2-employment')?.value || '40000',
-            socialSecurity: document.getElementById('c2-social-security')?.value || '1800',
-            other: document.getElementById('c2-other-income')?.value || '400'
-          },
-          accounts: [
-            {
-              name: document.getElementById('c2-account-0-name')?.value || 'IRA',
-              balance: document.getElementById('c2-account-0-balance')?.value || '80000',
-              contribution: document.getElementById('c2-account-0-contribution')?.value || '8000',
-              employerMatch: document.getElementById('c2-account-0-employer-match')?.value || '2',
-              ror: document.getElementById('c2-account-0-ror')?.value || '5'
-            }
-          ]
-        },
-        incomeNeeds: {
-          monthly: document.getElementById('monthly-income')?.value || '5000'
-        },
-        assumptions: {
-          mortalityAge: document.getElementById('mortality-age')?.value || '90',
-          inflation: document.getElementById('inflation')?.value || '2',
-          rorRetirement: document.getElementById('ror-retirement')?.value || '4'
-        }
-      };
-    }
-  </script>
+  <script type="module" src="src/index.js"></script>
 </body>
 </html>
