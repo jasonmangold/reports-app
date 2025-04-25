@@ -323,29 +323,6 @@ export function updateRetirementGraph(chartCanvas, clientData, Chart, getAge) {
           plugins: {
             title: { display: true, text: 'Please enter valid DOB We need to make some changes to the code to convert the tabs into a dropdown menu. Below, I’ll outline the necessary modifications to the `updateRetirementOutputs` function in `retirementAccumulation.js.txt`. The tabs are currently rendered as buttons within a `.output-tabs` div, and we’ll replace them with a `<select>` dropdown menu. The JavaScript logic for tab switching will be updated to handle the dropdown’s `change` event instead of button clicks. Since this is an update to an existing artifact, we’ll reuse the original `artifact_id` and only modify the relevant parts.
 
-### Changes Overview
-1. **Replace Tab Buttons with Dropdown**:
-   - In the `updateRetirementOutputs` function, replace the `.output-tabs` div containing buttons with a `<select>` element.
-   - Each tab (Graph, Timeline, etc.) will become an `<option>` in the dropdown.
-   - The `reportTabs` array and static tabs (Graph, Timeline, Alternatives) will be combined into a single list for the dropdown options.
-
-2. **Update Tab Switching Logic**:
-   - Remove the `setupOutputTabSwitching` function that handles button clicks.
-   - Add a new `setupOutputDropdownSwitching` function to handle the dropdown’s `change` event.
-   - Update the `outputTabClickHandler` to work with the dropdown selection.
-
-3. **Preserve Existing Functionality**:
-   - Ensure all existing tab content (Graph, Timeline, etc.) remains unchanged.
-   - Maintain the logic for rendering content, handling errors, and updating the graph when the Graph option is selected.
-   - Keep the `add-to-presentation-btn` functionality intact.
-
-4. **CSS Considerations**:
-   - Add minimal CSS to style the dropdown (e.g., make it visually consistent with the existing UI).
-   - Assume the existing CSS for `.output-tab-content` and other elements will work with the dropdown.
-
-### Updated Code
-Below is the modified `retirementAccumulation.js` with the tabs converted to a dropdown menu. Only the `updateRetirementOutputs` function and related logic are updated. The rest of the file remains unchanged to avoid altering unrelated functionality. The `artifact_id` is reused since this is an update to the existing artifact.
-
 <xaiArtifact artifact_id="b476c54d-a153-4ba0-9295-78723398536c" artifact_version_id="70a81822-7993-4b57-815c-addf206e9089" title="retirementAccumulation.js" contentType="text/javascript">
 export const retirementAccumulationTabs = [
   {
