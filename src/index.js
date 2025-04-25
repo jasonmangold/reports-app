@@ -1,6 +1,6 @@
 import { retirementAccumulationTabs, updateRetirementGraph, updateRetirementOutputs, setupAgeDisplayListeners } from './retirementAccumulation.js';
 import { personalFinanceTabs, updatePersonalFinanceGraph, updatePersonalFinanceOutputs } from './personalFinance.js';
-import { summaryTabs, updateSummaryOutputs } from './summary.js'; // Add this import
+import { summaryTabs, updateSummaryOutputs } from './summary.js';
 
 // Client data structure with default values
 let clientData = {
@@ -736,9 +736,9 @@ function updateOutputs() {
     if (currentAnalysis === 'retirement-accumulation') {
       updateRetirementOutputs(analysisOutputs, clientData, formatCurrency, getAge, selectedReports, Chart);
     } else if (currentAnalysis === 'personal-finance') {
-      updatePersonalFinanceOutputs(analysisOutputs, clientData, formatCurrency);
+      updatePersonalFinanceOutputs(analysisOutputs, clientData, formatCurrency, selectedReports, Chart);
     } else if (currentAnalysis === 'summary') {
-      updateSummaryOutputs(analysisOutputs, clientData, formatCurrency);
+      updateSummaryOutputs(analysisOutputs, clientData, formatCurrency, selectedReports);
     } else {
       analysisOutputs.innerHTML = `<p class="output-card">Outputs not available for ${currentAnalysis}.</p>`;
     }
