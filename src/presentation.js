@@ -168,6 +168,9 @@ async function generatePresentationPreview() {
     pdfPreviewContent.innerHTML = '<p>Generating preview...</p>';
     pdfPreviewModal.style.display = 'flex';
 
+    // Log clientData to ensure it's available
+    console.log('clientData:', clientData);
+
     // Create a temporary container for rendering
     const tempContainer = document.createElement('div');
     tempContainer.style.width = '600px';
@@ -181,7 +184,26 @@ async function generatePresentationPreview() {
       reportDiv.style.marginBottom = '20px';
       reportDiv.style.background = '#fff';
 
-      const [analysisType, outputType] = report.id.split('-');
+      console.log(`Processing report: ${report.id}`);
+
+      // Handle different report ID formats
+      const parts = report.id.split('-');
+      let analysisType = parts[0];
+      let outputType = parts.length > 1 ? parts[parts.length - 1] : '';
+
+      // Map report-retirement-fact-finder to retirement-accumulation
+      if (report.id.startsWith('report-retirement-fact-finder')) {
+        analysisType = 'retirement-accumulation';
+        outputType = 'fact-finder'; // Adjust as needed
+      } else if (report.id.includes('retirement')) {
+        analysisType = 'retirement-accumulation';
+      } else if (report.id.includes('personal-finance')) {
+        analysisType = 'personal-finance';
+      } else if (report.id.includes('summary')) {
+        analysisType = 'summary';
+      }
+
+      console.log(`Analysis type: ${analysisType}, Output type: ${outputType}`);
 
       if (analysisType === 'retirement-accumulation') {
         await renderRetirementReport(reportDiv, outputType, report.title);
@@ -189,6 +211,8 @@ async function generatePresentationPreview() {
         await renderPersonalFinanceReport(reportDiv, outputType, report.title);
       } else if (analysisType === 'summary') {
         await renderSummaryReport(reportDiv, outputType, report.title);
+      } else {
+        reportDiv.innerHTML = `<h3>${report.title}</h3><p>Unsupported report type: ${report.id}</p>`;
       }
 
       // Log the content of reportDiv
@@ -197,7 +221,6 @@ async function generatePresentationPreview() {
       // Convert any canvas to image for preview
       const canvas = reportDiv.querySelector('canvas');
       if (canvas) {
-        // Ensure canvas is visible in the DOM
         document.body.appendChild(canvas);
         await new Promise(resolve => setTimeout(resolve, 1000));
         const imgData = canvas.toDataURL('image/png');
@@ -233,6 +256,7 @@ async function generatePresentationPreview() {
 // Render Retirement Accumulation report
 async function renderRetirementReport(container, outputType, title) {
   container.innerHTML = `<h3>${title}</h3>`;
+  console.log(`Rendering retirement report, outputType: ${outputType}`);
   if (outputType === 'graph') {
     const canvas = document.createElement('canvas');
     canvas.id = `temp-chart-${Date.now()}`;
@@ -247,12 +271,16 @@ async function renderRetirementReport(container, outputType, title) {
     return chartInstance;
   } else {
     updateRetirementOutputs(container, clientData, formatCurrency, getAge, selectedReports, Chart);
+    if (!container.innerHTML.includes('output-card') && !container.innerHTML.includes('output-table')) {
+      container.innerHTML += '<p>No retirement data available.</p>';
+    }
   }
 }
 
 // Render Personal Finance report
 async function renderPersonalFinanceReport(container, outputType, title) {
   container.innerHTML = `<h3>${title}</h3>`;
+  console.log(`Rendering personal finance report, outputType: ${outputType}`);
   if (outputType === 'graph') {
     const canvas = document.createElement('canvas');
     canvas.id = `temp-chart-${Date.now()}`;
@@ -267,13 +295,20 @@ async function renderPersonalFinanceReport(container, outputType, title) {
     return chartInstance;
   } else {
     updatePersonalFinanceOutputs(container, clientData, formatCurrency, selectedReports, Chart);
+    if (!container.innerHTML.includes('output-card') && !container.innerHTML.includes('output-table')) {
+      container.innerHTML += '<p>No personal finance data available.</p>';
+    }
   }
 }
 
 // Render Summary report
 async function renderSummaryReport(container, outputType, title) {
   container.innerHTML = `<h3>${title}</h3>`;
+  console.log(`Rendering summary report, outputType: ${outputType}`);
   updateSummaryOutputs(container, clientData, formatCurrency, selectedReports, Chart, getAge);
+  if (!container.innerHTML.includes('output-card') && !container.innerHTML.includes('output-table')) {
+    container.innerHTML += '<p>No summary data available.</p>';
+  }
 }
 
 // Download presentation as PDF
@@ -294,13 +329,29 @@ async function downloadPresentationPDF() {
 
       document.body.appendChild(reportDiv);
 
-      const [analysisType, outputType] = report.id.split('-');
+      const parts = report.id.split('-');
+      let analysisType = parts[0];
+      let outputType = parts.length > 1 ? parts[parts.length - 1] : '';
+
+      if (report.id.startsWith('report-retirement-fact-finder')) {
+        analysisType = 'retirement-accumulation';
+        outputType = 'fact-finder';
+      } else if (report.id.includes('retirement')) {
+        analysisType = 'retirement-accumulation';
+      } else if (report.id.includes('personal-finance')) {
+        analysisType = 'personal-finance';
+      } else if (report.id.includes('summary')) {
+        analysisType = 'summary';
+      }
+
       if (analysisType === 'retirement-accumulation') {
         await renderRetirementReport(reportDiv, outputType, report.title);
       } else if (analysisType === 'personal-finance') {
         await renderPersonalFinanceReport(reportDiv, outputType, report.title);
       } else if (analysisType === 'summary') {
         await renderSummaryReport(reportDiv, outputType, report.title);
+      } else {
+        reportDiv.innerHTML = `<h3>${report.title}</h3><p>Unsupported report type: ${report.id}</p>`;
       }
 
       // Convert canvas to image
