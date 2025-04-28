@@ -1,6 +1,3 @@
-// retirementAccumulation.js
-import { validateClientData } from './index.js';
-
 export const retirementAccumulationTabs = [
   {
     id: 'personal',
