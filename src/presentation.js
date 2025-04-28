@@ -191,16 +191,23 @@ async function generatePresentationPreview() {
         await renderSummaryReport(reportDiv, outputType, report.title);
       }
 
+      // Log the content of reportDiv
+      console.log(`Report ${report.id} content:`, reportDiv.innerHTML);
+
       // Convert any canvas to image for preview
       const canvas = reportDiv.querySelector('canvas');
       if (canvas) {
-        await new Promise(resolve => setTimeout(resolve, 1000)); // Increased delay
+        // Ensure canvas is visible in the DOM
+        document.body.appendChild(canvas);
+        await new Promise(resolve => setTimeout(resolve, 1000));
         const imgData = canvas.toDataURL('image/png');
+        console.log(`Canvas data for ${report.id}:`, imgData);
         const img = document.createElement('img');
         img.src = imgData;
         img.style.width = canvas.style.width || '600px';
         img.style.height = canvas.style.height || '400px';
         canvas.parentNode.replaceChild(img, canvas);
+        document.body.removeChild(canvas);
       }
 
       tempContainer.appendChild(reportDiv);
@@ -210,9 +217,13 @@ async function generatePresentationPreview() {
     pdfPreviewContent.innerHTML = '';
     pdfPreviewContent.appendChild(tempContainer);
 
+    // Log final content
+    console.log('Final pdfPreviewContent:', pdfPreviewContent.innerHTML);
+
     // Ensure modal content is visible
     pdfPreviewContent.style.display = 'block';
     pdfPreviewContent.style.opacity = '1';
+    pdfPreviewContent.style.visibility = 'visible';
   } catch (error) {
     console.error('Error generating preview:', error);
     pdfPreviewContent.innerHTML = '<p class="output-error">Error generating preview. Please check console.</p>';
@@ -229,7 +240,10 @@ async function renderRetirementReport(container, outputType, title) {
     canvas.style.height = '400px';
     container.appendChild(canvas);
     const chartInstance = await updateRetirementGraph(canvas, clientData, Chart, getAge);
-    await new Promise(resolve => setTimeout(resolve, 1000)); // Increased delay
+    if (!chartInstance) {
+      container.innerHTML += '<p>Failed to render chart.</p>';
+    }
+    await new Promise(resolve => setTimeout(resolve, 1000));
     return chartInstance;
   } else {
     updateRetirementOutputs(container, clientData, formatCurrency, getAge, selectedReports, Chart);
@@ -246,7 +260,10 @@ async function renderPersonalFinanceReport(container, outputType, title) {
     canvas.style.height = '400px';
     container.appendChild(canvas);
     const chartInstance = await updatePersonalFinanceGraph(canvas, clientData, Chart);
-    await new Promise(resolve => setTimeout(resolve, 1000)); // Increased delay
+    if (!chartInstance) {
+      container.innerHTML += '<p>Failed to render chart.</p>';
+    }
+    await new Promise(resolve => setTimeout(resolve, 1000));
     return chartInstance;
   } else {
     updatePersonalFinanceOutputs(container, clientData, formatCurrency, selectedReports, Chart);
@@ -271,9 +288,9 @@ async function downloadPresentationPDF() {
       reportDiv.classList.add('report-preview');
       reportDiv.style.padding = '20px';
       reportDiv.style.background = '#fff';
+      reportDiv.style.width = '600px';
       reportDiv.style.position = 'absolute';
       reportDiv.style.left = '-9999px';
-      reportDiv.style.width = '600px';
 
       document.body.appendChild(reportDiv);
 
@@ -289,25 +306,27 @@ async function downloadPresentationPDF() {
       // Convert canvas to image
       const canvas = reportDiv.querySelector('canvas');
       if (canvas) {
-        await new Promise(resolve => setTimeout(resolve, 1000)); // Increased delay
+        document.body.appendChild(canvas);
+        await new Promise(resolve => setTimeout(resolve, 1000));
         const imgData = canvas.toDataURL('image/png');
+        console.log(`Canvas data for ${report.id} in PDF:`, imgData);
         const img = document.createElement('img');
         img.src = imgData;
         img.style.width = canvas.style.width || '600px';
         img.style.height = canvas.style.height || '400px';
         canvas.parentNode.replaceChild(img, canvas);
+        document.body.removeChild(canvas);
       }
 
-      // Ensure content is rendered
       await new Promise(resolve => setTimeout(resolve, 100));
 
-      console.log(`Rendering report: ${report.id}`);
+      console.log(`Rendering report ${report.id} for PDF:`, reportDiv.innerHTML);
       const canvasRender = await html2canvas(reportDiv, { 
         scale: 2, 
         useCORS: true, 
         logging: true 
       });
-      console.log('html2canvas output:', canvasRender.toDataURL('image/png')); // Debug captured image
+      console.log(`html2canvas output for ${report.id}:`, canvasRender.toDataURL('image/png'));
       const imgData = canvasRender.toDataURL('image/png');
       const imgWidth = doc.internal.pageSize.getWidth() - 40;
       const imgHeight = (canvasRender.height * imgWidth) / canvasRender.width;
