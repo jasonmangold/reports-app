@@ -6,7 +6,7 @@ import { clientProfileTabs } from './clientProfile.js';
 // Client data structure with default values
 let clientData = {
   client1: {
-    personal: { name: "John Doe", dob: "1970-01-01", retirementAge: "65" },
+    personal: { name: "Jason Mangold", dob: "1970-01-01", retirementAge: "65" },
     incomeSources: { employment: "50000", socialSecurity: "2000", other: "500", interestDividends: "1000" },
     accounts: [{ name: "401(k)", balance: "100000", contribution: "10000", employerMatch: "3", ror: "6" }],
     other: { assets: [{ name: "Rental Property", balance: "200000", ror: "4", debt: "50000" }] },
@@ -21,7 +21,7 @@ let clientData = {
   },
   isMarried: false,
   incomeNeeds: { monthly: "5000" },
-  assumptions: { mortalityAge: "90", inflation: "2", rorRetirement: "4", analysisDate: "2025-04-25" },
+  assumptions: { mortalityAge: "90", inflation: "3", rorRetirement: "4", analysisDate: "2025-04-25" },
   savingsExpenses: {
     householdExpenses: "3000",
     taxes: "1000",
@@ -35,7 +35,7 @@ let clientData = {
     otherDebt: "5000"
   },
   summary: {
-    topics: ['Retirement Accumulation', 'Debt']
+    topics: ['Accumulation Funding', 'Critical Illness', 'Debt', 'Disability', 'Education Funding', 'Long Term Care', 'Retirement Accumulation']
   }
 };
 
@@ -154,10 +154,12 @@ function populateAnalysisTopics() {
       analysisTopics.appendChild(btn);
     });
 
-    // Only bind to .topic-btn within .analysis-topics to avoid sub-tab buttons
+    // Bind to .topic-btn within .analysis-topics, ensuring no overlap with sub-tabs
     document.querySelectorAll('.analysis-topics .topic-btn').forEach(btn => {
       btn.addEventListener('click', (e) => {
-        e.stopPropagation(); // Prevent bubbling to parent elements
+        e.stopPropagation();
+        e.preventDefault(); // Prevent default to avoid any form submissions
+        console.log('Topic button clicked:', btn.dataset.analysis);
         document.querySelectorAll('.topic-btn').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
         currentAnalysis = btn.dataset.analysis;
@@ -394,7 +396,9 @@ function setupTabSwitching() {
 
 function tabClickHandler(e) {
   try {
-    e.stopPropagation(); // Prevent bubbling to analysis topic handlers
+    e.stopPropagation();
+    e.preventDefault();
+    console.log('Main tab clicked:', this.dataset.tab);
     inputTabs.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
     this.classList.add('active');
     inputContent.querySelectorAll('.tab-content').forEach(content => {
@@ -418,7 +422,7 @@ function tabClickHandler(e) {
 // Sub-tab switching for Client Profile
 function setupSubTabSwitching() {
   try {
-    const subTabs = document.querySelectorAll('.sub-tab-btn');
+    const subTabs = document.querySelectorAll('.sub-tab-btn:not(.topic-btn)');
     if (!subTabs.length) {
       console.warn('No sub-tab buttons found for Client Profile');
       return;
@@ -434,7 +438,17 @@ function setupSubTabSwitching() {
 
 function subTabClickHandler(e) {
   try {
-    e.stopPropagation(); // Prevent bubbling to analysis topic handlers
+    e.stopPropagation();
+    e.preventDefault();
+    console.log('Sub-tab clicked:', this.dataset.subTab);
+    // Ensure currentAnalysis remains 'client-profile'
+    if (currentAnalysis !== 'client-profile') {
+      console.warn('currentAnalysis unexpectedly changed to:', currentAnalysis);
+      currentAnalysis = 'client-profile';
+      document.querySelectorAll('.topic-btn').forEach(b => b.classList.remove('active'));
+      const clientProfileBtn = document.querySelector('.topic-btn[data-analysis="client-profile"]');
+      if (clientProfileBtn) clientProfileBtn.classList.add('active');
+    }
     document.querySelectorAll('.sub-tab-btn').forEach(btn => btn.classList.remove('active'));
     document.querySelectorAll('.sub-tab-content').forEach(content => {
       content.style.display = 'none';
@@ -448,7 +462,7 @@ function subTabClickHandler(e) {
     }
     populateInputFields();
     setupAgeDisplayListeners(getAge);
-    setupAddButtons(); // Rebind add buttons for dynamic accounts/assets
+    setupAddButtons();
   } catch (error) {
     console.error('Error in subTabClickHandler:', error);
   }
@@ -787,12 +801,14 @@ function updateGraph() {
       return;
     }
 
+    // Destroy any existing chart instances
     if (chartInstance) {
       console.log('Destroying existing chartInstance');
       chartInstance.destroy();
       chartInstance = null;
     }
 
+    // Destroy any orphaned charts on the canvas
     if (chartCanvas && Chart.getChart(chartCanvas)) {
       console.log('Destroying orphaned chart on canvas');
       Chart.getChart(chartCanvas).destroy();
@@ -876,15 +892,14 @@ function updateOutputs() {
 function setupOutputTabSwitching() {
   try {
     if (currentAnalysis === 'personal-finance' || currentAnalysis === 'summary' || currentAnalysis === 'client-profile') {
-      console.log(`Skipping setupOutputTabSwitching for ${currentAnalysis}`);
-      return;
+      return; // Skip for analyses without output tabs
     }
 
     const buttons = document.querySelectorAll('.output-tab-btn');
     if (!buttons.length) {
-      console.log('No output tab buttons found for current analysis');
-      return;
+      return; // Skip logging if no buttons
     }
+
     buttons.forEach(button => {
       button.removeEventListener('click', outputTabClickHandler);
       button.addEventListener('click', outputTabClickHandler);
@@ -896,7 +911,8 @@ function setupOutputTabSwitching() {
 
 function outputTabClickHandler(e) {
   try {
-    e.stopPropagation(); // Prevent bubbling to other handlers
+    e.stopPropagation();
+    e.preventDefault();
     document.querySelectorAll('.output-tab-btn').forEach(btn => btn.classList.remove('active'));
     document.querySelectorAll('.output-tab-content').forEach(content => {
       content.style.display = 'none';
