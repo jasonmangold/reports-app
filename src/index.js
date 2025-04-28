@@ -107,7 +107,7 @@ const analysisTopicsList = [
 ];
 
 // Initialize on page load
-document.addEventOnce('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', () => {
   try {
     console.log('Initializing page...');
     loadClientData();
