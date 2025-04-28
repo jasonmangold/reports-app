@@ -41,76 +41,30 @@ let clientData = {
 
 // Load clientData from localStorage if available
 function loadClientData() {
-  try {
-    const savedData = localStorage.getItem('clientData');
-    if (savedData) {
-      const parsedData = JSON.parse(savedData);
-      // Validate that parsedData is an object with client1 and client2 as objects
-      if (
-        parsedData &&
-        typeof parsedData === 'object' &&
-        parsedData.client1 &&
-        typeof parsedData.client1 === 'object' &&
-        parsedData.client2 &&
-        typeof parsedData.client2 === 'object'
-      ) {
-        clientData = parsedData;
-        // Ensure insurance objects exist
-        clientData.client1.insurance = clientData.client1.insurance && typeof clientData.client1.insurance === 'object'
-          ? clientData.client1.insurance
-          : { lifeInsurance: "0", disabilityInsurance: "0", longTermCare: "0" };
-        clientData.client2.insurance = clientData.client2.insurance && typeof clientData.client2.insurance === 'object'
-          ? clientData.client2.insurance
-          : { lifeInsurance: "0", disabilityInsurance: "0", longTermCare: "0" };
-        console.log('Loaded clientData from localStorage:', clientData);
-      } else {
-        console.warn('Invalid clientData structure in localStorage. Using default clientData.');
-      }
-    } else {
-      console.log('No clientData in localStorage. Using default clientData.');
-    }
-  } catch (error) {
-    console.error('Error parsing clientData from localStorage:', error);
-    console.warn('Using default clientData.');
+  const savedData = localStorage.getItem('clientData');
+  if (savedData) {
+    clientData = JSON.parse(savedData);
+    clientData.client1.insurance = clientData.client1.insurance || { lifeInsurance: "0", disabilityInsurance: "0", longTermCare: "0" };
+    clientData.client2.insurance = clientData.client2.insurance || { lifeInsurance: "0", disabilityInsurance: "0", longTermCare: "0" };
+    console.log('Loaded clientData from localStorage:', clientData);
   }
 }
 
 // Load selectedReports from localStorage if available
 function loadSelectedReports() {
-  try {
-    const savedReports = localStorage.getItem('selectedReports');
-    if (savedReports) {
-      selectedReports = JSON.parse(savedReports);
-      reportCount = selectedReports.length;
-      // Check if presentationCount exists before updating
-      if (presentationCount) {
-        presentationCount.textContent = reportCount;
-        presentationCount.classList.toggle('active', reportCount > 0);
-      } else {
-        console.warn('Element #presentation-count not found. Skipping presentation count update.');
-      }
-    }
-  } catch (error) {
-    console.error('Error parsing selectedReports from localStorage:', error);
-    selectedReports = [];
-    reportCount = 0;
-    if (presentationCount) {
-      presentationCount.textContent = reportCount;
-      presentationCount.classList.toggle('active', reportCount > 0);
-    } else {
-      console.warn('Element #presentation-count not found. Skipping presentation count update.');
-    }
+  const savedReports = localStorage.getItem('selectedReports');
+  if (savedReports) {
+    selectedReports = JSON.parse(savedReports);
+    reportCount = selectedReports.length;
+    presentationCount.textContent = reportCount;
+    presentationCount.classList.toggle('active', reportCount > 0);
   }
 }
 
 // Save clientData to localStorage
 function saveClientData() {
-  try {
-    localStorage.setItem('clientData', JSON.stringify(clientData));
-    console.log('Saved clientData to localStorage:', clientData);
-  } catch (error) {
-    console.error('Error saving clientData to localStorage:', error);
-  }
+  localStorage.setItem('clientData', JSON.stringify(clientData));
+  console.log('Saved clientData to localStorage:', clientData);
 }
 
 let accountCount = { c1: 1, c2: 1 };
@@ -163,13 +117,6 @@ document.addEventListener('DOMContentLoaded', () => {
     loadSelectedReports();
     console.log('Chart.js available:', typeof Chart !== 'undefined');
     console.log('chartCanvas:', document.getElementById('analysis-chart'));
-
-    // Check if required DOM elements exist
-    if (!analysisTopics || !inputTabs || !analysisOutputs) {
-      console.warn('Required DOM elements (.analysis-topics, .input-tabs, #analysis-outputs) not found. Skipping analysis initialization. This may be the presentation page.');
-      return;
-    }
-
     populateAnalysisTopics();
     updateTabs(currentAnalysis);
     updateClientFileName();
@@ -190,21 +137,13 @@ document.addEventListener('DOMContentLoaded', () => {
     }, 100);
   } catch (error) {
     console.error('Initialization error:', error);
-    if (analysisOutputs) {
-      analysisOutputs.innerHTML = '<p class="output-error">Error initializing page. Please check console for details.</p>';
-    } else {
-      console.warn('Cannot display error message: #analysis-outputs not found.');
-    }
+    analysisOutputs.innerHTML = '<p class="output-error">Error initializing page. Please check console for details.</p>';
   }
 });
 
 // Populate analysis topics
 function populateAnalysisTopics() {
   try {
-    if (!analysisTopics) {
-      console.warn('Cannot populate analysis topics: .analysis-topics not found.');
-      return;
-    }
     analysisTopics.innerHTML = '';
     analysisTopicsList.forEach(topic => {
       const btn = document.createElement('button');
@@ -219,7 +158,7 @@ function populateAnalysisTopics() {
     document.querySelectorAll('.analysis-topics .topic-btn').forEach(btn => {
       btn.addEventListener('click', (e) => {
         e.stopPropagation();
-        e.preventDefault();
+        e.preventDefault(); // Prevent default to avoid any form submissions
         console.log('Topic button clicked:', btn.dataset.analysis);
         document.querySelectorAll('.topic-btn').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
@@ -247,10 +186,6 @@ function populateAnalysisTopics() {
 // Update tabs and content
 function updateTabs(analysis) {
   try {
-    if (!inputTabs || !inputContent) {
-      console.warn('Cannot update tabs: .input-tabs or .input-content not found.');
-      return;
-    }
     console.log(`Updating tabs for ${analysis}`);
     inputTabs.innerHTML = '';
     inputContent.innerHTML = '';
@@ -450,10 +385,6 @@ function setInputValue(id, value, label, property = 'value') {
 // Tab switching
 function setupTabSwitching() {
   try {
-    if (!inputTabs) {
-      console.warn('Cannot setup tab switching: .input-tabs not found.');
-      return;
-    }
     inputTabs.querySelectorAll('.tab-btn').forEach(button => {
       button.removeEventListener('click', tabClickHandler);
       button.addEventListener('click', tabClickHandler);
@@ -590,18 +521,13 @@ function setupEventDelegation() {
 function toggleClient2(e) {
   try {
     clientData.isMarried = e.target.checked;
-    const client2Section = document.getElementById('client2-section');
-    const client2IncomeSection = document.getElementById('client2-income-section');
-    const c2Accounts = document.getElementById('c2-accounts');
+    document.getElementById('client2-section').style.display = e.target.checked ? 'block' : 'none';
+    document.getElementById('client2-income-section').style.display = e.target.checked ? 'block' : 'none';
+    document.getElementById('c2-accounts').style.display = e.target.checked ? 'block' : 'none';
     const c2Assets = document.getElementById('c2-assets');
-    const c2Insurance = document.getElementById('client2-insurance-section');
-
-    if (client2Section) client2Section.style.display = e.target.checked ? 'block' : 'none';
-    if (client2IncomeSection) client2IncomeSection.style.display = e.target.checked ? 'block' : 'none';
-    if (c2Accounts) c2Accounts.style.display = e.target.checked ? 'block' : 'none';
     if (c2Assets) c2Assets.style.display = e.target.checked ? 'block' : 'none';
+    const c2Insurance = document.getElementById('client2-insurance-section');
     if (c2Insurance) c2Insurance.style.display = e.target.checked ? 'block' : 'none';
-
     updateClientFileName();
     updateOutputs();
     if (currentAnalysis !== 'client-profile') {
@@ -634,10 +560,6 @@ function addAccountHandler(e) {
   try {
     const client = e.target.dataset.client;
     const container = document.getElementById(`${client}-accounts`);
-    if (!container) {
-      console.warn(`Container #${client}-accounts not found.`);
-      return;
-    }
     const count = accountCount[client]++;
     const newAccount = document.createElement('div');
     newAccount.classList.add('account');
@@ -674,10 +596,6 @@ function addAssetHandler(e) {
   try {
     const client = e.target.dataset.client;
     const container = document.getElementById(`${client}-assets`);
-    if (!container) {
-      console.warn(`Container #${client}-assets not found.`);
-      return;
-    }
     const count = assetCount[client]++;
     const newAsset = document.createElement('div');
     newAsset.classList.add('asset');
@@ -708,10 +626,6 @@ function addAssetHandler(e) {
 // Update client file name
 function updateClientFileName() {
   try {
-    if (!clientFileName) {
-      console.warn('Cannot update client file name: #client-file-name not found.');
-      return;
-    }
     let name = clientData.client1.personal.name || 'No Client Selected';
     if (clientData.isMarried && clientData.client2.personal.name) {
       name = `${clientData.client1.personal.name} & ${clientData.client2.personal.name}`;
@@ -883,7 +797,7 @@ function updateGraph() {
 
     if (typeof Chart === 'undefined') {
       console.error('Chart.js is not loaded. Ensure the CDN script is included in analysis.html.');
-      analysisOutputs?.innerHTML = '<p class="output-error">Chart.js is not loaded. Please check your network connection.</p>';
+      analysisOutputs.innerHTML = '<p class="output-error">Chart.js is not loaded. Please check your network connection.</p>';
       return;
     }
 
@@ -907,14 +821,14 @@ function updateGraph() {
 
     if (!clientData) {
       console.error('clientData is undefined');
-      analysisOutputs?.innerHTML = '<p class="output-error">Client data is undefined. Please check your inputs.</p>';
+      analysisOutputs.innerHTML = '<p class="output-error">Client data is undefined. Please check your inputs.</p>';
       return;
     }
 
     const validationError = validateClientData();
     if (validationError) {
       console.error('Validation failed:', validationError);
-      analysisOutputs?.innerHTML = `<p class="output-error">${validationError}</p>`;
+      analysisOutputs.innerHTML = `<p class="output-error">${validationError}</p>`;
       return;
     }
 
@@ -938,28 +852,22 @@ function updateGraph() {
     }
   } catch (error) {
     console.error('Error in updateGraph:', error);
-    if (analysisOutputs) {
-      analysisOutputs.innerHTML = '<p class="output-error">Error rendering graph. Please check console for details.</p>';
-    }
+    analysisOutputs.innerHTML = '<p class="output-error">Error rendering graph. Please check console for details.</p>';
   }
 }
 
 // Update outputs
 function updateOutputs() {
   try {
-    if (!analysisOutputs || !outputTabsContainer) {
-      console.warn('Cannot update outputs: #analysis-outputs or #output-tabs-container not found.');
-      return;
-    }
     const validationError = validateClientData();
     if (validationError) {
       analysisOutputs.innerHTML = `<p class="output-error">${validationError}</p>`;
-      outputTabsContainer.innerHTML = '';
+      if (outputTabsContainer) outputTabsContainer.innerHTML = '';
       return;
     }
 
     analysisOutputs.innerHTML = '';
-    outputTabsContainer.innerHTML = '';
+    if (outputTabsContainer) outputTabsContainer.innerHTML = '';
 
     if (currentAnalysis === 'retirement-accumulation') {
       updateRetirementOutputs(analysisOutputs, clientData, formatCurrency, getAge, selectedReports, Chart);
@@ -975,12 +883,8 @@ function updateOutputs() {
     setupOutputTabSwitching();
   } catch (error) {
     console.error('Error in updateOutputs:', error);
-    if (analysisOutputs) {
-      analysisOutputs.innerHTML = '<p class="output-error">Error rendering outputs. Please check console for details.</p>';
-    }
-    if (outputTabsContainer) {
-      outputTabsContainer.innerHTML = '';
-    }
+    analysisOutputs.innerHTML = '<p class="output-error">Error rendering outputs. Please check console for details.</p>';
+    if (outputTabsContainer) outputTabsContainer.innerHTML = '';
   }
 }
 
@@ -1040,12 +944,8 @@ function toggleReportSelection(reportId, reportTitle) {
       reportCount++;
     }
     localStorage.setItem('selectedReports', JSON.stringify(selectedReports));
-    if (presentationCount) {
-      presentationCount.textContent = reportCount;
-      presentationCount.classList.toggle('active', reportCount > 0);
-    } else {
-      console.warn('Element #presentation-count not found. Skipping presentation count update.');
-    }
+    presentationCount.textContent = reportCount;
+    presentationCount.classList.toggle('active', reportCount > 0);
     console.log('Selected reports:', selectedReports);
   } catch (error) {
     console.error('Error in toggleReportSelection:', error);
