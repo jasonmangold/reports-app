@@ -1,3 +1,6 @@
+// retirementAccumulation.js
+import { validateClientData } from './index.js';
+
 export const retirementAccumulationTabs = [
   {
     id: 'personal',
@@ -396,17 +399,18 @@ export function updateRetirementGraph(chartCanvas, clientData, Chart, getAge) {
   }
 }
 
-export function updateRetirementOutputs(analysisOutputs, clientData, formatCurrency, getAge, selectedReports, Chart) {
+export function updateRetirementOutputs(analysisOutputs, clientData, formatCurrency, getAge, selectedReports, Chart, outputType = null) {
   try {
     if (!analysisOutputs) {
       console.error('Analysis outputs #analysis-outputs not found');
       return;
     }
 
-    // Get the tab container
-    const tabContainer = document.getElementById('output-tabs-container');
-    if (!tabContainer) {
-      console.warn('Tab container #output-tabs-container not found; dropdown will be rendered in analysis-outputs');
+    // Validate client data
+    const validationError = validateClientData(clientData, ['client1.personal.dob', 'client1.personal.retirementAge']);
+    if (validationError) {
+      analysisOutputs.innerHTML = `<p class="output-error">${validationError}</p>`;
+      return;
     }
 
     const c1Age = getAge(clientData.client1.personal.dob);
@@ -426,12 +430,10 @@ export function updateRetirementOutputs(analysisOutputs, clientData, formatCurre
 
     if (c1Age >= c1RetirementAge || (clientData.isMarried && c2Age >= c2RetirementAge)) {
       analysisOutputs.innerHTML = '<p class="output-card">Client(s) already at or past retirement age. Please adjust retirement age or DOB.</p>';
-      if (tabContainer) tabContainer.innerHTML = ''; // Clear tabs on error
       return;
     }
     if (c1RetirementAge >= mortalityAge || (clientData.isMarried && c2RetirementAge >= mortalityAge)) {
       analysisOutputs.innerHTML = '<p class="output-card">Retirement age must be less than mortality age.</p>';
-      if (tabContainer) tabContainer.innerHTML = ''; // Clear tabs on error
       return;
     }
 
@@ -610,6 +612,191 @@ export function updateRetirementOutputs(analysisOutputs, clientData, formatCurre
       if (newRetirementAge > mortalityAge) newRetirementAge = mortalityAge;
     }
 
+    // If outputType is provided (presentation mode), render only the specific report
+    if (outputType) {
+      if (outputType === 'fact-finder') {
+        analysisOutputs.innerHTML = `
+          <div class="output-card">
+            <h3>Retirement Fact Finder</h3>
+            <table class="output-table">
+              <thead>
+                <tr>
+                  <th>Field</th>
+                  <th>Client 1</th>
+                  ${clientData.isMarried ? '<th>Client 2</th>' : ''}
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Name</td>
+                  <td>${clientData.client1.personal.name || 'N/A'}</td>
+                  ${clientData.isMarried ? `<td>${clientData.client2.personal.name || 'N/A'}</td>` : ''}
+                </tr>
+                <tr>
+                  <td>Date of Birth</td>
+                  <td>${clientData.client1.personal.dob || 'N/A'}</td>
+                  ${clientData.isMarried ? `<td>${clientData.client2.personal.dob || 'N/A'}</td>` : ''}
+                </tr>
+                <tr>
+                  <td>Retirement Age</td>
+                  <td>${clientData.client1.personal.retirementAge || 'N/A'}</td>
+                  ${clientData.isMarried ? `<td>${clientData.client2.personal.retirementAge || 'N/A'}</td>` : ''}
+                </tr>
+              </tbody>
+            </table>
+            <h4>Income Sources</h4>
+            <table class="output-table">
+              <thead>
+                <tr>
+                  <th>Source</th>
+                  <th>Client 1</th>
+                  ${clientData.isMarried ? '<th>Client 2</th>' : ''}
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Employment ($/yr)</td>
+                  <td>${formatCurrency(parseFloat(clientData.client1.incomeSources.employment) || 0)}</td>
+                  ${clientData.isMarried ? `<td>${formatCurrency(parseFloat(clientData.client2.incomeSources.employment) || 0)}</td>` : ''}
+                </tr>
+                <tr>
+                  <td>Social Security ($/mo)</td>
+                  <td>${formatCurrency(parseFloat(clientData.client1.incomeSources.socialSecurity) || 0)}</td>
+                  ${clientData.isMarried ? `<td>${formatCurrency(parseFloat(clientData.client2.incomeSources.socialSecurity) || 0)}</td>` : ''}
+                </tr>
+                <tr>
+                  <td>Other Income ($/mo)</td>
+                  <td>${formatCurrency(parseFloat(clientData.client1.incomeSources.other) || 0)}</td>
+                  ${clientData.isMarried ? `<td>${formatCurrency(parseFloat(clientData.client2.incomeSources.other) || 0)}</td>` : ''}
+                </tr>
+              </tbody>
+            </table>
+            <h4>Assumptions</h4>
+            <table class="output-table">
+              <thead>
+                <tr>
+                  <th>Assumption</th>
+                  <th>Value</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Mortality Age</td>
+                  <td>${clientData.assumptions.mortalityAge || 'N/A'}</td>
+                </tr>
+                <tr>
+                  <td>Inflation (%)</td>
+                  <td>${clientData.assumptions.inflation || 'N/A'}</td>
+                </tr>
+                <tr>
+                  <td>ROR During Retirement (%)</td>
+                  <td>${clientData.assumptions.rorRetirement || 'N/A'}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        `;
+      } else if (outputType === 'timeline') {
+        analysisOutputs.innerHTML = `
+          <div class="output-card">
+            <h3>Retirement Income Timeline</h3>
+            <table class="output-table">
+              <thead>
+                <tr>
+                  <th>Age</th>
+                  <th>Need</th>
+                  <th>Income</th>
+                  <th>Social Security</th>
+                  <th>Withdrawal</th>
+                  <th>Shortfall</th>
+                  <th>Balance</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${incomeData.labels.slice(1).map((age, i) => `
+                  <tr>
+                    <td>${age}</td>
+                    <td>${formatCurrency(incomeData.needData[i + 1])}</td>
+                    <td>${formatCurrency(incomeData.incomeData[i + 1])}</td>
+                    <td>${formatCurrency(incomeData.socialSecurityData[i + 1])}</td>
+                    <td>${formatCurrency(incomeData.withdrawalData[i + 1])}</td>
+                    <td>${formatCurrency(incomeData.shortfallData[i + 1])}</td>
+                    <td>${formatCurrency(incomeData.balanceData[i + 1])}</td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          </div>
+        `;
+      } else if (outputType === 'alternatives') {
+        analysisOutputs.innerHTML = `
+          <div class="output-card">
+            <h3>Retirement Alternatives</h3>
+            <table class="output-table">
+              <thead>
+                <tr>
+                  <th>Option</th>
+                  <th>Details</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Increase Rate of Return</td>
+                  <td>Increase portfolio ROR to ${(targetROR * 100).toFixed(1)}% from ${(rorRetirement * 100).toFixed(1)}%</td>
+                </tr>
+                <tr>
+                  <td>Reduce Income Needs</td>
+                  <td>Reduce monthly income needs to ${formatCurrency(reducedMonthlyNeed)} from ${formatCurrency(monthlyNeed)}</td>
+                </tr>
+                <tr>
+                  <td>Delay Retirement</td>
+                  <td>Delay retirement to age ${newRetirementAge} from age ${c1RetirementAge}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        `;
+      } else if (outputType === 'social-security-optimizer') {
+        analysisOutputs.innerHTML = `
+          <div class="output-card">
+            <h3>Social Security Optimizer</h3>
+            <p>Optimized Social Security strategies will be displayed here. (Placeholder: Optimization logic not implemented.)</p>
+          </div>
+        `;
+      } else if (outputType === 'capital-available') {
+        analysisOutputs.innerHTML = `
+          <div class="output-card">
+            <h3>Capital Available at Retirement</h3>
+            <table class="output-table">
+              <thead>
+                <tr>
+                  <th>Asset</th>
+                  <th>Balance</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${assets.map(asset => `
+                  <tr>
+                    <td>${asset.name}</td>
+                    <td>${formatCurrency(asset.balance)}</td>
+                  </tr>
+                `).join('')}
+                <tr>
+                  <td><strong>Total</strong></td>
+                  <td><strong>${formatCurrency(totalAssets)}</strong></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        `;
+      } else {
+        analysisOutputs.innerHTML = '<p class="output-error">Unsupported output type for presentation.</p>';
+      }
+      return;
+    }
+
+    // Below is the original rendering logic for the Analysis page (with dropdown and tabs)
+
     // Define report options for dropdown
     const reportOptions = [
       { id: 'output-graph', label: 'Retirement Analysis', reportId: 'report-graph', title: 'Retirement Income Graph' },
@@ -623,6 +810,12 @@ export function updateRetirementOutputs(analysisOutputs, clientData, formatCurre
     // Preserve the current dropdown selection
     const select = document.getElementById('output-select');
     const currentSelection = select ? select.value : 'output-graph';
+
+    // Get the tab container
+    const tabContainer = document.getElementById('output-tabs-container');
+    if (!tabContainer) {
+      console.warn('Tab container #output-tabs-container not found; dropdown will be rendered in analysis-outputs');
+    }
 
     // Render Dropdown and Checkbox in output-tabs-container
     if (tabContainer) {
@@ -855,6 +1048,7 @@ export function updateRetirementOutputs(analysisOutputs, clientData, formatCurre
   } catch (error) {
     console.error('Error in updateRetirementOutputs:', error);
     analysisOutputs.innerHTML = '<p class="output-card">Error rendering outputs. Please check input data.</p>';
+    const tabContainer = document.getElementById('output-tabs-container');
     if (tabContainer) tabContainer.innerHTML = '';
   }
 }
