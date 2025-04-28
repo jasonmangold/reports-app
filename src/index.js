@@ -44,7 +44,6 @@ function loadClientData() {
   const savedData = localStorage.getItem('clientData');
   if (savedData) {
     clientData = JSON.parse(savedData);
-    // Ensure insurance properties exist
     clientData.client1.insurance = clientData.client1.insurance || { lifeInsurance: "0", disabilityInsurance: "0", longTermCare: "0" };
     clientData.client2.insurance = clientData.client2.insurance || { lifeInsurance: "0", disabilityInsurance: "0", longTermCare: "0" };
     console.log('Loaded clientData from localStorage:', clientData);
@@ -218,6 +217,9 @@ function updateTabs(analysis) {
     }
 
     setupTabSwitching();
+    if (analysis === 'client-profile') {
+      setupSubTabSwitching();
+    }
     setupAddButtons();
     if (analysis === 'retirement-accumulation' || analysis === 'client-profile') {
       setupAgeDisplayListeners(getAge);
@@ -253,7 +255,8 @@ function populateInputFields() {
     setInputValue('mortality-age', clientData.assumptions.mortalityAge, 'Mortality Age');
     setInputValue('inflation', clientData.assumptions.inflation, 'Inflation');
     setInputValue('ror-retirement', clientData.assumptions.rorRetirement, 'ROR Retirement');
-    setInputValue('interest-dividends', clientData.client1.incomeSources.interestDividends, 'Interest and Dividends');
+    setInputValue('c1-interest-dividends', clientData.client1.incomeSources.interestDividends, 'Client 1 Interest and Dividends');
+    setInputValue('c2-interest-dividends', clientData.client2.incomeSources.interestDividends, 'Client 2 Interest and Dividends');
     setInputValue('household-expenses', clientData.savingsExpenses.householdExpenses, 'Household Expenses');
     setInputValue('taxes', clientData.savingsExpenses.taxes, 'Taxes');
     setInputValue('other-expenses', clientData.savingsExpenses.otherExpenses, 'Other Expenses');
@@ -388,8 +391,48 @@ function tabClickHandler() {
     if (currentAnalysis !== 'client-profile') {
       setTimeout(updateGraph, 100);
     }
+    if (currentAnalysis === 'client-profile') {
+      setupSubTabSwitching();
+    }
   } catch (error) {
     console.error('Error in tabClickHandler:', error);
+  }
+}
+
+// Sub-tab switching for Client Profile
+function setupSubTabSwitching() {
+  try {
+    const subTabs = document.querySelectorAll('.sub-tab-btn');
+    if (!subTabs.length) {
+      console.warn('No sub-tab buttons found for Client Profile');
+      return;
+    }
+    subTabs.forEach(button => {
+      button.removeEventListener('click', subTabClickHandler);
+      button.addEventListener('click', subTabClickHandler);
+    });
+  } catch (error) {
+    console.error('Error in setupSubTabSwitching:', error);
+  }
+}
+
+function subTabClickHandler() {
+  try {
+    document.querySelectorAll('.sub-tab-btn').forEach(btn => btn.classList.remove('active'));
+    document.querySelectorAll('.sub-tab-content').forEach(content => {
+      content.style.display = 'none';
+    });
+    this.classList.add('active');
+    const subTabContent = document.getElementById(this.dataset.subTab);
+    if (subTabContent) {
+      subTabContent.style.display = 'block';
+    } else {
+      console.warn(`Sub-tab content #${this.dataset.subTab} not found`);
+    }
+    populateInputFields();
+    setupAgeDisplayListeners(getAge);
+  } catch (error) {
+    console.error('Error in subTabClickHandler:', error);
   }
 }
 
@@ -451,6 +494,8 @@ function toggleClient2(e) {
     document.getElementById('c2-accounts').style.display = e.target.checked ? 'block' : 'none';
     const c2Assets = document.getElementById('c2-assets');
     if (c2Assets) c2Assets.style.display = e.target.checked ? 'block' : 'none';
+    const c2Insurance = document.getElementById('client2-insurance-section');
+    if (c2Insurance) c2Insurance.style.display = e.target.checked ? 'block' : 'none';
     updateClientFileName();
     updateOutputs();
     if (currentAnalysis !== 'client-profile') {
@@ -597,7 +642,7 @@ function validateClientData() {
     }
 
     ['client1', 'client2'].forEach((clientKey, idx) => {
-      const client = clientKey === 'client1' || clientData.isMarried ? clientData[clientKey].accounts : [];
+      const client = clientData[clientKey].accounts;
       client.forEach((account, i) => {
         if (!account.name) errors.push(`${clientKey === 'client1' ? 'Client 1' : 'Client 2'} Account ${i + 1} name is required.`);
         if (account.balance < 0) errors.push(`${clientKey === 'client1' ? 'Client 1' : 'Client 2'} Account ${i + 1} balance must be non-negative.`);
@@ -673,13 +718,7 @@ function updateClientData(e) {
       else if (input.id === 'mortality-age') clientData.assumptions.mortalityAge = value;
       else if (input.id === 'inflation') clientData.assumptions.inflation = value;
       else if (input.id === 'ror-retirement') clientData.assumptions.rorRetirement = value;
-      else if (input.id === 'interest-dividends') {
-        clientData.client1.incomeSources.interestDividends = value;
-        if (clientData.isMarried) clientData.client2.incomeSources.interestDividends = value;
-      } else if (input.id === 'other-income') {
-        clientData.client1.incomeSources.other = value;
-        if (clientData.isMarried) clientData.client2.incomeSources.other = value;
-      } else if (input.id === 'household-expenses') clientData.savingsExpenses.householdExpenses = value;
+      else if (input.id === 'household-expenses') clientData.savingsExpenses.householdExpenses = value;
       else if (input.id === 'taxes') clientData.savingsExpenses.taxes = value;
       else if (input.id === 'other-expenses') clientData.savingsExpenses.otherExpenses = value;
       else if (input.id === 'monthly-savings') clientData.savingsExpenses.monthlySavings = value;
