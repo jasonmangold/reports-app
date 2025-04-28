@@ -267,7 +267,7 @@ function populateInputFields() {
     setIfExists('mortality-age', clientData.assumptions.mortalityAge, 'Mortality Age');
     setIfExists('inflation', clientData.assumptions.inflation, 'Inflation');
     setIfExists('ror-retirement', clientData.assumptions.rorRetirement, 'ROR Retirement');
-    setIfExists('c1-interest-dividends', clientData.client1.in calls='Client 1 Interest and Dividends');
+    setIfExists('c1-interest-dividends', clientData.client1.incomeSources.interestDividends, 'Client 1 Interest and Dividends');
     setIfExists('c2-interest-dividends', clientData.client2.incomeSources.interestDividends, 'Client 2 Interest and Dividends');
     setIfExists('household-expenses', clientData.savingsExpenses.householdExpenses, 'Household Expenses');
     setIfExists('taxes', clientData.savingsExpenses.taxes, 'Taxes');
