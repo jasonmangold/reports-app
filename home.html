@@ -75,7 +75,7 @@
       color: #3b82f6;
     }
 
-    /* Grid Styles */
+    /* Grid Styles for Featured Reports */
     .grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
@@ -83,38 +83,35 @@
       max-width: 1400px;
       margin: 0 auto;
       padding: 0 20px;
+      justify-content: center; /* Center the grid items */
     }
 
-    /* List Styles for Favorites */
-    .list {
-      max-width: 1400px;
-      margin: 0 auto;
-      padding: 0 20px;
-    }
-
-    .list-item {
+    /* Widget Styles */
+    .widget {
       background: #ffffff;
       border-radius: 12px;
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-      padding: 15px;
-      margin-bottom: 15px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
+      padding: 20px;
+      margin-bottom: 20px;
+      max-width: 1400px;
+      margin-left: auto;
+      margin-right: auto;
     }
 
-    .list-item h3 {
-      font-size: 16px;
+    .widget h3 {
+      font-size: 18px;
       font-weight: 600;
       color: #1e293b;
+      margin-bottom: 10px;
     }
 
-    .list-item p {
+    .widget p {
       font-size: 14px;
       color: #64748b;
+      margin-bottom: 15px;
     }
 
-    .list-item button {
+    .widget button {
       background: linear-gradient(90deg, #3b82f6, #60a5fa);
       color: #fff;
       padding: 8px 16px;
@@ -125,11 +122,20 @@
       transition: background 0.2s;
     }
 
-    .list-item button:hover {
+    .widget button:hover {
       background: linear-gradient(90deg, #2563eb, #3b82f6);
     }
 
-    /* Card Styles */
+    .widget .item {
+      padding: 10px 0;
+      border-bottom: 1px solid #e2e8f0;
+    }
+
+    .widget .item:last-child {
+      border-bottom: none;
+    }
+
+    /* Card Styles for Featured Reports */
     .card {
       background: #ffffff;
       border-radius: 12px;
@@ -237,45 +243,6 @@
       padding-left: 20px;
     }
 
-    /* Suggestion Section */
-    .suggestion {
-      background: #ffffff;
-      border-radius: 12px;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-      max-width: 1400px;
-      margin: 20px auto;
-      padding: 20px;
-      text-align: center;
-    }
-
-    .suggestion h3 {
-      font-size: 18px;
-      font-weight: 600;
-      color: #1e293b;
-      margin-bottom: 10px;
-    }
-
-    .suggestion p {
-      font-size: 14px;
-      color: #64748b;
-      margin-bottom: 15px;
-    }
-
-    .suggestion button {
-      background: linear-gradient(90deg, #3b82f6, #60a5fa);
-      color: #fff;
-      padding: 10px 20px;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-      font-weight: 600;
-      transition: background 0.2s;
-    }
-
-    .suggestion button:hover {
-      background: linear-gradient(90deg, #2563eb, #3b82f6);
-    }
-
     /* Dark Mode Styles */
     body.dark-mode {
       background: #1e293b;
@@ -285,23 +252,24 @@
     body.dark-mode header,
     body.dark-mode .card,
     body.dark-mode .sidebar,
-    body.dark-mode .list-item,
-    body.dark-mode .suggestion {
+    body.dark-mode .widget {
       background: #334155;
     }
 
     body.dark-mode .card h3,
     body.dark-mode h2,
-    body.dark-mode .list-item h3,
-    body.dark-mode .suggestion h3 {
+    body.dark-mode .widget h3 {
       color: #f1f5f9;
     }
 
     body.dark-mode .card p,
     body.dark-mode .sidebar p,
-    body.dark-mode .list-item p,
-    body.dark-mode .suggestion p {
+    body.dark-mode .widget p {
       color: #94a3b8;
+    }
+
+    body.dark-mode .widget .item {
+      border-bottom: 1px solid #475569;
     }
 
     /* Ensure consistent layout during loading */
@@ -371,41 +339,31 @@
 
       <div class="recent-clients">
         <h2>Recent Clients</h2>
-        <div class="grid">
-          <div class="card">
-            <img src="https://via.placeholder.com/280x140" alt="Client Thumbnail">
-            <div class="card-content">
-              <h3>John Doe</h3>
-              <p>Financial planning session completed.</p>
-              <button>View Profile</button>
-            </div>
+        <div class="widget">
+          <div class="item">
+            <h3>John Doe</h3>
+            <p>Financial planning session completed.</p>
+            <button>View Profile</button>
           </div>
-          <div class="card">
-            <img src="https://via.placeholder.com/280x140" alt="Client Thumbnail">
-            <div class="card-content">
-              <h3>Jane Smith</h3>
-              <p>Investment portfolio review scheduled.</p>
-              <button>View Profile</button>
-            </div>
+          <div class="item">
+            <h3>Jane Smith</h3>
+            <p>Investment portfolio review scheduled.</p>
+            <button>View Profile</button>
           </div>
         </div>
       </div>
 
       <div class="favorites">
         <h2>Favorites</h2>
-        <div class="list">
-          <div class="list-item">
-            <div>
-              <h3>Retirement Savings Calculator</h3>
-              <p>Estimate your retirement savings needs.</p>
-            </div>
+        <div class="widget">
+          <div class="item">
+            <h3>Retirement Savings Calculator</h3>
+            <p>Estimate your retirement savings needs.</p>
             <button>Use Calculator</button>
           </div>
-          <div class="list-item">
-            <div>
-              <h3>Fast Facts Report</h3>
-              <p>Quick reference for contribution limits.</p>
-            </div>
+          <div class="item">
+            <h3>Fast Facts Report</h3>
+            <p>Quick reference for contribution limits.</p>
             <button>Read More</button>
           </div>
         </div>
@@ -413,71 +371,94 @@
 
       <div class="webinars">
         <h2>Webinars</h2>
-        <div class="grid">
-          <div class="card">
-            <img src="https://via.placeholder.com/280x140" alt="Webinar Thumbnail">
-            <div class="card-content">
-              <h3>Retirement Planning 101</h3>
-              <p>Join our live webinar to learn the basics of retirement planning.</p>
-              <button>Register</button>
-            </div>
+        <div class="widget">
+          <div class="item">
+            <h3>Retirement Planning 101</h3>
+            <p>Join our live webinar to learn the basics of retirement planning.</p>
+            <button>Register</button>
           </div>
-          <div class="card">
-            <img src="https://via.placeholder.com/280x140" alt="Webinar Thumbnail">
-            <div class="card-content">
-              <h3>Investing in 2025</h3>
-              <p>Discover top investment strategies for the new year.</p>
-              <button>Register</button>
-            </div>
+          <div class="item">
+            <h3>Investing in 2025</h3>
+            <p>Discover top investment strategies for the new year.</p>
+            <button>Register</button>
           </div>
         </div>
       </div>
 
       <div class="two-minute-tips">
         <h2>Two Minute Tips</h2>
-        <div class="grid">
-          <div class="card">
-            <img src="https://via.placeholder.com/280x140" alt="Tip Thumbnail">
-            <div class="card-content">
-              <h3>Saving for College</h3>
-              <p>Quick tips on setting up a 529 plan.</p>
-              <button>Watch Now</button>
-            </div>
+        <div class="widget">
+          <div class="item">
+            <h3>Saving for College</h3>
+            <p>Quick tips on setting up a 529 plan.</p>
+            <button>Watch Now</button>
           </div>
-          <div class="card">
-            <img src="https://via.placeholder.com/280x140" alt="Tip Thumbnail">
-            <div class="card-content">
-              <h3>Budgeting Basics</h3>
-              <p>Learn to manage your finances in 2 minutes.</p>
-              <button>Watch Now</button>
-            </div>
+          <div class="item">
+            <h3>Budgeting Basics</h3>
+            <p>Learn to manage your finances in 2 minutes.</p>
+            <button>Watch Now</button>
           </div>
         </div>
       </div>
 
       <div class="training">
         <h2>Training Resources</h2>
-        <div class="grid">
-          <div class="card">
-            <img src="https://via.placeholder.com/280x140" alt="Training Thumbnail">
-            <div class="card-content">
-              <h3>Advisys Training Portal</h3>
-              <p>Access all training materials at our dedicated portal.</p>
-              <button><a href="https://intercom.help/advisys/en" style="color: #fff; text-decoration: none;">Visit Portal</a></button>
-            </div>
+        <div class="widget">
+          <div class="item">
+            <h3>Advisys Training Portal</h3>
+            <p>Access all training materials at our dedicated portal.</p>
+            <button><a href="https://intercom.help/advisys/en" style="color: #fff; text-decoration: none;">Visit Portal</a></button>
           </div>
         </div>
       </div>
 
       <div class="suggestion">
         <h2>Our Suggestion</h2>
-        <h3>Explore Cryptocurrency Investments</h3>
-        <p>Based on current market trends, consider attending our upcoming webinar on cryptocurrency to diversify your portfolio.</p>
-        <button>Learn More</button>
+        <div class="widget">
+          <h3>Explore Cryptocurrency Investments</h3>
+          <p>Based on current market trends, consider attending our upcoming webinar on cryptocurrency to diversify your portfolio.</p>
+          <button>Learn More</button>
+        </div>
       </div>
     </section>
 
-    
+    <!-- Reports Section -->
+    <section class="reports">
+      <div class="sidebar">
+        <h3>Filters</h3>
+        <p>Category</p>
+        <p>Date</p>
+        <p>Popularity</p>
+      </div>
+      <div class="report-grid">
+        <div class="grid">
+          <div class="card">
+            <img src="https://via.placeholder.com/280x140" alt="Report Thumbnail">
+            <div class="card-content">
+              <h3>Advanced Investment Techniques</h3>
+              <p>Explore advanced strategies for maximizing your investment portfolio.</p>
+              <button>Read More</button>
+            </div>
+          </div>
+          <div class="card">
+            <img src="https://via.placeholder.com/280x140" alt="Report Thumbnail">
+            <div class="card-content">
+              <h3>Budgeting for Millennials</h3>
+              <p>Tips for managing finances in your 20s and 30s.</p>
+              <button>Read More</button>
+            </div>
+          </div>
+          <div class="card">
+            <img src="https://via.placeholder.com/280x140" alt="Report Thumbnail">
+            <div class="card-content">
+              <h3>Understanding Cryptocurrency</h3>
+              <p>A beginner's guide to crypto investments.</p>
+              <button>Read More</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
   </main>
 
   <!-- JavaScript for dark mode toggle -->
