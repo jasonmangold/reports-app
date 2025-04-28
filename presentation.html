@@ -7,17 +7,26 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
   <link rel="stylesheet" href="styles.css">
+  <!-- Include jsPDF for PDF generation -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <!-- Include html2canvas for rendering charts to PDF -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 </head>
 <body>
   <header>
-    <div class="logo">Advisys</div>
+    <div class="logo">
+      <img src="logo.png" alt="Advisys Logo" class="logo-img">
+    </div>
+    <div class="client-file">
+      <span id="client-file-name">No Client Selected</span>
+    </div>
     <nav>
       <ul>
         <li><a href="home.html">Home</a></li>
         <li><a href="index.html">Education</a></li>
-        <li><a href="index.html">Analysis</a></li>
+        <li><a href="home.html">Analysis</a></li>
         <li><a href="#">Calculators</a></li>
-        <li><a href="presentation.html" id="presentation-tab" class="active">Presentation <span id="presentation-count" class="count-badge">0</span></a></li>
+        <li><a href="presentation.html" class="active" id="presentation-tab">Presentation <span id="presentation-count" class="count-badge">0</span></a></li>
         <li><a href="#">Search</a></li>
         <li><a href="#">Profile</a></li>
       </ul>
@@ -30,136 +39,29 @@
   </header>
 
   <div class="presentation-page">
-    <h2>Presentation Builder</h2>
-    <div class="presentation-workspace">
-      <div class="selected-reports">
-        <h3>Selected Reports</h3>
-        <div id="report-list" class="report-list">
-          <!-- Populated dynamically via JavaScript -->
-        </div>
+    <h2>Presentation Reports</h2>
+    <div class="report-list" id="report-list">
+      <!-- Reports will be populated dynamically -->
+    </div>
+    <button id="preview-presentation-btn" disabled>Preview Presentation</button>
+  </div>
+
+  <!-- Modal for PDF Preview -->
+  <div class="modal" id="pdf-preview-modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>Presentation Preview</h2>
+        <span class="close" id="close-pdf-modal">&times;</span>
       </div>
-      <div class="presentation-options">
-        <h3>Presentation Options</h3>
-        <div class="option-section">
-          <label>Include Table of Contents: <input type="checkbox" id="include-toc"></label>
-          <label>Include Page Numbers: <input type="checkbox" id="include-page-numbers"></label>
-          <label>Theme:
-            <select id="theme">
-              <option value="light">Light</option>
-              <option value="dark">Dark</option>
-              <option value="corporate">Corporate</option>
-            </select>
-          </label>
-        </div>
-        <h3>Client Information</h3>
-        <div class="option-section">
-          <label>Client Name: <input type="text" id="client-name" placeholder="John Doe"></label>
-          <label>Advisor Name: <input type="text" id="advisor-name" placeholder="Jane Smith"></label>
-          <label>Company Name: <input type="text" id="company-name" placeholder="Advisys Financial"></label>
-        </div>
-        <h3>Title Page</h3>
-        <div class="option-section">
-          <label>Title: <input type="text" id="title" placeholder="Retirement Planning Presentation"></label>
-          <label>Subtitle: <input type="text" id="subtitle" placeholder="Prepared for John Doe"></label>
-          <label>Date: <input type="date" id="presentation-date"></label>
-          <label>Logo URL: <input type="url" id="logo-url" placeholder="https://example.com/logo.png"></label>
-        </div>
-        <button type="button" id="save-presentation-btn">Save Presentation</button>
+      <div class="modal-body" id="pdf-preview-content">
+        <!-- PDF content will be rendered here -->
+      </div>
+      <div class="modal-footer">
+        <button class="save-pdf-btn" id="download-pdf-btn">Download PDF</button>
       </div>
     </div>
   </div>
 
-  <script>
-    // Initialize report list from localStorage
-    const reportList = document.getElementById('report-list');
-    const presentationCount = document.getElementById('presentation-count');
-    let selectedReports = JSON.parse(localStorage.getItem('selectedReports')) || [];
-
-    function renderReports() {
-      reportList.innerHTML = '';
-      selectedReports.forEach((report, index) => {
-        const reportItem = document.createElement('div');
-        reportItem.className = 'report-item';
-        reportItem.draggable = true;
-        reportItem.dataset.index = index;
-        reportItem.innerHTML = `
-          <span>${report}</span>
-          <button class="remove-report-btn" data-index="${index}"><i class="fas fa-trash"></i></button>
-        `;
-        reportList.appendChild(reportItem);
-      });
-      updateCountBadge();
-    }
-
-    function updateCountBadge() {
-      presentationCount.textContent = selectedReports.length;
-      presentationCount.classList.toggle('active', selectedReports.length > 0);
-    }
-
-    // Drag and Drop
-    reportList.addEventListener('dragstart', (e) => {
-      if (e.target.classList.contains('report-item')) {
-        e.target.classList.add('dragging');
-        e.dataTransfer.setData('text/plain', e.target.dataset.index);
-      }
-    });
-
-    reportList.addEventListener('dragend', (e) => {
-      if (e.target.classList.contains('report-item')) {
-        e.target.classList.remove('dragging');
-      }
-    });
-
-    reportList.addEventListener('dragover', (e) => {
-      e.preventDefault();
-      const draggingItem = document.querySelector('.dragging');
-      const afterElement = getDragAfterElement(reportList, e.clientY);
-      if (afterElement == null) {
-        reportList.appendChild(draggingItem);
-      } else {
-        reportList.insertBefore(draggingItem, afterElement);
-      }
-    });
-
-    reportList.addEventListener('drop', (e) => {
-      e.preventDefault();
-      const index = e.dataTransfer.getData('text/plain');
-      const newOrder = Array.from(reportList.children).map(item => selectedReports[item.dataset.index]);
-      selectedReports = newOrder;
-      localStorage.setItem('selectedReports', JSON.stringify(selectedReports));
-      renderReports();
-    });
-
-    function getDragAfterElement(container, y) {
-      const draggableElements = [...container.querySelectorAll('.report-item:not(.dragging)')];
-      return draggableElements.reduce((closest, child) => {
-        const box = child.getBoundingClientRect();
-        const offset = y - box.top - box.height / 2;
-        if (offset < 0 && offset > closest.offset) {
-          return { offset: offset, element: child };
-        } else {
-          return closest;
-        }
-      }, { offset: Number.NEGATIVE_INFINITY }).element;
-    }
-
-    // Remove report
-    reportList.addEventListener('click', (e) => {
-      if (e.target.closest('.remove-report-btn')) {
-        const index = e.target.closest('.remove-report-btn').dataset.index;
-        selectedReports.splice(index, 1);
-        localStorage.setItem('selectedReports', JSON.stringify(selectedReports));
-        renderReports();
-      }
-    });
-
-    // Initialize
-    renderReports();
-
-    // Dark mode toggle (consistent with analysis.html)
-    document.querySelector('.dark-mode-toggle').addEventListener('click', () => {
-      document.body.classList.toggle('dark-mode');
-    });
-  </script>
+  <script type="module" src="src/presentation.js"></script>
 </body>
 </html>
