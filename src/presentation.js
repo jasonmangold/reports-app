@@ -220,6 +220,7 @@ async function generatePresentationPreview() {
       // Convert any canvas to image for preview
       const canvas = reportDiv.querySelector('canvas');
       if (canvas) {
+        const canvasParent = canvas.parentNode;
         document.body.appendChild(canvas);
         await new Promise(resolve => setTimeout(resolve, 1000));
         const imgData = canvas.toDataURL('image/png');
@@ -228,8 +229,11 @@ async function generatePresentationPreview() {
         img.src = imgData;
         img.style.width = canvas.style.width || '600px';
         img.style.height = canvas.style.height || '400px';
-        canvas.parentNode.replaceChild(img, canvas);
-        document.body.removeChild(canvas);
+        canvasParent.replaceChild(img, canvas);
+        // Only remove from document.body if it’s still there
+        if (canvas.parentNode === document.body) {
+          document.body.removeChild(canvas);
+        }
       }
 
       tempContainer.appendChild(reportDiv);
@@ -269,8 +273,8 @@ async function renderRetirementReport(container, outputType, title) {
     await new Promise(resolve => setTimeout(resolve, 1000));
     return chartInstance;
   } else {
-    // Pass window.Chart to ensure it's available
-    updateRetirementOutputs(container, clientData, formatCurrency, getAge, selectedReports, window.Chart);
+    // Pass the specific outputType to render the correct view
+    updateRetirementOutputs(container, clientData, formatCurrency, getAge, selectedReports, window.Chart, outputType);
     if (!container.innerHTML.includes('output-card') && !container.innerHTML.includes('output-table')) {
       container.innerHTML += '<p>No retirement data available.</p>';
     }
@@ -294,7 +298,7 @@ async function renderPersonalFinanceReport(container, outputType, title) {
     await new Promise(resolve => setTimeout(resolve, 1000));
     return chartInstance;
   } else {
-    updatePersonalFinanceOutputs(container, clientData, formatCurrency, selectedReports, window.Chart);
+    updatePersonalFinanceOutputs(container, clientData, formatCurrency, selectedReports, window.Chart, outputType);
     if (!container.innerHTML.includes('output-card') && !container.innerHTML.includes('output-table')) {
       container.innerHTML += '<p>No personal finance data available.</p>';
     }
@@ -305,7 +309,7 @@ async function renderPersonalFinanceReport(container, outputType, title) {
 async function renderSummaryReport(container, outputType, title) {
   container.innerHTML = `<h3>${title}</h3>`;
   console.log(`Rendering summary report, outputType: ${outputType}`);
-  updateSummaryOutputs(container, clientData, formatCurrency, selectedReports, window.Chart, getAge);
+  updateSummaryOutputs(container, clientData, formatCurrency, selectedReports, window.Chart, getAge, outputType);
   if (!container.innerHTML.includes('output-card') && !container.innerHTML.includes('output-table')) {
     container.innerHTML += '<p>No summary data available.</p>';
   }
@@ -357,6 +361,7 @@ async function downloadPresentationPDF() {
       // Convert canvas to image
       const canvas = reportDiv.querySelector('canvas');
       if (canvas) {
+        const canvasParent = canvas.parentNode;
         document.body.appendChild(canvas);
         await new Promise(resolve => setTimeout(resolve, 1000));
         const imgData = canvas.toDataURL('image/png');
@@ -365,8 +370,10 @@ async function downloadPresentationPDF() {
         img.src = imgData;
         img.style.width = canvas.style.width || '600px';
         img.style.height = canvas.style.height || '400px';
-        canvas.parentNode.replaceChild(img, canvas);
-        document.body.removeChild(canvas);
+        canvasParent.replaceChild(img, canvas);
+        if (canvas.parentNode === document.body) {
+          document.body.removeChild(canvas);
+        }
       }
 
       await new Promise(resolve => setTimeout(resolve, 100));
