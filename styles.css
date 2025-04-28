@@ -1428,3 +1428,12 @@ body.dark-mode .report-preview h3 {
   visibility: visible;
   color: #000;
 }
+/* New styles for Client Profile */
+.analysis-workspace.client-profile-active .graph-outputs {
+  display: none;
+}
+
+.analysis-workspace.client-profile-active .client-inputs {
+  max-width: 100%;
+  width: 100%;
+}
