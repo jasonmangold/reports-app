@@ -140,7 +140,7 @@ function populateAnalysisTopics() {
 
     document.querySelectorAll('.topic-btn').forEach(btn => {
       btn.addEventListener('click', () => {
-        document.querySelectorAll('.topic-btn').forEach(b => b.classList.remove('active')));
+        document.querySelectorAll('.topic-btn').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
         currentAnalysis = btn.dataset.analysis;
         updateTabs(currentAnalysis);
