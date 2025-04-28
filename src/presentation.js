@@ -168,20 +168,21 @@ async function generatePresentationPreview() {
     pdfPreviewContent.innerHTML = '<p>Generating preview...</p>';
     pdfPreviewModal.style.display = 'flex';
 
-    const { jsPDF } = window.jspdf;
-    const doc = new jsPDF({ orientation: 'portrait', unit: 'px', format: 'letter' });
-    let yOffset = 20;
+    // Create a temporary container for rendering
+    const tempContainer = document.createElement('div');
+    tempContainer.style.width = '600px';
+    tempContainer.style.background = '#fff';
 
+    // Render reports
     for (const report of selectedReports) {
       const reportDiv = document.createElement('div');
       reportDiv.classList.add('report-preview');
       reportDiv.style.padding = '20px';
-      reportDiv.style.background = '#fff';
       reportDiv.style.marginBottom = '20px';
+      reportDiv.style.background = '#fff';
 
       const [analysisType, outputType] = report.id.split('-');
 
-      // Render report content
       if (analysisType === 'retirement-accumulation') {
         await renderRetirementReport(reportDiv, outputType, report.title);
       } else if (analysisType === 'personal-finance') {
@@ -190,38 +191,28 @@ async function generatePresentationPreview() {
         await renderSummaryReport(reportDiv, outputType, report.title);
       }
 
-      // Add to preview modal
-      pdfPreviewContent.appendChild(reportDiv);
-
-      // Add to PDF
-      const canvas = await html2canvas(reportDiv, { scale: 2 });
-      const imgData = canvas.toDataURL('image/png');
-      const imgWidth = doc.internal.pageSize.getWidth() - 40;
-      const imgHeight = (canvas.height * imgWidth) / canvas.width;
-
-      if (yOffset + imgHeight > doc.internal.pageSize.getHeight() - 40) {
-        doc.addPage();
-        yOffset = 20;
+      // Convert any canvas to image for preview
+      const canvas = reportDiv.querySelector('canvas');
+      if (canvas) {
+        await new Promise(resolve => setTimeout(resolve, 1000)); // Increased delay
+        const imgData = canvas.toDataURL('image/png');
+        const img = document.createElement('img');
+        img.src = imgData;
+        img.style.width = canvas.style.width || '600px';
+        img.style.height = canvas.style.height || '400px';
+        canvas.parentNode.replaceChild(img, canvas);
       }
 
-      doc.addImage(imgData, 'PNG', 20, yOffset, imgWidth, imgHeight);
-      yOffset += imgHeight + 20;
+      tempContainer.appendChild(reportDiv);
     }
 
     // Update preview content
     pdfPreviewContent.innerHTML = '';
-    for (const report of selectedReports) {
-      const reportDiv = document.createElement('div');
-      const [analysisType, outputType] = report.id.split('-');
-      if (analysisType === 'retirement-accumulation') {
-        await renderRetirementReport(reportDiv, outputType, report.title);
-      } else if (analysisType === 'personal-finance') {
-        await renderPersonalFinanceReport(reportDiv, outputType, report.title);
-      } else if (analysisType === 'summary') {
-        await renderSummaryReport(reportDiv, outputType, report.title);
-      }
-      pdfPreviewContent.appendChild(reportDiv);
-    }
+    pdfPreviewContent.appendChild(tempContainer);
+
+    // Ensure modal content is visible
+    pdfPreviewContent.style.display = 'block';
+    pdfPreviewContent.style.opacity = '1';
   } catch (error) {
     console.error('Error generating preview:', error);
     pdfPreviewContent.innerHTML = '<p class="output-error">Error generating preview. Please check console.</p>';
@@ -237,7 +228,9 @@ async function renderRetirementReport(container, outputType, title) {
     canvas.style.width = '600px';
     canvas.style.height = '400px';
     container.appendChild(canvas);
-    await updateRetirementGraph(canvas, clientData, Chart, getAge);
+    const chartInstance = await updateRetirementGraph(canvas, clientData, Chart, getAge);
+    await new Promise(resolve => setTimeout(resolve, 1000)); // Increased delay
+    return chartInstance;
   } else {
     updateRetirementOutputs(container, clientData, formatCurrency, getAge, selectedReports, Chart);
   }
@@ -252,7 +245,9 @@ async function renderPersonalFinanceReport(container, outputType, title) {
     canvas.style.width = '600px';
     canvas.style.height = '400px';
     container.appendChild(canvas);
-    await updatePersonalFinanceGraph(canvas, clientData, Chart);
+    const chartInstance = await updatePersonalFinanceGraph(canvas, clientData, Chart);
+    await new Promise(resolve => setTimeout(resolve, 1000)); // Increased delay
+    return chartInstance;
   } else {
     updatePersonalFinanceOutputs(container, clientData, formatCurrency, selectedReports, Chart);
   }
@@ -264,7 +259,7 @@ async function renderSummaryReport(container, outputType, title) {
   updateSummaryOutputs(container, clientData, formatCurrency, selectedReports, Chart, getAge);
 }
 
-// src/presentation.js (replace the downloadPresentationPDF function)
+// Download presentation as PDF
 async function downloadPresentationPDF() {
   try {
     const { jsPDF } = window.jspdf;
@@ -276,11 +271,10 @@ async function downloadPresentationPDF() {
       reportDiv.classList.add('report-preview');
       reportDiv.style.padding = '20px';
       reportDiv.style.background = '#fff';
-      reportDiv.style.position = 'absolute'; // Position off-screen
-      reportDiv.style.left = '-9999px'; // Ensure it doesn't affect layout
-      reportDiv.style.width = '600px'; // Set a consistent width for rendering
+      reportDiv.style.position = 'absolute';
+      reportDiv.style.left = '-9999px';
+      reportDiv.style.width = '600px';
 
-      // Append to DOM to ensure html2canvas can render it
       document.body.appendChild(reportDiv);
 
       const [analysisType, outputType] = report.id.split('-');
@@ -292,11 +286,10 @@ async function downloadPresentationPDF() {
         await renderSummaryReport(reportDiv, outputType, report.title);
       }
 
-      // Handle charts: Convert canvas to image
+      // Convert canvas to image
       const canvas = reportDiv.querySelector('canvas');
       if (canvas) {
-        // Wait for chart to render
-        await new Promise(resolve => setTimeout(resolve, 500));
+        await new Promise(resolve => setTimeout(resolve, 1000)); // Increased delay
         const imgData = canvas.toDataURL('image/png');
         const img = document.createElement('img');
         img.src = imgData;
@@ -305,16 +298,16 @@ async function downloadPresentationPDF() {
         canvas.parentNode.replaceChild(img, canvas);
       }
 
-      // Ensure content is fully rendered
+      // Ensure content is rendered
       await new Promise(resolve => setTimeout(resolve, 100));
 
-      // Capture with html2canvas
       console.log(`Rendering report: ${report.id}`);
       const canvasRender = await html2canvas(reportDiv, { 
         scale: 2, 
         useCORS: true, 
-        logging: true // Enable html2canvas logging for debugging
+        logging: true 
       });
+      console.log('html2canvas output:', canvasRender.toDataURL('image/png')); // Debug captured image
       const imgData = canvasRender.toDataURL('image/png');
       const imgWidth = doc.internal.pageSize.getWidth() - 40;
       const imgHeight = (canvasRender.height * imgWidth) / canvasRender.width;
@@ -327,7 +320,6 @@ async function downloadPresentationPDF() {
       doc.addImage(imgData, 'PNG', 20, yOffset, imgWidth, imgHeight);
       yOffset += imgHeight + 20;
 
-      // Clean up
       document.body.removeChild(reportDiv);
     }
 
