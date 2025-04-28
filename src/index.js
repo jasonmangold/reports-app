@@ -374,7 +374,7 @@ function setupEventDelegation() {
   try {
     let graphTimeout;
     document.addEventListener('input', (e) => {
-７      if (e.target.closest('#client-input-form')) {
+      if (e.target.closest('#client-input-form')) {
         isTyping = true;
         const activeElement = document.activeElement;
         console.log(`Input event on ${e.target.id}: ${e.target.value}`);
