@@ -154,8 +154,10 @@ function populateAnalysisTopics() {
       analysisTopics.appendChild(btn);
     });
 
-    document.querySelectorAll('.topic-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
+    // Only bind to .topic-btn within .analysis-topics to avoid sub-tab buttons
+    document.querySelectorAll('.analysis-topics .topic-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation(); // Prevent bubbling to parent elements
         document.querySelectorAll('.topic-btn').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
         currentAnalysis = btn.dataset.analysis;
@@ -238,46 +240,56 @@ function populateInputFields() {
     }
     console.log('Populating input fields with clientData:', JSON.stringify(clientData, null, 2));
 
-    setInputValue('c1-name', clientData.client1.personal.name, 'Client 1 Name');
-    setInputValue('c2-name', clientData.client2.personal.name, 'Client 2 Name');
-    setInputValue('c1-employment', clientData.client1.incomeSources.employment, 'Client 1 Employment');
-    setInputValue('c2-employment', clientData.client2.incomeSources.employment, 'Client 2 Employment');
-    setInputValue('c1-social-security', clientData.client1.incomeSources.socialSecurity, 'Client 1 Social Security');
-    setInputValue('c2-social-security', clientData.client2.incomeSources.socialSecurity, 'Client 2 Social Security');
-    setInputValue('c1-other-income', clientData.client1.incomeSources.other, 'Client 1 Other Income');
-    setInputValue('c2-other-income', clientData.client2.incomeSources.other, 'Client 2 Other Income');
-    setInputValue('is-married', clientData.isMarried, 'Is Married', 'checked');
-    setInputValue('c1-dob', clientData.client1.personal.dob, 'Client 1 DOB');
-    setInputValue('c2-dob', clientData.client2.personal.dob, 'Client 2 DOB');
-    setInputValue('c1-retirement-age', clientData.client1.personal.retirementAge, 'Client 1 Retirement Age');
-    setInputValue('c2-retirement-age', clientData.client2.personal.retirementAge, 'Client 2 Retirement Age');
-    setInputValue('monthly-income', clientData.incomeNeeds.monthly, 'Monthly Income');
-    setInputValue('mortality-age', clientData.assumptions.mortalityAge, 'Mortality Age');
-    setInputValue('inflation', clientData.assumptions.inflation, 'Inflation');
-    setInputValue('ror-retirement', clientData.assumptions.rorRetirement, 'ROR Retirement');
-    setInputValue('c1-interest-dividends', clientData.client1.incomeSources.interestDividends, 'Client 1 Interest and Dividends');
-    setInputValue('c2-interest-dividends', clientData.client2.incomeSources.interestDividends, 'Client 2 Interest and Dividends');
-    setInputValue('household-expenses', clientData.savingsExpenses.householdExpenses, 'Household Expenses');
-    setInputValue('taxes', clientData.savingsExpenses.taxes, 'Taxes');
-    setInputValue('other-expenses', clientData.savingsExpenses.otherExpenses, 'Other Expenses');
-    setInputValue('monthly-savings', clientData.savingsExpenses.monthlySavings, 'Monthly Savings');
-    setInputValue('analysis-date', clientData.assumptions.analysisDate, 'Analysis Date');
-    setInputValue('cash', clientData.other.cash, 'Cash');
-    setInputValue('residence-mortgage', clientData.other.residenceMortgage, 'Residence/Mortgage');
-    setInputValue('other-debt', clientData.other.otherDebt, 'Other Debt');
-    setInputValue('c1-life-insurance', clientData.client1.insurance.lifeInsurance, 'Client 1 Life Insurance');
-    setInputValue('c2-life-insurance', clientData.client2.insurance.lifeInsurance, 'Client 2 Life Insurance');
-    setInputValue('c1-disability-insurance', clientData.client1.insurance.disabilityInsurance, 'Client 1 Disability Insurance');
-    setInputValue('c2-disability-insurance', clientData.client2.insurance.disabilityInsurance, 'Client 2 Disability Insurance');
-    setInputValue('c1-long-term-care', clientData.client1.insurance.longTermCare, 'Client 1 Long-Term Care');
-    setInputValue('c2-long-term-care', clientData.client2.insurance.longTermCare, 'Client 2 Long-Term Care');
+    // Only set inputs that exist in the current tab content
+    const setIfExists = (id, value, label, property = 'value') => {
+      const input = document.getElementById(id);
+      if (input) {
+        setInputValue(id, value, label, property);
+      } else {
+        console.log(`Skipping ${label} (#${id}) as it is not present in current tab`);
+      }
+    };
+
+    setIfExists('c1-name', clientData.client1.personal.name, 'Client 1 Name');
+    setIfExists('c2-name', clientData.client2.personal.name, 'Client 2 Name');
+    setIfExists('c1-employment', clientData.client1.incomeSources.employment, 'Client 1 Employment');
+    setIfExists('c2-employment', clientData.client2.incomeSources.employment, 'Client 2 Employment');
+    setIfExists('c1-social-security', clientData.client1.incomeSources.socialSecurity, 'Client 1 Social Security');
+    setIfExists('c2-social-security', clientData.client2.incomeSources.socialSecurity, 'Client 2 Social Security');
+    setIfExists('c1-other-income', clientData.client1.incomeSources.other, 'Client 1 Other Income');
+    setIfExists('c2-other-income', clientData.client2.incomeSources.other, 'Client 2 Other Income');
+    setIfExists('is-married', clientData.isMarried, 'Is Married', 'checked');
+    setIfExists('c1-dob', clientData.client1.personal.dob, 'Client 1 DOB');
+    setIfExists('c2-dob', clientData.client2.personal.dob, 'Client 2 DOB');
+    setIfExists('c1-retirement-age', clientData.client1.personal.retirementAge, 'Client 1 Retirement Age');
+    setIfExists('c2-retirement-age', clientData.client2.personal.retirementAge, 'Client 2 Retirement Age');
+    setIfExists('monthly-income', clientData.incomeNeeds.monthly, 'Monthly Income');
+    setIfExists('mortality-age', clientData.assumptions.mortalityAge, 'Mortality Age');
+    setIfExists('inflation', clientData.assumptions.inflation, 'Inflation');
+    setIfExists('ror-retirement', clientData.assumptions.rorRetirement, 'ROR Retirement');
+    setIfExists('c1-interest-dividends', clientData.client1.in calls='Client 1 Interest and Dividends');
+    setIfExists('c2-interest-dividends', clientData.client2.incomeSources.interestDividends, 'Client 2 Interest and Dividends');
+    setIfExists('household-expenses', clientData.savingsExpenses.householdExpenses, 'Household Expenses');
+    setIfExists('taxes', clientData.savingsExpenses.taxes, 'Taxes');
+    setIfExists('other-expenses', clientData.savingsExpenses.otherExpenses, 'Other Expenses');
+    setIfExists('monthly-savings', clientData.savingsExpenses.monthlySavings, 'Monthly Savings');
+    setIfExists('analysis-date', clientData.assumptions.analysisDate, 'Analysis Date');
+    setIfExists('cash', clientData.other.cash, 'Cash');
+    setIfExists('residence-mortgage', clientData.other.residenceMortgage, 'Residence/Mortgage');
+    setIfExists('other-debt', clientData.other.otherDebt, 'Other Debt');
+    setIfExists('c1-life-insurance', clientData.client1.insurance.lifeInsurance, 'Client 1 Life Insurance');
+    setIfExists('c2-life-insurance', clientData.client2.insurance.lifeInsurance, 'Client 2 Life Insurance');
+    setIfExists('c1-disability-insurance', clientData.client1.insurance.disabilityInsurance, 'Client 1 Disability Insurance');
+    setIfExists('c2-disability-insurance', clientData.client2.insurance.disabilityInsurance, 'Client 2 Disability Insurance');
+    setIfExists('c1-long-term-care', clientData.client1.insurance.longTermCare, 'Client 1 Long-Term Care');
+    setIfExists('c2-long-term-care', clientData.client2.insurance.longTermCare, 'Client 2 Long-Term Care');
 
     ['c1', 'c2'].forEach(client => {
       const clientKey = client === 'c1' ? 'client1' : 'client2';
       const accounts = clientData[clientKey].accounts;
       const container = document.getElementById(`${client}-accounts`);
       if (!container) {
-        console.warn(`Container #${client}-accounts not found`);
+        console.log(`Container #${client}-accounts not found in current tab`);
         return;
       }
 
@@ -317,7 +329,10 @@ function populateInputFields() {
       const clientKey = client === 'c1' ? 'client1' : 'client2';
       const assets = clientData[clientKey].other?.assets || [];
       const container = document.getElementById(`${client}-assets`);
-      if (!container) return;
+      if (!container) {
+        console.log(`Container #${client}-assets not found in current tab`);
+        return;
+      }
 
       const existingAssets = container.querySelectorAll('.asset');
       existingAssets.forEach(asset => asset.remove());
@@ -377,8 +392,9 @@ function setupTabSwitching() {
   }
 }
 
-function tabClickHandler() {
+function tabClickHandler(e) {
   try {
+    e.stopPropagation(); // Prevent bubbling to analysis topic handlers
     inputTabs.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
     this.classList.add('active');
     inputContent.querySelectorAll('.tab-content').forEach(content => {
@@ -416,8 +432,9 @@ function setupSubTabSwitching() {
   }
 }
 
-function subTabClickHandler() {
+function subTabClickHandler(e) {
   try {
+    e.stopPropagation(); // Prevent bubbling to analysis topic handlers
     document.querySelectorAll('.sub-tab-btn').forEach(btn => btn.classList.remove('active'));
     document.querySelectorAll('.sub-tab-content').forEach(content => {
       content.style.display = 'none';
@@ -431,6 +448,7 @@ function subTabClickHandler() {
     }
     populateInputFields();
     setupAgeDisplayListeners(getAge);
+    setupAddButtons(); // Rebind add buttons for dynamic accounts/assets
   } catch (error) {
     console.error('Error in subTabClickHandler:', error);
   }
@@ -794,6 +812,7 @@ function updateGraph() {
     const validationError = validateClientData();
     if (validationError) {
       console.error('Validation failed:', validationError);
+      analysisOutputs.innerHTML = `<p class="output-error">${validationError}</p>`;
       return;
     }
 
@@ -863,7 +882,7 @@ function setupOutputTabSwitching() {
 
     const buttons = document.querySelectorAll('.output-tab-btn');
     if (!buttons.length) {
-      console.warn('No output tab buttons found');
+      console.log('No output tab buttons found for current analysis');
       return;
     }
     buttons.forEach(button => {
@@ -875,8 +894,9 @@ function setupOutputTabSwitching() {
   }
 }
 
-function outputTabClickHandler() {
+function outputTabClickHandler(e) {
   try {
+    e.stopPropagation(); // Prevent bubbling to other handlers
     document.querySelectorAll('.output-tab-btn').forEach(btn => btn.classList.remove('active'));
     document.querySelectorAll('.output-tab-content').forEach(content => {
       content.style.display = 'none';
