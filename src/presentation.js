@@ -264,7 +264,7 @@ async function renderSummaryReport(container, outputType, title) {
   updateSummaryOutputs(container, clientData, formatCurrency, selectedReports, Chart, getAge);
 }
 
-// Download presentation as PDF
+// src/presentation.js (replace the downloadPresentationPDF function)
 async function downloadPresentationPDF() {
   try {
     const { jsPDF } = window.jspdf;
@@ -276,6 +276,12 @@ async function downloadPresentationPDF() {
       reportDiv.classList.add('report-preview');
       reportDiv.style.padding = '20px';
       reportDiv.style.background = '#fff';
+      reportDiv.style.position = 'absolute'; // Position off-screen
+      reportDiv.style.left = '-9999px'; // Ensure it doesn't affect layout
+      reportDiv.style.width = '600px'; // Set a consistent width for rendering
+
+      // Append to DOM to ensure html2canvas can render it
+      document.body.appendChild(reportDiv);
 
       const [analysisType, outputType] = report.id.split('-');
       if (analysisType === 'retirement-accumulation') {
@@ -286,10 +292,32 @@ async function downloadPresentationPDF() {
         await renderSummaryReport(reportDiv, outputType, report.title);
       }
 
-      const canvas = await html2canvas(reportDiv, { scale: 2 });
-      const imgData = canvas.toDataURL('image/png');
+      // Handle charts: Convert canvas to image
+      const canvas = reportDiv.querySelector('canvas');
+      if (canvas) {
+        // Wait for chart to render
+        await new Promise(resolve => setTimeout(resolve, 500));
+        const imgData = canvas.toDataURL('image/png');
+        const img = document.createElement('img');
+        img.src = imgData;
+        img.style.width = canvas.style.width || '600px';
+        img.style.height = canvas.style.height || '400px';
+        canvas.parentNode.replaceChild(img, canvas);
+      }
+
+      // Ensure content is fully rendered
+      await new Promise(resolve => setTimeout(resolve, 100));
+
+      // Capture with html2canvas
+      console.log(`Rendering report: ${report.id}`);
+      const canvasRender = await html2canvas(reportDiv, { 
+        scale: 2, 
+        useCORS: true, 
+        logging: true // Enable html2canvas logging for debugging
+      });
+      const imgData = canvasRender.toDataURL('image/png');
       const imgWidth = doc.internal.pageSize.getWidth() - 40;
-      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+      const imgHeight = (canvasRender.height * imgWidth) / canvasRender.width;
 
       if (yOffset + imgHeight > doc.internal.pageSize.getHeight() - 40) {
         doc.addPage();
@@ -298,11 +326,14 @@ async function downloadPresentationPDF() {
 
       doc.addImage(imgData, 'PNG', 20, yOffset, imgWidth, imgHeight);
       yOffset += imgHeight + 20;
+
+      // Clean up
+      document.body.removeChild(reportDiv);
     }
 
     doc.save('Presentation.pdf');
   } catch (error) {
     console.error('Error downloading PDF:', error);
-    alert('Error generating PDF. Please check console.');
+    alert('Error generating PDF. Please check console for details.');
   }
 }
