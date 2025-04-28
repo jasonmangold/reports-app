@@ -82,6 +82,7 @@ const clientFileName = document.getElementById('client-file-name');
 const presentationCount = document.getElementById('presentation-count');
 const analysisOutputs = document.getElementById('analysis-outputs');
 const outputTabsContainer = document.getElementById('output-tabs-container');
+const analysisWorkspace = document.querySelector('.analysis-workspace');
 let chartInstance = null;
 
 // Analysis topics list
@@ -119,6 +120,12 @@ document.addEventListener('DOMContentLoaded', () => {
     updateClientFileName();
     setupEventDelegation();
     updateOutputs();
+    // Set initial workspace class based on currentAnalysis
+    if (currentAnalysis === 'client-profile') {
+      analysisWorkspace.classList.add('client-profile-active');
+    } else {
+      analysisWorkspace.classList.remove('client-profile-active');
+    }
     setTimeout(() => {
       updateGraph();
       setupOutputTabSwitching();
@@ -147,6 +154,12 @@ function populateAnalysisTopics() {
         document.querySelectorAll('.topic-btn').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
         currentAnalysis = btn.dataset.analysis;
+        // Toggle client-profile-active class based on currentAnalysis
+        if (currentAnalysis === 'client-profile') {
+          analysisWorkspace.classList.add('client-profile-active');
+        } else {
+          analysisWorkspace.classList.remove('client-profile-active');
+        }
         updateTabs(currentAnalysis);
         updateOutputs();
         setTimeout(updateGraph, 100);
@@ -340,7 +353,7 @@ function setInputValue(id, value, label, property = 'value') {
   }
 }
 
-// Tab проблему
+// Tab switching
 function setupTabSwitching() {
   try {
     inputTabs.querySelectorAll('.tab-btn').forEach(button => {
