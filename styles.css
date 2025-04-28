@@ -1292,3 +1292,143 @@ canvas#analysis-chart { display: block; width: 600px; height: 400px; max-height:
   height: 30px; /* Adjust as needed */
   width: auto;
 }
+/* Presentation Page Layout */
+.presentation-page {
+  padding: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.presentation-page h2 {
+  font-size: 24px;
+  font-weight: 700;
+  color: #1e293b;
+  margin-bottom: 20px;
+}
+
+.report-list {
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  padding: 20px;
+  min-height: 200px;
+}
+
+.report-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px;
+  margin-bottom: 10px;
+  background: #f1f5f9;
+  border-radius: 8px;
+  cursor: move;
+  transition: background 0.2s;
+}
+
+.report-item:hover {
+  background: #e0e7ff;
+}
+
+.report-item.dragging {
+  opacity: 0.5;
+}
+
+.report-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #1e293b;
+}
+
+.remove-report-btn {
+  background: #ef4444;
+  color: #fff;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.remove-report-btn:hover {
+  background: #dc2626;
+}
+
+#preview-presentation-btn {
+  background: #3b82f6;
+  color: #fff;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  margin-top: 20px;
+}
+
+#preview-presentation-btn:disabled {
+  background: #94a3b8;
+  cursor: not-allowed;
+}
+
+#preview-presentation-btn:hover:not(:disabled) {
+  background: #2563eb;
+}
+
+.report-preview {
+  margin-bottom: 20px;
+}
+
+.report-preview h3 {
+  font-size: 18px;
+  font-weight: 600;
+  color: #3b82f6;
+  margin-bottom: 15px;
+  border-bottom: 2px solid #3b82f6;
+  padding-bottom: 5px;
+}
+
+/* Dark Mode Adjustments */
+body.dark-mode .presentation-page h2 {
+  color: #f1f5f9;
+}
+
+body.dark-mode .report-list {
+  background: #334155;
+}
+
+body.dark-mode .report-item {
+  background: #475569;
+}
+
+body.dark-mode .report-item:hover {
+  background: #4b5e7a;
+}
+
+body.dark-mode .report-title {
+  color: #f1f5f9;
+}
+
+body.dark-mode .remove-report-btn {
+  background: #f87171;
+}
+
+body.dark-mode .remove-report-btn:hover {
+  background: #ef4444;
+}
+
+body.dark-mode #preview-presentation-btn {
+  background: #60a5fa;
+}
+
+body.dark-mode #preview-presentation-btn:disabled {
+  background: #64748b;
+}
+
+body.dark-mode #preview-presentation-btn:hover:not(:disabled) {
+  background: #2563eb;
+}
+
+body.dark-mode .report-preview h3 {
+  color: #60a5fa;
+  border-bottom-color: #60a5fa;
+}
