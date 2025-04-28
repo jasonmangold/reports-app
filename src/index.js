@@ -45,6 +45,17 @@ function loadClientData() {
   }
 }
 
+// Load selectedReports from localStorage if available
+function loadSelectedReports() {
+  const savedReports = localStorage.getItem('selectedReports');
+  if (savedReports) {
+    selectedReports = JSON.parse(savedReports);
+    reportCount = selectedReports.length;
+    presentationCount.textContent = reportCount;
+    presentationCount.classList.toggle('active', reportCount > 0);
+  }
+}
+
 // Save clientData to localStorage
 function saveClientData() {
   localStorage.setItem('clientData', JSON.stringify(clientData));
@@ -95,7 +106,8 @@ const analysisTopicsList = [
 document.addEventListener('DOMContentLoaded', () => {
   try {
     console.log('Initializing page...');
-    loadClientData(); // Load saved data
+    loadClientData();
+    loadSelectedReports();
     console.log('Chart.js available:', typeof Chart !== 'undefined');
     console.log('chartCanvas:', document.getElementById('analysis-chart'));
     populateAnalysisTopics();
@@ -128,7 +140,7 @@ function populateAnalysisTopics() {
 
     document.querySelectorAll('.topic-btn').forEach(btn => {
       btn.addEventListener('click', () => {
-        document.querySelectorAll('.topic-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.topic-btn').forEach(b => b.classList.remove('active')));
         btn.classList.add('active');
         currentAnalysis = btn.dataset.analysis;
         updateTabs(currentAnalysis);
@@ -810,6 +822,7 @@ function toggleReportSelection(reportId, reportTitle) {
       selectedReports.push({ id: reportId, title: reportTitle, order: selectedReports.length });
       reportCount++;
     }
+    localStorage.setItem('selectedReports', JSON.stringify(selectedReports));
     presentationCount.textContent = reportCount;
     presentationCount.classList.toggle('active', reportCount > 0);
     console.log('Selected reports:', selectedReports);
@@ -839,3 +852,6 @@ exportGraphBtn?.addEventListener('click', () => {
     console.error('Error in exportGraph:', error);
   }
 });
+
+// Export functions for use in other modules
+export { formatCurrency, getAge };
