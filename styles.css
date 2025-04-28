@@ -1434,6 +1434,8 @@ body.dark-mode .report-preview h3 {
 }
 
 .analysis-workspace.client-profile-active .client-inputs {
-  max-width: 100%;
-  width: 100%;
+  flex: 1; /* Allow it to grow and fill the container */
+  max-width: 100%; /* Ensure no max-width constraint */
+  width: 100%; /* Set width to 100% */
+  min-width: 0; /* Override min-width to allow full flexibility */
 }
