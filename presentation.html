@@ -7,6 +7,8 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
   <link rel="stylesheet" href="styles.css">
+  <!-- Include Chart.js for rendering charts -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
   <!-- Include jsPDF for PDF generation -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <!-- Include html2canvas for rendering charts to PDF -->
@@ -51,7 +53,7 @@
     <div class="modal-content">
       <div class="modal-header">
         <h2>Presentation Preview</h2>
-        <span class="close" id="close-pdf-modal">&times;</span>
+        <span class="close" id="close-pdf-modal">×</span>
       </div>
       <div class="modal-body" id="pdf-preview-content">
         <!-- PDF content will be rendered here -->
