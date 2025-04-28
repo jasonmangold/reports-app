@@ -38,6 +38,11 @@ export const clientProfileTabs = [
           <label>Interest & Dividends ($/mo): <input type="number" id="c2-interest-dividends" min="0" step="100" placeholder="800"></label>
         </div>
 
+        <h4>Income Needs</h4>
+        <div class="income-needs">
+          <label>Monthly Income Needs ($): <input type="number" id="monthly-income" min="0" step="100" placeholder="5000"></label>
+        </div>
+
         <h4>Assets</h4>
         <div id="c1-accounts">
           <h5>Client 1 Accounts</h5>
@@ -104,6 +109,14 @@ export const clientProfileTabs = [
           <label>Life Insurance ($): <input type="number" id="c2-life-insurance" min="0" step="1000" placeholder="0"></label>
           <label>Disability Insurance ($): <input type="number" id="c2-disability-insurance" min="0" step="1000" placeholder="0"></label>
           <label>Long-Term Care ($): <input type="number" id="c2-long-term-care" min="0" step="1000" placeholder="0"></label>
+        </div>
+
+        <h4>Savings and Expenses</h4>
+        <div class="savings-expenses">
+          <label>Household Expenses ($/mo): <input type="number" id="household-expenses" min="0" step="100" placeholder="3000"></label>
+          <label>Taxes ($/mo): <input type="number" id="taxes" min="0" step="100" placeholder="1000"></label>
+          <label>Other Expenses ($/mo): <input type="number" id="other-expenses" min="0" step="100" placeholder="500"></label>
+          <label>Monthly Savings ($): <input type="number" id="monthly-savings" min="0" step="100" placeholder="2000"></label>
         </div>
 
         <h4>Assumptions</h4>
