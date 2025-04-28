@@ -1,6 +1,7 @@
 import { retirementAccumulationTabs, updateRetirementGraph, updateRetirementOutputs, setupAgeDisplayListeners } from './retirementAccumulation.js';
 import { personalFinanceTabs, updatePersonalFinanceGraph, updatePersonalFinanceOutputs } from './personalFinance.js';
 import { summaryTabs, updateSummaryOutputs } from './summary.js';
+import { clientProfileTabs } from './clientProfile.js';
 
 // Client data structure with default values
 let clientData = {
@@ -8,13 +9,15 @@ let clientData = {
     personal: { name: "John Doe", dob: "1970-01-01", retirementAge: "65" },
     incomeSources: { employment: "50000", socialSecurity: "2000", other: "500", interestDividends: "1000" },
     accounts: [{ name: "401(k)", balance: "100000", contribution: "10000", employerMatch: "3", ror: "6" }],
-    other: { assets: [{ name: "Rental Property", balance: "200000", ror: "4", debt: "50000" }] }
+    other: { assets: [{ name: "Rental Property", balance: "200000", ror: "4", debt: "50000" }] },
+    insurance: { lifeInsurance: "0", disabilityInsurance: "0", longTermCare: "0" }
   },
   client2: {
     personal: { name: "Jane Doe", dob: "1972-01-01", retirementAge: "65" },
     incomeSources: { employment: "40000", socialSecurity: "1500", other: "300", interestDividends: "800" },
     accounts: [{ name: "IRA", balance: "80000", contribution: "8000", employerMatch: "0", ror: "5" }],
-    other: { assets: [] }
+    other: { assets: [] },
+    insurance: { lifeInsurance: "0", disabilityInsurance: "0", longTermCare: "0" }
   },
   isMarried: false,
   incomeNeeds: { monthly: "5000" },
@@ -83,6 +86,7 @@ let chartInstance = null;
 
 // Analysis topics list
 const analysisTopicsList = [
+  { id: 'client-profile', label: 'Client Profile' },
   { id: 'summary', label: 'Summary' },
   { id: 'education-funding', label: 'Education Funding' },
   { id: 'survivor-needs', label: 'Survivor Needs' },
@@ -103,7 +107,7 @@ const analysisTopicsList = [
 ];
 
 // Initialize on page load
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventOnce('DOMContentLoaded', () => {
   try {
     console.log('Initializing page...');
     loadClientData();
@@ -164,6 +168,7 @@ function updateTabs(analysis) {
     const config = analysis === 'retirement-accumulation' ? retirementAccumulationTabs :
                   analysis === 'personal-finance' ? personalFinanceTabs :
                   analysis === 'summary' ? summaryTabs :
+                  analysis === 'client-profile' ? clientProfileTabs :
                   retirementAccumulationTabs; // Default to retirement-accumulation
 
     config.forEach((tab, index) => {
@@ -192,7 +197,7 @@ function updateTabs(analysis) {
 
     setupTabSwitching();
     setupAddButtons();
-    if (analysis === 'retirement-accumulation') {
+    if (analysis === 'retirement-accumulation' || analysis === 'client-profile') {
       setupAgeDisplayListeners(getAge);
     }
   } catch (error) {
@@ -235,6 +240,12 @@ function populateInputFields() {
     setInputValue('cash', clientData.other.cash, 'Cash');
     setInputValue('residence-mortgage', clientData.other.residenceMortgage, 'Residence/Mortgage');
     setInputValue('other-debt', clientData.other.otherDebt, 'Other Debt');
+    setInputValue('c1-life-insurance', clientData.client1.insurance.lifeInsurance, 'Client 1 Life Insurance');
+    setInputValue('c2-life-insurance', clientData.client2.insurance.lifeInsurance, 'Client 2 Life Insurance');
+    setInputValue('c1-disability-insurance', clientData.client1.insurance.disabilityInsurance, 'Client 1 Disability Insurance');
+    setInputValue('c2-disability-insurance', clientData.client2.insurance.disabilityInsurance, 'Client 2 Disability Insurance');
+    setInputValue('c1-long-term-care', clientData.client1.insurance.longTermCare, 'Client 1 Long-Term Care');
+    setInputValue('c2-long-term-care', clientData.client2.insurance.longTermCare, 'Client 2 Long-Term Care');
 
     ['c1', 'c2'].forEach(client => {
       const clientKey = client === 'c1' ? 'client1' : 'client2';
@@ -329,7 +340,7 @@ function setInputValue(id, value, label, property = 'value') {
   }
 }
 
-// Tab switching
+// Tab проблему
 function setupTabSwitching() {
   try {
     inputTabs.querySelectorAll('.tab-btn').forEach(button => {
@@ -348,7 +359,7 @@ function tabClickHandler() {
     inputContent.querySelectorAll('.tab-content').forEach(content => {
       content.style.display = content.id === this.dataset.tab ? 'block' : 'none';
     });
-    if (currentAnalysis === 'retirement-accumulation') {
+    if (currentAnalysis === 'retirement-accumulation' || currentAnalysis === 'client-profile') {
       setupAgeDisplayListeners(getAge);
     }
     updateOutputs();
@@ -363,7 +374,7 @@ function setupEventDelegation() {
   try {
     let graphTimeout;
     document.addEventListener('input', (e) => {
-      if (e.target.closest('#client-input-form')) {
+７      if (e.target.closest('#client-input-form')) {
         isTyping = true;
         const activeElement = document.activeElement;
         console.log(`Input event on ${e.target.id}: ${e.target.value}`);
@@ -387,7 +398,7 @@ function setupEventDelegation() {
         updateOutputs();
         setTimeout(updateGraph, 100);
         setupOutputTabSwitching();
-        if (currentAnalysis === 'retirement-accumulation') {
+        if (currentAnalysis === 'retirement-accumulation' || currentAnalysis === 'client-profile') {
           setupAgeDisplayListeners(getAge);
         }
       }
@@ -465,7 +476,7 @@ function addAccountHandler(e) {
     updateOutputs();
     setTimeout(updateGraph, 100);
     setupOutputTabSwitching();
-    if (currentAnalysis === 'retirement-accumulation') {
+    if (currentAnalysis === 'retirement-accumulation' || currentAnalysis === 'client-profile') {
       setupAgeDisplayListeners(getAge);
     }
   } catch (error) {
@@ -494,7 +505,7 @@ function addAssetHandler(e) {
     updateOutputs();
     setTimeout(updateGraph, 100);
     setupOutputTabSwitching();
-    if (currentAnalysis === 'retirement-accumulation') {
+    if (currentAnalysis === 'retirement-accumulation' || currentAnalysis === 'client-profile') {
       setupAgeDisplayListeners(getAge);
     }
   } catch (error) {
@@ -608,6 +619,14 @@ function updateClientData(e) {
         clientData[clientKey].incomeSources.socialSecurity = value;
       } else if (input.id === `${prefix}-other-income`) {
         clientData[clientKey].incomeSources.other = value;
+      } else if (input.id === `${prefix}-interest-dividends`) {
+        clientData[clientKey].incomeSources.interestDividends = value;
+      } else if (input.id === `${prefix}-life-insurance`) {
+        clientData[clientKey].insurance.lifeInsurance = value;
+      } else if (input.id === `${prefix}-disability-insurance`) {
+        clientData[clientKey].insurance.disabilityInsurance = value;
+      } else if (input.id === `${prefix}-long-term-care`) {
+        clientData[clientKey].insurance.longTermCare = value;
       } else if (input.id.startsWith(`${prefix}-account-`)) {
         const [, , index, field] = input.id.split('-');
         clientData[clientKey].accounts[parseInt(index)] = {
@@ -721,7 +740,7 @@ function updateGraph() {
       console.log('updatePersonalFinanceGraph returned chartInstance:', chartInstance);
     } else {
       console.warn(`No graph rendering for analysis type: ${currentAnalysis}`);
-      chartCanvas.style.display = 'none'; // Hide the canvas for Summary
+      chartCanvas.style.display = 'none'; // Hide the canvas for Summary and Client Profile
     }
 
     if (!chartInstance) {
@@ -755,6 +774,8 @@ function updateOutputs() {
       updatePersonalFinanceOutputs(analysisOutputs, clientData, formatCurrency, selectedReports, Chart);
     } else if (currentAnalysis === 'summary') {
       updateSummaryOutputs(analysisOutputs, clientData, formatCurrency, selectedReports, Chart, getAge);
+    } else if (currentAnalysis === 'client-profile') {
+      analysisOutputs.innerHTML = `<p class="output-card">Client Profile data saved. No graphical output available.</p>`;
     } else {
       analysisOutputs.innerHTML = `<p class="output-card">Outputs not available for ${currentAnalysis}.</p>`;
     }
@@ -770,9 +791,9 @@ function updateOutputs() {
 function setupOutputTabSwitching() {
   try {
     // Only apply tab switching for analyses that use tabs (e.g., Retirement Accumulation)
-    // Skip for analyses that use dropdowns (e.g., Personal Finance, Summary)
-    if (currentAnalysis === 'personal-finance' || currentAnalysis === 'summary') {
-      console.log(`Skipping setupOutputTabSwitching for ${currentAnalysis} (uses dropdown)`);
+    // Skip for analyses that use dropdowns (e.g., Personal Finance, Summary) or no outputs (Client Profile)
+    if (currentAnalysis === 'personal-finance' || currentAnalysis === 'summary' || currentAnalysis === 'client-profile') {
+      console.log(`Skipping setupOutputTabSwitching for ${currentAnalysis}`);
       return;
     }
 
