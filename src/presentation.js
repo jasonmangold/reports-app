@@ -191,10 +191,9 @@ async function generatePresentationPreview() {
       let analysisType = parts[0];
       let outputType = parts.length > 1 ? parts[parts.length - 1] : '';
 
-      // Map report-retirement-fact-finder to retirement-accumulation
       if (report.id.startsWith('report-retirement-fact-finder')) {
         analysisType = 'retirement-accumulation';
-        outputType = 'fact-finder'; // Adjust as needed
+        outputType = 'fact-finder';
       } else if (report.id.includes('retirement')) {
         analysisType = 'retirement-accumulation';
       } else if (report.id.includes('personal-finance')) {
@@ -263,14 +262,15 @@ async function renderRetirementReport(container, outputType, title) {
     canvas.style.width = '600px';
     canvas.style.height = '400px';
     container.appendChild(canvas);
-    const chartInstance = await updateRetirementGraph(canvas, clientData, Chart, getAge);
+    const chartInstance = await updateRetirementGraph(canvas, clientData, window.Chart, getAge);
     if (!chartInstance) {
       container.innerHTML += '<p>Failed to render chart.</p>';
     }
     await new Promise(resolve => setTimeout(resolve, 1000));
     return chartInstance;
   } else {
-    updateRetirementOutputs(container, clientData, formatCurrency, getAge, selectedReports, Chart);
+    // Pass window.Chart to ensure it's available
+    updateRetirementOutputs(container, clientData, formatCurrency, getAge, selectedReports, window.Chart);
     if (!container.innerHTML.includes('output-card') && !container.innerHTML.includes('output-table')) {
       container.innerHTML += '<p>No retirement data available.</p>';
     }
@@ -287,14 +287,14 @@ async function renderPersonalFinanceReport(container, outputType, title) {
     canvas.style.width = '600px';
     canvas.style.height = '400px';
     container.appendChild(canvas);
-    const chartInstance = await updatePersonalFinanceGraph(canvas, clientData, Chart);
+    const chartInstance = await updatePersonalFinanceGraph(canvas, clientData, window.Chart);
     if (!chartInstance) {
       container.innerHTML += '<p>Failed to render chart.</p>';
     }
     await new Promise(resolve => setTimeout(resolve, 1000));
     return chartInstance;
   } else {
-    updatePersonalFinanceOutputs(container, clientData, formatCurrency, selectedReports, Chart);
+    updatePersonalFinanceOutputs(container, clientData, formatCurrency, selectedReports, window.Chart);
     if (!container.innerHTML.includes('output-card') && !container.innerHTML.includes('output-table')) {
       container.innerHTML += '<p>No personal finance data available.</p>';
     }
@@ -305,7 +305,7 @@ async function renderPersonalFinanceReport(container, outputType, title) {
 async function renderSummaryReport(container, outputType, title) {
   container.innerHTML = `<h3>${title}</h3>`;
   console.log(`Rendering summary report, outputType: ${outputType}`);
-  updateSummaryOutputs(container, clientData, formatCurrency, selectedReports, Chart, getAge);
+  updateSummaryOutputs(container, clientData, formatCurrency, selectedReports, window.Chart, getAge);
   if (!container.innerHTML.includes('output-card') && !container.innerHTML.includes('output-table')) {
     container.innerHTML += '<p>No summary data available.</p>';
   }
