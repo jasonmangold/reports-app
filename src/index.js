@@ -41,30 +41,76 @@ let clientData = {
 
 // Load clientData from localStorage if available
 function loadClientData() {
-  const savedData = localStorage.getItem('clientData');
-  if (savedData) {
-    clientData = JSON.parse(savedData);
-    clientData.client1.insurance = clientData.client1.insurance || { lifeInsurance: "0", disabilityInsurance: "0", longTermCare: "0" };
-    clientData.client2.insurance = clientData.client2.insurance || { lifeInsurance: "0", disabilityInsurance: "0", longTermCare: "0" };
-    console.log('Loaded clientData from localStorage:', clientData);
+  try {
+    const savedData = localStorage.getItem('clientData');
+    if (savedData) {
+      const parsedData = JSON.parse(savedData);
+      // Validate that parsedData is an object with client1 and client2 as objects
+      if (
+        parsedData &&
+        typeof parsedData === 'object' &&
+        parsedData.client1 &&
+        typeof parsedData.client1 === 'object' &&
+        parsedData.client2 &&
+        typeof parsedData.client2 === 'object'
+      ) {
+        clientData = parsedData;
+        // Ensure insurance objects exist
+        clientData.client1.insurance = clientData.client1.insurance && typeof clientData.client1.insurance === 'object'
+          ? clientData.client1.insurance
+          : { lifeInsurance: "0", disabilityInsurance: "0", longTermCare: "0" };
+        clientData.client2.insurance = clientData.client2.insurance && typeof clientData.client2.insurance === 'object'
+          ? clientData.client2.insurance
+          : { lifeInsurance: "0", disabilityInsurance: "0", longTermCare: "0" };
+        console.log('Loaded clientData from localStorage:', clientData);
+      } else {
+        console.warn('Invalid clientData structure in localStorage. Using default clientData.');
+      }
+    } else {
+      console.log('No clientData in localStorage. Using default clientData.');
+    }
+  } catch (error) {
+    console.error('Error parsing clientData from localStorage:', error);
+    console.warn('Using default clientData.');
   }
 }
 
 // Load selectedReports from localStorage if available
 function loadSelectedReports() {
-  const savedReports = localStorage.getItem('selectedReports');
-  if (savedReports) {
-    selectedReports = JSON.parse(savedReports);
-    reportCount = selectedReports.length;
-    presentationCount?.textContent = reportCount;
-    presentationCount?.classList.toggle('active', reportCount > 0);
+  try {
+    const savedReports = localStorage.getItem('selectedReports');
+    if (savedReports) {
+      selectedReports = JSON.parse(savedReports);
+      reportCount = selectedReports.length;
+      // Check if presentationCount exists before updating
+      if (presentationCount) {
+        presentationCount.textContent = reportCount;
+        presentationCount.classList.toggle('active', reportCount > 0);
+      } else {
+        console.warn('Element #presentation-count not found. Skipping presentation count update.');
+      }
+    }
+  } catch (error) {
+    console.error('Error parsing selectedReports from localStorage:', error);
+    selectedReports = [];
+    reportCount = 0;
+    if (presentationCount) {
+      presentationCount.textContent = reportCount;
+      presentationCount.classList.toggle('active', reportCount > 0);
+    } else {
+      console.warn('Element #presentation-count not found. Skipping presentation count update.');
+    }
   }
 }
 
 // Save clientData to localStorage
 function saveClientData() {
-  localStorage.setItem('clientData', JSON.stringify(clientData));
-  console.log('Saved clientData to localStorage:', clientData);
+  try {
+    localStorage.setItem('clientData', JSON.stringify(clientData));
+    console.log('Saved clientData to localStorage:', clientData);
+  } catch (error) {
+    console.error('Error saving clientData to localStorage:', error);
+  }
 }
 
 let accountCount = { c1: 1, c2: 1 };
@@ -997,6 +1043,8 @@ function toggleReportSelection(reportId, reportTitle) {
     if (presentationCount) {
       presentationCount.textContent = reportCount;
       presentationCount.classList.toggle('active', reportCount > 0);
+    } else {
+      console.warn('Element #presentation-count not found. Skipping presentation count update.');
     }
     console.log('Selected reports:', selectedReports);
   } catch (error) {
