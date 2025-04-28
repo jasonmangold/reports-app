@@ -35,7 +35,7 @@ let clientData = {
     otherDebt: "5000"
   },
   summary: {
-    topics: ['Retirement Accumulation', 'Debt'] // Default selected topics for testing
+    topics: ['Retirement Accumulation', 'Debt']
   }
 };
 
@@ -44,6 +44,9 @@ function loadClientData() {
   const savedData = localStorage.getItem('clientData');
   if (savedData) {
     clientData = JSON.parse(savedData);
+    // Ensure insurance properties exist
+    clientData.client1.insurance = clientData.client1.insurance || { lifeInsurance: "0", disabilityInsurance: "0", longTermCare: "0" };
+    clientData.client2.insurance = clientData.client2.insurance || { lifeInsurance: "0", disabilityInsurance: "0", longTermCare: "0" };
     console.log('Loaded clientData from localStorage:', clientData);
   }
 }
@@ -120,14 +123,17 @@ document.addEventListener('DOMContentLoaded', () => {
     updateClientFileName();
     setupEventDelegation();
     updateOutputs();
-    // Set initial workspace class based on currentAnalysis
     if (currentAnalysis === 'client-profile') {
       analysisWorkspace.classList.add('client-profile-active');
+      console.log('Added client-profile-active to analysisWorkspace');
     } else {
       analysisWorkspace.classList.remove('client-profile-active');
+      console.log('Removed client-profile-active from analysisWorkspace');
     }
     setTimeout(() => {
-      updateGraph();
+      if (currentAnalysis !== 'client-profile') {
+        updateGraph();
+      }
       setupOutputTabSwitching();
     }, 100);
   } catch (error) {
@@ -154,15 +160,18 @@ function populateAnalysisTopics() {
         document.querySelectorAll('.topic-btn').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
         currentAnalysis = btn.dataset.analysis;
-        // Toggle client-profile-active class based on currentAnalysis
         if (currentAnalysis === 'client-profile') {
           analysisWorkspace.classList.add('client-profile-active');
+          console.log('Added client-profile-active to analysisWorkspace');
         } else {
           analysisWorkspace.classList.remove('client-profile-active');
+          console.log('Removed client-profile-active from analysisWorkspace');
         }
         updateTabs(currentAnalysis);
         updateOutputs();
-        setTimeout(updateGraph, 100);
+        if (currentAnalysis !== 'client-profile') {
+          setTimeout(updateGraph, 100);
+        }
         setupOutputTabSwitching();
       });
     });
@@ -182,7 +191,7 @@ function updateTabs(analysis) {
                   analysis === 'personal-finance' ? personalFinanceTabs :
                   analysis === 'summary' ? summaryTabs :
                   analysis === 'client-profile' ? clientProfileTabs :
-                  retirementAccumulationTabs; // Default to retirement-accumulation
+                  retirementAccumulationTabs;
 
     config.forEach((tab, index) => {
       const btn = document.createElement('button');
@@ -376,7 +385,9 @@ function tabClickHandler() {
       setupAgeDisplayListeners(getAge);
     }
     updateOutputs();
-    setTimeout(updateGraph, 100);
+    if (currentAnalysis !== 'client-profile') {
+      setTimeout(updateGraph, 100);
+    }
   } catch (error) {
     console.error('Error in tabClickHandler:', error);
   }
@@ -392,11 +403,13 @@ function setupEventDelegation() {
         const activeElement = document.activeElement;
         console.log(`Input event on ${e.target.id}: ${e.target.value}`);
         updateClientData(e);
-        saveClientData(); // Save data on input
+        saveClientData();
         clearTimeout(graphTimeout);
         graphTimeout = setTimeout(() => {
           updateOutputs();
-          updateGraph();
+          if (currentAnalysis !== 'client-profile') {
+            updateGraph();
+          }
           setupOutputTabSwitching();
           isTyping = false;
           if (activeElement) activeElement.focus();
@@ -409,7 +422,9 @@ function setupEventDelegation() {
         toggleClient2(e);
         saveClientData();
         updateOutputs();
-        setTimeout(updateGraph, 100);
+        if (currentAnalysis !== 'client-profile') {
+          setTimeout(updateGraph, 100);
+        }
         setupOutputTabSwitching();
         if (currentAnalysis === 'retirement-accumulation' || currentAnalysis === 'client-profile') {
           setupAgeDisplayListeners(getAge);
@@ -417,11 +432,10 @@ function setupEventDelegation() {
       }
     });
 
-    // Listen for custom event from checkbox to update report counter
     document.addEventListener('addToPresentationToggle', (e) => {
       const { reportId, reportTitle } = e.detail;
       toggleReportSelection(reportId, reportTitle);
-      updateOutputs(); // Re-render outputs to update checkbox state
+      updateOutputs();
     });
   } catch (error) {
     console.error('Error in setupEventDelegation:', error);
@@ -439,7 +453,9 @@ function toggleClient2(e) {
     if (c2Assets) c2Assets.style.display = e.target.checked ? 'block' : 'none';
     updateClientFileName();
     updateOutputs();
-    setTimeout(updateGraph, 100);
+    if (currentAnalysis !== 'client-profile') {
+      setTimeout(updateGraph, 100);
+    }
     setupOutputTabSwitching();
   } catch (error) {
     console.error('Error in toggleClient2:', error);
@@ -487,7 +503,9 @@ function addAccountHandler(e) {
     populateInputFields();
     saveClientData();
     updateOutputs();
-    setTimeout(updateGraph, 100);
+    if (currentAnalysis !== 'client-profile') {
+      setTimeout(updateGraph, 100);
+    }
     setupOutputTabSwitching();
     if (currentAnalysis === 'retirement-accumulation' || currentAnalysis === 'client-profile') {
       setupAgeDisplayListeners(getAge);
@@ -516,7 +534,9 @@ function addAssetHandler(e) {
     populateInputFields();
     saveClientData();
     updateOutputs();
-    setTimeout(updateGraph, 100);
+    if (currentAnalysis !== 'client-profile') {
+      setTimeout(updateGraph, 100);
+    }
     setupOutputTabSwitching();
     if (currentAnalysis === 'retirement-accumulation' || currentAnalysis === 'client-profile') {
       setupAgeDisplayListeners(getAge);
@@ -545,7 +565,6 @@ function validateClientData() {
   try {
     const errors = [];
 
-    // Check Client 1 personal data
     if (!clientData.client1.personal.name) errors.push("Client 1 name is required.");
     if (!clientData.client1.personal.dob || new Date(clientData.client1.personal.dob) > new Date()) {
       errors.push("Client 1 date of birth is invalid.");
@@ -554,7 +573,6 @@ function validateClientData() {
       errors.push("Client 1 retirement age must be greater than current age.");
     }
 
-    // Check Client 2 if married
     if (clientData.isMarried) {
       if (!clientData.client2.personal.name) errors.push("Client 2 name is required when married.");
       if (!clientData.client2.personal.dob || new Date(clientData.client2.personal.dob) > new Date()) {
@@ -565,7 +583,6 @@ function validateClientData() {
       }
     }
 
-    // Check income needs and assumptions
     if (!clientData.incomeNeeds.monthly || clientData.incomeNeeds.monthly <= 0) {
       errors.push("Monthly income needs must be a positive number.");
     }
@@ -579,7 +596,6 @@ function validateClientData() {
       errors.push("Rate of return in retirement must be a non-negative number.");
     }
 
-    // Check accounts
     ['client1', 'client2'].forEach((clientKey, idx) => {
       const client = clientKey === 'client1' || clientData.isMarried ? clientData[clientKey].accounts : [];
       client.forEach((account, i) => {
@@ -593,7 +609,6 @@ function validateClientData() {
       });
     });
 
-    // Check Summary topics (if Summary tab is active)
     if (currentAnalysis === 'summary') {
       if (!clientData.summary?.topics || clientData.summary.topics.length === 0) {
         errors.push("At least one topic must be selected for Financial Fitness Score.");
@@ -753,13 +768,13 @@ function updateGraph() {
       console.log('updatePersonalFinanceGraph returned chartInstance:', chartInstance);
     } else {
       console.warn(`No graph rendering for analysis type: ${currentAnalysis}`);
-      chartCanvas.style.display = 'none'; // Hide the canvas for Summary and Client Profile
+      chartCanvas.style.display = 'none';
     }
 
     if (!chartInstance) {
       console.warn('No chart instance created');
     } else {
-      chartCanvas.style.display = 'block'; // Show the canvas if a chart is created
+      chartCanvas.style.display = 'block';
     }
   } catch (error) {
     console.error('Error in updateGraph:', error);
@@ -773,11 +788,10 @@ function updateOutputs() {
     const validationError = validateClientData();
     if (validationError) {
       analysisOutputs.innerHTML = `<p class="output-error">${validationError}</p>`;
-      if (outputTabsContainer) outputTabsContainer.innerHTML = ''; // Clear dropdown
+      if (outputTabsContainer) outputTabsContainer.innerHTML = '';
       return;
     }
 
-    // Clear previous output state
     analysisOutputs.innerHTML = '';
     if (outputTabsContainer) outputTabsContainer.innerHTML = '';
 
@@ -788,7 +802,7 @@ function updateOutputs() {
     } else if (currentAnalysis === 'summary') {
       updateSummaryOutputs(analysisOutputs, clientData, formatCurrency, selectedReports, Chart, getAge);
     } else if (currentAnalysis === 'client-profile') {
-      analysisOutputs.innerHTML = `<p class="output-card">Client Profile data saved. No graphical output available.</p>`;
+      analysisOutputs.innerHTML = '';
     } else {
       analysisOutputs.innerHTML = `<p class="output-card">Outputs not available for ${currentAnalysis}.</p>`;
     }
@@ -803,8 +817,6 @@ function updateOutputs() {
 // Output tab switching
 function setupOutputTabSwitching() {
   try {
-    // Only apply tab switching for analyses that use tabs (e.g., Retirement Accumulation)
-    // Skip for analyses that use dropdowns (e.g., Personal Finance, Summary) or no outputs (Client Profile)
     if (currentAnalysis === 'personal-finance' || currentAnalysis === 'summary' || currentAnalysis === 'client-profile') {
       console.log(`Skipping setupOutputTabSwitching for ${currentAnalysis}`);
       return;
@@ -868,7 +880,9 @@ function toggleReportSelection(reportId, reportTitle) {
 // Recalculate and export
 recalculateBtn?.addEventListener('click', () => {
   updateOutputs();
-  setTimeout(updateGraph, 100);
+  if (currentAnalysis !== 'client-profile') {
+    setTimeout(updateGraph, 100);
+  }
 });
 
 exportGraphBtn?.addEventListener('click', () => {
