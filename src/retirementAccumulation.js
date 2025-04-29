@@ -78,18 +78,19 @@ export const retirementAccumulationTabs = [
     label: 'Assumptions',
     content: `
       <label>Client 1 Mortality Age: <input type="number" id="c1-mortality-age" min="1" max="120" placeholder="90"></label>
-      <label>Client 2 Mortality Age: <input type="number" id="c2-mortality-age" min="1" max="120" placeholder="90" style="display: ${clientData.isMarried ? 'block' : 'none'};"></label>
+      <label id="c2-mortality-label" style="display: none;">Client 2 Mortality Age: <input type="number" id="c2-mortality-age" min="1" max="120" placeholder="90"></label>
       <label>Inflation (%): <input type="number" id="inflation" min="0" max="100" step="0.1" placeholder="2"></label>
       <label>ROR During Retirement (%): <input type="number" id="ror-retirement" min="0" max="100" step="0.1" placeholder="4"></label>
     `
   }
 ];
 
-// Setup age display listeners for DOB inputs
+// Setup age display listeners for DOB inputs and handle Client 2 mortality input visibility
 export function setupAgeDisplayListeners(getAge) {
   try {
     const dobInputs = document.querySelectorAll('#c1-dob, #c2-dob');
     const isMarriedInput = document.getElementById('is-married');
+    const c2MortalityLabel = document.getElementById('c2-mortality-label');
 
     dobInputs.forEach(input => {
       input.addEventListener('change', () => {
@@ -111,18 +112,18 @@ export function setupAgeDisplayListeners(getAge) {
       }
     });
 
-    if (isMarriedInput) {
+    if (isMarriedInput && c2MortalityLabel) {
       isMarriedInput.addEventListener('change', () => {
+        c2MortalityLabel.style.display = isMarriedInput.checked ? 'block' : 'none';
         const c2Dob = document.getElementById('c2-dob');
-        const c2MortalityInput = document.getElementById('c2-mortality-age');
-        if (c2MortalityInput) {
-          c2MortalityInput.style.display = isMarriedInput.checked ? 'block' : 'none';
-        }
         if (c2Dob && isMarriedInput.checked && c2Dob.value) {
           const event = new Event('change');
           c2Dob.dispatchEvent(event);
         }
       });
+
+      // Trigger initial visibility based on current marital status
+      c2MortalityLabel.style.display = isMarriedInput.checked ? 'block' : 'none';
     }
   } catch (error) {
     console.error('Error in setupAgeDisplayListeners:', error);
@@ -677,7 +678,7 @@ export function updateRetirementOutputs(analysisOutputs, clientData, formatCurre
 
     // Preserve the current dropdown selection
     const select = document.getElementById('output-select');
-    const currentSelection = select ? select.value : 'output-graph';
+    const current sprocketSelection = select ? select.value : 'output-graph';
 
     // Render Dropdown and Checkbox in output-tabs-container
     if (tabContainer) {
