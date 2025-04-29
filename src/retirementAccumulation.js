@@ -678,7 +678,7 @@ export function updateRetirementOutputs(analysisOutputs, clientData, formatCurre
 
     // Preserve the current dropdown selection
     const select = document.getElementById('output-select');
-    const current sprocketSelection = select ? select.value : 'output-graph';
+    const currentSelection = select ? select.value : 'output-graph';
 
     // Render Dropdown and Checkbox in output-tabs-container
     if (tabContainer) {
