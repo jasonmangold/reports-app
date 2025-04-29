@@ -818,7 +818,7 @@ body.dark-mode .breadcrumb span {
 }
 
 .timeline-table {
-  width: 100%;
+  width: 200%;
   border-collapse: collapse;
   margin: 10px 0;
 }
