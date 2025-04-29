@@ -675,7 +675,8 @@ export function updateRetirementOutputs(analysisOutputs, clientData, formatCurre
             <thead>
               <tr>
                 <th>Age</th>
-                <th>Need Income</th>
+                <th>Need</th>
+                <th>Income</th>
                 <th>Social Security</th>
                 <th>Withdrawal</th>
                 <th>Earnings</th>
