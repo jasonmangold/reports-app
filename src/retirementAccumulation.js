@@ -268,7 +268,7 @@ function calculateRetirementIncome(clientData, getAge) {
         const availableBalance = Math.round(balance + earnings);
         if (availableBalance >= remainingNeed) {
           withdrawal = Math.round(remainingNeed);
-          balance = Math.round(availableBalance - remainingNeed);
+          balance = Math.round(availableBalance - withdrawal);
         } else {
           withdrawal = availableBalance > 0 ? Math.round(availableBalance) : 0;
           shortfall = Math.round(remainingNeed - withdrawal);
@@ -671,28 +671,58 @@ export function updateRetirementOutputs(analysisOutputs, clientData, formatCurre
       <div class="output-tab-content ${currentSelection === 'output-timeline' ? 'active' : ''}" id="output-timeline" style="display: ${currentSelection === 'output-timeline' ? 'block' : 'none'};">
         <div class="output-card">
           <h3>Retirement Income Timeline</h3>
+          <style>
+            .output-table {
+              width: 100%;
+              border-collapse: collapse;
+              margin-top: 1rem;
+            }
+            .output-table th, .output-table td {
+              border: 1px solid #ddd;
+              padding: 8px;
+              text-align: right;
+            }
+            .output-table th {
+              background-color: #f4f4f4;
+              font-weight: bold;
+            }
+            .output-table tbody tr:nth-child(even) {
+              background-color: #f9f9f9;
+            }
+            .output-table tbody tr:hover {
+              background-color: #f1f1f1;
+            }
+            @media (max-width: 600px) {
+              .output-table {
+                font-size: 0.9em;
+              }
+              .output-table th, .output-table td {
+                padding: 6px;
+              }
+            }
+          </style>
           <table class="output-table">
             <thead>
               <tr>
                 <th>Age</th>
-                <th>Need</th>
-                <th>Income</th>
+                <th>Need Income</th>
                 <th>Social Security</th>
                 <th>Withdrawal</th>
-                <th>Shortfall</th>
+                <th>Earnings</th>
                 <th>Balance</th>
+                <th>Shortfall</th>
               </tr>
             </thead>
             <tbody>
-              ${incomeData.labels.slice(1).map((age, i) => `
+              ${incomeData.labels.map((age, i) => `
                 <tr>
                   <td>${age}</td>
-                  <td>${formatCurrency(incomeData.needData[i + 1])}</td>
-                  <td>${formatCurrency(incomeData.incomeData[i + 1])}</td>
-                  <td>${formatCurrency(incomeData.socialSecurityData[i + 1])}</td>
-                  <td>${formatCurrency(incomeData.withdrawalData[i + 1])}</td>
-                  <td>${formatCurrency(incomeData.shortfallData[i + 1])}</td>
-                  <td>${formatCurrency(incomeData.balanceData[i + 1])}</td>
+                  <td>${formatCurrency(incomeData.needData[i])}</td>
+                  <td>${formatCurrency(incomeData.socialSecurityData[i])}</td>
+                  <td>${formatCurrency(incomeData.withdrawalData[i])}</td>
+                  <td>${formatCurrency(incomeData.earningsData[i])}</td>
+                  <td>${formatCurrency(incomeData.balanceData[i])}</td>
+                  <td>${formatCurrency(incomeData.shortfallData[i])}</td>
                 </tr>
               `).join('')}
             </tbody>
