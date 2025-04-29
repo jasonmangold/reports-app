@@ -239,7 +239,7 @@ function calculateRetirementIncome(clientData, getAge) {
       const currentC2Age = currentC1Age - ageDifference;
       // Format age label
       const ageLabel = clientData.isMarried
-        ? `${currentC1Age <= c1MortalityAge ? currentC1Age : '-'}/${currentC2Age <= c2MortalityAge ? currentC2Age : '-'}`
+        ? `${currentC1Age <= c1MortalityAge ? currentC1Age : ''}/${currentC2Age <= c2MortalityAge ? currentC2Age : ''}`
         : `${currentC1Age}`;
       result.labels.push(ageLabel);
 
