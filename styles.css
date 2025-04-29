@@ -1485,7 +1485,90 @@ body.dark-mode .sub-tab-btn {
 body.dark-mode .sub-tab-btn:hover {
   background: #333;
 }
+.client-file {
+  position: relative;
+}
 
+.client-file-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 16px;
+  color: #333;
+}
+
+.client-file-btn:hover {
+  color: #007bff;
+}
+
+.modal {
+  position: absolute;
+  top: 40px; /* Adjust based on header height */
+  left: 0;
+  background-color: #fff;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  z-index: 1000;
+  width: 300px; /* Adjust as needed */
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.modal-content {
+  padding: 15px;
+}
+
+.modal-content h3 {
+  margin: 0 0 10px;
+  font-size: 18px;
+}
+
+.modal-content input {
+  width: 100%;
+  padding: 8px;
+  margin-bottom: 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.modal-content ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.modal-content li {
+  padding: 10px;
+  cursor: pointer;
+  border-bottom: 1px solid #eee;
+}
+
+.modal-content li:hover {
+  background-color: #e0e4e9;
+}
+
+.modal-content li.selected {
+  background-color: #d0e1f9;
+  font-weight: 600;
+}
+
+.modal-content button {
+  margin-top: 10px;
+  padding: 8px 16px;
+  background-color: #007bff;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.modal-content button:hover {
+  background-color: #0056b3;
+}
 body.dark-mode .sub-tab-btn.active {
   color: #66b0ff;
   border-bottom: 2px solid #66b0ff;
