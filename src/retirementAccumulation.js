@@ -675,12 +675,12 @@ export function updateRetirementOutputs(analysisOutputs, clientData, formatCurre
             <thead>
               <tr>
                 <th>Age</th>
-                <th>Need</th>
-                <th>Income</th>
+                <th>Need Income</th>
                 <th>Social Security</th>
                 <th>Withdrawal</th>
-                <th>Shortfall</th>
+                <th>Earnings</th>
                 <th>Balance</th>
+                <th>Shortfall</th>
               </tr>
             </thead>
             <tbody>
@@ -691,8 +691,9 @@ export function updateRetirementOutputs(analysisOutputs, clientData, formatCurre
                   <td>${formatCurrency(incomeData.incomeData[i + 1])}</td>
                   <td>${formatCurrency(incomeData.socialSecurityData[i + 1])}</td>
                   <td>${formatCurrency(incomeData.withdrawalData[i + 1])}</td>
-                  <td>${formatCurrency(incomeData.shortfallData[i + 1])}</td>
+                  <td>${formatCurrency(incomeData.earningsData[i])}</td>
                   <td>${formatCurrency(incomeData.balanceData[i + 1])}</td>
+                  <td>${formatCurrency(incomeData.shortfallData[i + 1])}</td>
                 </tr>
               `).join('')}
             </tbody>
