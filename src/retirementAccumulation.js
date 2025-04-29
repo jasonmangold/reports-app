@@ -152,18 +152,30 @@ function calculateRetirementIncome(clientData, getAge) {
     const c1RetirementAge = parseFloat(clientData.client1.personal.retirementAge) || 65;
     const c2RetirementAge = clientData.isMarried ? parseFloat(clientData.client2.personal.retirementAge) || 65 : c1RetirementAge;
     const startAge = Math.max(c1RetirementAge, c2RetirementAge);
-    const c1MortalityAge = parseFloat(clientData.assumptions.c1MortalityAge) || 90;
-    const c2MortalityAge = clientData.isMarried ? parseFloat(clientData.assumptions.c2MortalityAge) || 90 : c1MortalityAge;
+
+    // Parse mortality ages with stricter validation
+    const c1MortalityAgeRaw = parseFloat(clientData.assumptions.c1MortalityAge);
+    const c2MortalityAgeRaw = clientData.isMarried ? parseFloat(clientData.assumptions.c2MortalityAge) : c1MortalityAgeRaw;
+    const c1MortalityAge = isNaN(c1MortalityAgeRaw) || c1MortalityAgeRaw < c1RetirementAge ? 90 : Math.min(c1MortalityAgeRaw, 120);
+    const c2MortalityAge = isNaN(c2MortalityAgeRaw) || c2MortalityAgeRaw < c2RetirementAge ? 90 : Math.min(c2MortalityAgeRaw, 120);
+    
+    // Debug mortality ages
+    console.log('Parsed Mortality Ages:', { c1MortalityAge, c2MortalityAge, c1MortalityAgeRaw, c2MortalityAgeRaw });
+
     const maxTimelineAge = clientData.isMarried ? Math.max(c1MortalityAge, c2MortalityAge) : c1MortalityAge;
+    console.log('Max Timeline Age:', maxTimelineAge);
+
     const inflation = isNaN(parseFloat(clientData.assumptions.inflation)) ? 0.02 : parseFloat(clientData.assumptions.inflation) / 100;
     const rorRetirement = isNaN(parseFloat(clientData.assumptions.rorRetirement)) ? 0.04 : parseFloat(clientData.assumptions.rorRetirement) / 100;
     let monthlyNeed = parseFloat(clientData.incomeNeeds.monthly) || 5000;
 
     if (!clientData.client1.personal.dob || c1Age >= c1RetirementAge || (clientData.isMarried && (!clientData.client2.personal.dob || c2Age >= c2RetirementAge))) {
-      return result; // Empty result for invalid inputs
+      console.warn('Invalid inputs: Returning empty result');
+      return result;
     }
     if (startAge >= maxTimelineAge) {
-      return result; // Empty result for invalid ages
+      console.warn('Start age >= maxTimelineAge: Returning empty result');
+      return result;
     }
 
     // Adjust monthly need for inflation until retirement with annual compounding
@@ -244,7 +256,7 @@ function calculateRetirementIncome(clientData, getAge) {
       // Format age label
       const ageLabel = clientData.isMarried
         ? `${currentC1Age <= c1MortalityAge ? currentC1Age : ''}/${currentC2Age <= c2MortalityAge ? currentC2Age : ''}`
-        : `${currentC1Age}`;
+        : `${currentC1Age <= c1MortalityAge ? currentC1Age : ''}`;
       result.labels.push(ageLabel);
 
       // Need (inflation-adjusted from retirement start with annual compounding)
@@ -458,8 +470,15 @@ export function updateRetirementOutputs(analysisOutputs, clientData, formatCurre
     const c1RetirementAge = parseFloat(clientData.client1.personal.retirementAge) || 65;
     const c2RetirementAge = clientData.isMarried ? parseFloat(clientData.client2.personal.retirementAge) || 65 : c1RetirementAge;
     const startAge = Math.max(c1RetirementAge, c2RetirementAge);
-    const c1MortalityAge = parseFloat(clientData.assumptions.c1MortalityAge) || 90;
-    const c2MortalityAge = clientData.isMarried ? parseFloat(clientData.assumptions.c2MortalityAge) || 90 : c1MortalityAge;
+    
+    // Parse mortality ages with validation
+    const c1MortalityAgeRaw = parseFloat(clientData.assumptions.c1MortalityAge);
+    const c2MortalityAgeRaw = clientData.isMarried ? parseFloat(clientData.assumptions.c2MortalityAge) : c1MortalityAgeRaw;
+    const c1MortalityAge = isNaN(c1MortalityAgeRaw) || c1MortalityAgeRaw < c1RetirementAge ? 90 : Math.min(c1MortalityAgeRaw, 120);
+    const c2MortalityAge = isNaN(c2MortalityAgeRaw) || c2MortalityAgeRaw < c2RetirementAge ? 90 : Math.min(c2MortalityAgeRaw, 120);
+    
+    console.log('Output Mortality Ages:', { c1MortalityAge, c2MortalityAge });
+
     const maxTimelineAge = clientData.isMarried ? Math.max(c1MortalityAge, c2MortalityAge) : c1MortalityAge;
     const inflation = isNaN(parseFloat(clientData.assumptions.inflation)) ? 0.02 : parseFloat(clientData.assumptions.inflation) / 100;
     const rorRetirement = isNaN(parseFloat(clientData.assumptions.rorRetirement)) ? 0.04 : parseFloat(clientData.assumptions.rorRetirement) / 100;
@@ -632,7 +651,7 @@ export function updateRetirementOutputs(analysisOutputs, clientData, formatCurre
         let tempBalance = incomeData.totalBalance;
         for (let j = 0; j < maxTimelineAge - c1RetirementAge; j++) {
           const currentNeed = monthlyNeed * Math.pow(1 + inflation, j) - monthlySources;
-          tempBalance = tempBalance * Math.pow(1 + mid / 12, 12) - (currentNeed > 0 ? currentNeed * 12 : 0);
+          tempBalance | tempBalance * Math.pow(1 + mid / 12, 12) - (currentNeed > 0 ? currentNeed * 12 : 0);
           if (tempBalance <= 0) break;
         }
         if (tempBalance > 0) high = mid;
