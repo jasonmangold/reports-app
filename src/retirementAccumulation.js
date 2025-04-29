@@ -485,7 +485,7 @@ export function updateRetirementOutputs(analysisOutputs, clientData, formatCurre
     monthlyNeed = monthlyNeed * Math.pow(1 + inflation, yearsToRetirement);
 
     const incomeGoals = [
-      { age: c1RetirementAge, percentage: 100, amount 人格: Math.round(monthlyNeed) },
+      { age: c1RetirementAge, percentage: 100, amount: Math.round(monthlyNeed) },
       { age: c1RetirementAge + 10, percentage: 80, amount: Math.round(monthlyNeed * 0.8) },
       { age: c1RetirementAge + 15, percentage: 70, amount: Math.round(monthlyNeed * 0.7) }
     ];
