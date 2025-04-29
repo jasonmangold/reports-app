@@ -270,10 +270,6 @@ function calculateRetirementIncome(clientData, getAge) {
       const monthlySocialSecurity = socialSecurity / 12;
 
       for (let m = 0; m < 12; m++) {
-        // Monthly earnings (no rounding)
-        const monthlyEarnings = monthlyBalance * monthlyRor;
-        monthlyBalance += monthlyEarnings;
-
         // Monthly withdrawal (no rounding for calculation)
         const monthlyRemainingNeed = monthlyNeedAdjusted - monthlyIncome - monthlySocialSecurity;
         let monthlyWithdrawal = 0;
@@ -286,6 +282,10 @@ function calculateRetirementIncome(clientData, getAge) {
             monthlyBalance = 0;
           }
         }
+
+        // Monthly earnings (calculated after withdrawal, no rounding)
+        const monthlyEarnings = monthlyBalance * monthlyRor;
+        monthlyBalance += monthlyEarnings;
 
         annualEarnings += monthlyEarnings;
         annualWithdrawal += monthlyWithdrawal;
