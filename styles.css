@@ -1629,3 +1629,120 @@ body.dark-mode .sub-tab-btn:hover {
     padding: 8px 16px;
   }
 }
+```css
+/* Existing styles (omitted for brevity, only showing relevant changes/additions) */
+
+/* Ensure graph-outputs and output-card allow full-width content */
+.graph-outputs {
+  flex: 0.65;
+  min-width: 400px;
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  padding: 15px;
+  overflow-y: auto;
+  position: relative;
+  width: 100%; /* Ensure it takes full available width */
+}
+
+.output-card {
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  padding: 20px;
+  transition: transform 0.2s, box-shadow 0.2s;
+  position: relative;
+  width: 100%; /* Ensure full width */
+  max-width: none; /* Remove any max-width constraints */
+}
+
+/* Consolidated output-table styles for Retirement Timeline */
+.output-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 10px 0;
+  table-layout: auto; /* Allow columns to adjust based on content */
+}
+
+.output-table th,
+.output-table td {
+  border: 1px solid #ddd;
+  padding: 8px;
+  text-align: right; /* Right-align for numbers */
+  font-size: 14px;
+}
+
+.output-table th:first-child,
+.output-table td:first-child {
+  text-align: left; /* Left-align the Age column */
+}
+
+.output-table th {
+  background: #f1f5f9;
+  color: #1e293b;
+  font-weight: 600;
+}
+
+.output-table td {
+  color: #475569;
+}
+
+.output-table tbody tr:nth-child(even) {
+  background-color: #f9f9f9;
+}
+
+.output-table tbody tr:hover {
+  background-color: #f1f1f1;
+}
+
+/* Ensure output-timeline container is full-width */
+#output-timeline {
+  width: 100%;
+  max-width: none;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .graph-outputs {
+    flex: 1;
+    min-width: 100%;
+    padding: 10px; /* Reduce padding for smaller screens */
+  }
+
+  .output-card {
+    padding: 15px;
+  }
+
+  .output-table th,
+  .output-table td {
+    font-size: 12px;
+    padding: 6px;
+  }
+
+  .output-table {
+    font-size: 0.9em;
+  }
+}
+
+/* Dark mode adjustments */
+body.dark-mode .graph-outputs,
+body.dark-mode .output-card {
+  background: #334155;
+}
+
+body.dark-mode .output-table th {
+  background: #475569;
+  color: #f1f5f9;
+}
+
+body.dark-mode .output-table td {
+  color: #94a3b8;
+}
+
+body.dark-mode .output-table tbody tr:nth-child(even) {
+  background-color: #3c4b64;
+}
+
+body.dark-mode .output-table tbody tr:hover {
+  background-color: #4b5e7a;
+}
