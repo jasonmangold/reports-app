@@ -21,7 +21,14 @@ let clientData = {
   },
   isMarried: false,
   incomeNeeds: { monthly: "5000" },
-  assumptions: { mortalityAge: "90", inflation: "3", rorRetirement: "4", analysisDate: "2025-04-25" },
+  assumptions: { 
+    mortalityAge: "90", 
+    c1MortalityAge: "90", 
+    c2MortalityAge: "90", 
+    inflation: "3", 
+    rorRetirement: "4", 
+    analysisDate: "2025-04-25" 
+  },
   savingsExpenses: {
     householdExpenses: "3000",
     taxes: "1000",
@@ -52,6 +59,9 @@ function loadClientData() {
     clientData = JSON.parse(savedData);
     clientData.client1.insurance = clientData.client1.insurance || { lifeInsurance: "0", disabilityInsurance: "0", longTermCare: "0" };
     clientData.client2.insurance = clientData.client2.insurance || { lifeInsurance: "0", disabilityInsurance: "0", longTermCare: "0" };
+    // Ensure c1MortalityAge and c2MortalityAge are initialized
+    clientData.assumptions.c1MortalityAge = clientData.assumptions.c1MortalityAge || clientData.assumptions.mortalityAge || "90";
+    clientData.assumptions.c2MortalityAge = clientData.assumptions.c2MortalityAge || clientData.assumptions.mortalityAge || "90";
     console.log('Loaded clientData from localStorage:', clientData);
   }
 }
@@ -370,6 +380,8 @@ function populateInputFields() {
     setIfExists('c2-retirement-age', clientData.client2.personal.retirementAge, 'Client 2 Retirement Age');
     setIfExists('monthly-income', clientData.incomeNeeds.monthly, 'Monthly Income');
     setIfExists('mortality-age', clientData.assumptions.mortalityAge, 'Mortality Age');
+    setIfExists('c1-mortality-age', clientData.assumptions.c1MortalityAge, 'Client 1 Mortality Age');
+    setIfExists('c2-mortality-age', clientData.assumptions.c2MortalityAge, 'Client 2 Mortality Age');
     setIfExists('inflation', clientData.assumptions.inflation, 'Inflation');
     setIfExists('ror-retirement', clientData.assumptions.rorRetirement, 'ROR Retirement');
     setIfExists('c1-interest-dividends', clientData.client1.incomeSources.interestDividends, 'Client 1 Interest and Dividends');
@@ -765,8 +777,11 @@ function validateClientData() {
     if (!clientData.incomeNeeds.monthly || clientData.incomeNeeds.monthly <= 0) {
       errors.push("Monthly income needs must be a positive number.");
     }
-    if (!clientData.assumptions.mortalityAge || clientData.assumptions.mortalityAge < 0) {
-      errors.push("Mortality age must be a positive number.");
+    if (!clientData.assumptions.c1MortalityAge || clientData.assumptions.c1MortalityAge < 0) {
+      errors.push("Client 1 mortality age must be a positive number.");
+    }
+    if (clientData.isMarried && (!clientData.assumptions.c2MortalityAge || clientData.assumptions.c2MortalityAge < 0)) {
+      errors.push("Client 2 mortality age must be a positive number.");
     }
     if (!clientData.assumptions.inflation || clientData.assumptions.inflation < 0) {
       errors.push("Inflation rate must be a non-negative number.");
@@ -834,6 +849,8 @@ function updateClientData(e) {
         clientData[clientKey].insurance.disabilityInsurance = value;
       } else if (input.id === `${prefix}-long-term-care`) {
         clientData[clientKey].insurance.longTermCare = value;
+      } else if (input.id === `${prefix}-mortality-age`) {
+        clientData.assumptions[`${prefix}MortalityAge`] = value;
       } else if (input.id.startsWith(`${prefix}-account-`)) {
         const [, , index, field] = input.id.split('-');
         clientData[clientKey].accounts[parseInt(index)] = {
