@@ -659,7 +659,7 @@ body.dark-mode .breadcrumb span {
 
 .input-tabs {
   width: 130px;
-  display: flex;
+  display: Guinflex;
   flex-direction: column;
   gap: 8px;
   margin-right: 10px;
@@ -781,6 +781,10 @@ body.dark-mode .breadcrumb span {
   position: relative;
 }
 
+#output-timeline .graph-outputs {
+  padding: 10px; /* Slightly reduce padding for timeline */
+}
+
 .output-tabs {
   display: flex;
   justify-content: flex-end;
@@ -819,26 +823,29 @@ body.dark-mode .breadcrumb span {
 
 .timeline-table {
   width: 100%;
+  max-width: 100%;
+  table-layout: fixed;
   border-collapse: collapse;
-  margin: 10px 0;
+  min-width: 600px; /* Prevent excessive shrinking */
 }
 
 .timeline-table th,
 .timeline-table td {
   border: 1px solid #ddd;
   padding: 8px;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.timeline-table th:first-child,
+.timeline-table td:first-child {
   text-align: left;
-  font-size: 14px;
+  width: 20%;
 }
 
-.timeline-table th {
-  background: #f1f5f9;
-  color: #1e293b;
-  font-weight: 600;
-}
-
-.timeline-table td {
-  color: #475569;
+.timeline-table th:not(:first-child),
+.timeline-table td:not(:first-child) {
+  width: calc(80% / 7);
 }
 
 .alternatives-list {
@@ -1049,6 +1056,11 @@ body.dark-mode .alternatives-list li strong {
   position: relative;
 }
 
+#output-timeline .output-card {
+  padding: 8px; /* Reduce padding for timeline */
+  overflow-x: auto; /* Enable horizontal scrolling if needed */
+}
+
 .output-card:hover {
   transform: translateY(-5px);
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
@@ -1078,6 +1090,8 @@ body.dark-mode .alternatives-list li strong {
 
 .output-table {
   width: 100%;
+  max-width: 100%;
+  table-layout: fixed;
   border-collapse: collapse;
   margin: 10px 0;
 }
@@ -1161,6 +1175,10 @@ body.dark-mode .alternatives-list li strong {
     padding: 15px;
   }
 
+  #output-timeline .output-card {
+    padding: 6px;
+  }
+
   .output-card h3 {
     font-size: 16px;
   }
@@ -1171,6 +1189,10 @@ body.dark-mode .alternatives-list li strong {
   .timeline-table td {
     font-size: 12px;
     padding: 6px;
+  }
+
+  .timeline-table {
+    min-width: 100%; /* Fit container on small screens */
   }
 
   .results-highlight {
@@ -1210,29 +1232,12 @@ body.dark-mode .graph-placeholder {
   color: #555;
 }
 
-.timeline-table {
-  width: 100%;
-  border-collapse: collapse;
-}
-
-.timeline-table th, .timeline-table td {
-  border: 1px solid #ddd;
-  padding: 8px;
-  text-align: right;
-}
-
-.timeline-table th:first-child, .timeline-table td:first-child {
-  text-align: left;
-}
-
 .output-dropdown { margin-bottom: 16px; }
 .output-select { padding: 8px; font-size: 16px; width: 100%; max-width: 300px; }
 .output-tab-content { display: none; }
 .output-tab-content:first-child { display: block; }
 .output-error { color: red; font-style: italic; }
 .output-card { padding: 16px; border: 1px solid #ccc; border-radius: 4px; }
-.output-table { width: 100%; border-collapse: collapse; margin-top: 8px; }
-.output-table th, .output-table td { border: 1px solid #ddd; padding: 8px; text-align: left; }
 canvas#analysis-chart { display: block; width: 600px; height: 400px; max-height: 400px; }
 
 .logo-img {
@@ -1404,7 +1409,6 @@ body.dark-mode .report-preview h3 {
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
   display: block;
   visibility: visible;
-  opacity: 1;
 }
 
 .report-preview {
@@ -1419,7 +1423,7 @@ body.dark-mode .report-preview h3 {
   max-width: 100%;
   height: auto;
   display: block;
-  visibility: visible;
+  visibility: auto;
 }
 
 /* Ensure text and tables are visible */
