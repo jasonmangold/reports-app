@@ -39,6 +39,12 @@ let clientData = {
   }
 };
 
+// List of clients for the modal (can be expanded or fetched dynamically)
+const clients = [
+  { id: 1, name: "Jason Mangold", data: clientData.client1 },
+  { id: 2, name: "Jane Doe", data: clientData.client2 }
+];
+
 // Load clientData from localStorage if available
 function loadClientData() {
   const savedData = localStorage.getItem('clientData');
@@ -73,6 +79,7 @@ let currentAnalysis = 'retirement-accumulation';
 let reportCount = 0;
 let selectedReports = [];
 let isTyping = false;
+let selectedClientId = 1; // Track the currently selected client
 
 // DOM elements
 const analysisTopics = document.querySelector('.analysis-topics');
@@ -85,6 +92,11 @@ const presentationCount = document.getElementById('presentation-count');
 const analysisOutputs = document.getElementById('analysis-outputs');
 const outputTabsContainer = document.getElementById('output-tabs-container');
 const analysisWorkspace = document.querySelector('.analysis-workspace');
+const clientFileToggle = document.getElementById('client-file-toggle');
+const clientModal = document.getElementById('client-modal');
+const closeModalBtn = document.getElementById('close-modal');
+const clientList = document.getElementById('client-list');
+const clientSearch = document.getElementById('client-search');
 let chartInstance = null;
 
 // Analysis topics list
@@ -119,8 +131,10 @@ document.addEventListener('DOMContentLoaded', () => {
     console.log('chartCanvas:', document.getElementById('analysis-chart'));
     populateAnalysisTopics();
     updateTabs(currentAnalysis);
+    populateClientList(); // Populate the client list in the modal
     updateClientFileName();
     setupEventDelegation();
+    setupClientModalListeners(); // Setup listeners for the client modal
     updateOutputs();
     if (currentAnalysis === 'client-profile') {
       analysisWorkspace.classList.add('client-profile-active');
@@ -141,6 +155,96 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 });
 
+// Populate client list in the modal
+function populateClientList() {
+  try {
+    clientList.innerHTML = ''; // Clear existing list
+    clients.forEach(client => {
+      const li = document.createElement('li');
+      li.textContent = client.name;
+      li.dataset.clientId = client.id;
+      if (client.id === selectedClientId) {
+        li.classList.add('selected');
+        clientFileName.textContent = client.name;
+      }
+      clientList.appendChild(li);
+    });
+  } catch (error) {
+    console.error('Error in populateClientList:', error);
+  }
+}
+
+// Setup listeners for the client modal
+function setupClientModalListeners() {
+  try {
+    // Toggle modal visibility
+    clientFileToggle.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const isOpen = clientModal.style.display === 'block';
+      clientModal.style.display = isOpen ? 'none' : 'block';
+      clientFileToggle.setAttribute('aria-expanded', !isOpen);
+    });
+
+    // Close modal
+    closeModalBtn.addEventListener('click', () => {
+      clientModal.style.display = 'none';
+      clientFileToggle.setAttribute('aria-expanded', 'false');
+    });
+
+    // Close modal when clicking outside
+    document.addEventListener('click', (e) => {
+      if (!clientFileToggle.contains(e.target) && !clientModal.contains(e.target)) {
+        clientModal.style.display = 'none';
+        clientFileToggle.setAttribute('aria-expanded', 'false');
+      }
+    });
+
+    // Handle client selection
+    clientList.addEventListener('click', (e) => {
+      const li = e.target.closest('li');
+      if (!li) return;
+
+      // Update selected client
+      selectedClientId = parseInt(li.dataset.clientId);
+      clientList.querySelectorAll('li').forEach(item => item.classList.remove('selected'));
+      li.classList.add('selected');
+      clientFileName.textContent = li.textContent;
+
+      // Update clientData with the selected client's data
+      const selectedClient = clients.find(client => client.id === selectedClientId);
+      if (selectedClient) {
+        clientData.client1 = selectedClient.data;
+        if (clientData.isMarried && clients.length > 1) {
+          const otherClient = clients.find(client => client.id !== selectedClientId);
+          clientData.client2 = otherClient ? otherClient.data : clientData.client2;
+        }
+        saveClientData();
+        updateTabs(currentAnalysis); // Refresh tabs to reflect new client data
+        updateOutputs();
+        if (currentAnalysis !== 'client-profile') {
+          setTimeout(updateGraph, 100);
+        }
+      }
+
+      // Close modal
+      clientModal.style.display = 'none';
+      clientFileToggle.setAttribute('aria-expanded', 'false');
+    });
+
+    // Search functionality
+    clientSearch.addEventListener('input', (e) => {
+      const searchTerm = e.target.value.toLowerCase();
+      const clientItems = clientList.querySelectorAll('li');
+      clientItems.forEach(item => {
+        const clientName = item.textContent.toLowerCase();
+        item.style.display = clientName.includes(searchTerm) ? 'block' : 'none';
+      });
+    });
+  } catch (error) {
+    console.error('Error in setupClientModalListeners:', error);
+  }
+}
+
 // Populate analysis topics
 function populateAnalysisTopics() {
   try {
@@ -158,7 +262,7 @@ function populateAnalysisTopics() {
     document.querySelectorAll('.analysis-topics .topic-btn').forEach(btn => {
       btn.addEventListener('click', (e) => {
         e.stopPropagation();
-        e.preventDefault(); // Prevent default to avoid any form submissions
+        e.preventDefault();
         console.log('Topic button clicked:', btn.dataset.analysis);
         document.querySelectorAll('.topic-btn').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
@@ -242,7 +346,6 @@ function populateInputFields() {
     }
     console.log('Populating input fields with clientData:', JSON.stringify(clientData, null, 2));
 
-    // Only set inputs that exist in the current tab content
     const setIfExists = (id, value, label, property = 'value') => {
       const input = document.getElementById(id);
       if (input) {
@@ -441,7 +544,6 @@ function subTabClickHandler(e) {
     e.stopPropagation();
     e.preventDefault();
     console.log('Sub-tab clicked:', this.dataset.subTab);
-    // Ensure currentAnalysis remains 'client-profile'
     if (currentAnalysis !== 'client-profile') {
       console.warn('currentAnalysis unexpectedly changed to:', currentAnalysis);
       currentAnalysis = 'client-profile';
@@ -801,14 +903,12 @@ function updateGraph() {
       return;
     }
 
-    // Destroy any existing chart instances
     if (chartInstance) {
       console.log('Destroying existing chartInstance');
       chartInstance.destroy();
       chartInstance = null;
     }
 
-    // Destroy any orphaned charts on the canvas
     if (chartCanvas && Chart.getChart(chartCanvas)) {
       console.log('Destroying orphaned chart on canvas');
       Chart.getChart(chartCanvas).destroy();
@@ -892,12 +992,12 @@ function updateOutputs() {
 function setupOutputTabSwitching() {
   try {
     if (currentAnalysis === 'personal-finance' || currentAnalysis === 'summary' || currentAnalysis === 'client-profile') {
-      return; // Skip for analyses without output tabs
+      return;
     }
 
     const buttons = document.querySelectorAll('.output-tab-btn');
     if (!buttons.length) {
-      return; // Skip logging if no buttons
+      return;
     }
 
     buttons.forEach(button => {
