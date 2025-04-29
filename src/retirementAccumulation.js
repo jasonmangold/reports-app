@@ -77,7 +77,8 @@ export const retirementAccumulationTabs = [
     id: 'assumptions',
     label: 'Assumptions',
     content: `
-      <label>Mortality Age: <input type="number" id="mortality-age" min="1" max="120" placeholder="90"></label>
+      <label>Client 1 Mortality Age: <input type="number" id="c1-mortality-age" min="1" max="120" placeholder="90"></label>
+      <label>Client 2 Mortality Age: <input type="number" id="c2-mortality-age" min="1" max="120" placeholder="90" style="display: ${clientData.isMarried ? 'block' : 'none'};"></label>
       <label>Inflation (%): <input type="number" id="inflation" min="0" max="100" step="0.1" placeholder="2"></label>
       <label>ROR During Retirement (%): <input type="number" id="ror-retirement" min="0" max="100" step="0.1" placeholder="4"></label>
     `
@@ -113,6 +114,10 @@ export function setupAgeDisplayListeners(getAge) {
     if (isMarriedInput) {
       isMarriedInput.addEventListener('change', () => {
         const c2Dob = document.getElementById('c2-dob');
+        const c2MortalityInput = document.getElementById('c2-mortality-age');
+        if (c2MortalityInput) {
+          c2MortalityInput.style.display = isMarriedInput.checked ? 'block' : 'none';
+        }
         if (c2Dob && isMarriedInput.checked && c2Dob.value) {
           const event = new Event('change');
           c2Dob.dispatchEvent(event);
@@ -146,10 +151,8 @@ function calculateRetirementIncome(clientData, getAge) {
     const c1RetirementAge = parseFloat(clientData.client1.personal.retirementAge) || 65;
     const c2RetirementAge = clientData.isMarried ? parseFloat(clientData.client2.personal.retirementAge) || 65 : c1RetirementAge;
     const startAge = Math.max(c1RetirementAge, c2RetirementAge);
-    const mortalityAge = parseFloat(clientData.assumptions.mortalityAge) || 90;
-    // Mortality ages based on current ages
-    const c1MortalityAge = mortalityAge;
-    const c2MortalityAge = clientData.isMarried ? mortalityAge - ageDifference : mortalityAge;
+    const c1MortalityAge = parseFloat(clientData.assumptions.c1MortalityAge) || 90;
+    const c2MortalityAge = clientData.isMarried ? parseFloat(clientData.assumptions.c2MortalityAge) || 90 : c1MortalityAge;
     const maxTimelineAge = clientData.isMarried ? Math.max(c1MortalityAge, c2MortalityAge) : c1MortalityAge;
     const inflation = isNaN(parseFloat(clientData.assumptions.inflation)) ? 0.02 : parseFloat(clientData.assumptions.inflation) / 100;
     const rorRetirement = isNaN(parseFloat(clientData.assumptions.rorRetirement)) ? 0.04 : parseFloat(clientData.assumptions.rorRetirement) / 100;
@@ -454,10 +457,8 @@ export function updateRetirementOutputs(analysisOutputs, clientData, formatCurre
     const c1RetirementAge = parseFloat(clientData.client1.personal.retirementAge) || 65;
     const c2RetirementAge = clientData.isMarried ? parseFloat(clientData.client2.personal.retirementAge) || 65 : c1RetirementAge;
     const startAge = Math.max(c1RetirementAge, c2RetirementAge);
-    const mortalityAge = parseFloat(clientData.assumptions.mortalityAge) || 90;
-    const ageDifference = c1Age - c2Age;
-    const c1MortalityAge = mortalityAge;
-    const c2MortalityAge = clientData.isMarried ? mortalityAge - ageDifference : mortalityAge;
+    const c1MortalityAge = parseFloat(clientData.assumptions.c1MortalityAge) || 90;
+    const c2MortalityAge = clientData.isMarried ? parseFloat(clientData.assumptions.c2MortalityAge) || 90 : c1MortalityAge;
     const maxTimelineAge = clientData.isMarried ? Math.max(c1MortalityAge, c2MortalityAge) : c1MortalityAge;
     const inflation = isNaN(parseFloat(clientData.assumptions.inflation)) ? 0.02 : parseFloat(clientData.assumptions.inflation) / 100;
     const rorRetirement = isNaN(parseFloat(clientData.assumptions.rorRetirement)) ? 0.04 : parseFloat(clientData.assumptions.rorRetirement) / 100;
@@ -473,7 +474,7 @@ export function updateRetirementOutputs(analysisOutputs, clientData, formatCurre
       if (tabContainer) tabContainer.innerHTML = ''; // Clear tabs on error
       return;
     }
-    if (c1RetirementAge >= maxTimelineAge || (clientData.isMarried && c2RetirementAge >= maxTimelineAge)) {
+    if (c1RetirementAge >= c1MortalityAge || (clientData.isMarried && c2RetirementAge >= c2MortalityAge)) {
       analysisOutputs.innerHTML = '<p class="output-card">Retirement age must be less than mortality age.</p>';
       if (tabContainer) tabContainer.innerHTML = ''; // Clear tabs on error
       return;
@@ -484,7 +485,7 @@ export function updateRetirementOutputs(analysisOutputs, clientData, formatCurre
     monthlyNeed = monthlyNeed * Math.pow(1 + inflation, yearsToRetirement);
 
     const incomeGoals = [
-      { age: c1RetirementAge, percentage: 100, amount: Math.round(monthlyNeed) },
+      { age: c1RetirementAge, percentage: 100, amount 人格: Math.round(monthlyNeed) },
       { age: c1RetirementAge + 10, percentage: 80, amount: Math.round(monthlyNeed * 0.8) },
       { age: c1RetirementAge + 15, percentage: 70, amount: Math.round(monthlyNeed * 0.7) }
     ];
@@ -840,6 +841,11 @@ export function updateRetirementOutputs(analysisOutputs, clientData, formatCurre
                 <td>${clientData.client1.personal.retirementAge || 'N/A'}</td>
                 ${clientData.isMarried ? `<td>${clientData.client2.personal.retirementAge || 'N/A'}</td>` : ''}
               </tr>
+              <tr>
+                <td>Mortality Age</td>
+                <td>${clientData.assumptions.c1MortalityAge || 'N/A'}</td>
+                ${clientData.isMarried ? `<td>${clientData.assumptions.c2MortalityAge || 'N/A'}</td>` : ''}
+              </tr>
             </tbody>
           </table>
           <h4>Income Sources</h4>
@@ -879,9 +885,15 @@ export function updateRetirementOutputs(analysisOutputs, clientData, formatCurre
             </thead>
             <tbody>
               <tr>
-                <td>Mortality Age</td>
-                <td>${clientData.assumptions.mortalityAge || 'N/A'}</td>
+                <td>Client 1 Mortality Age</td>
+                <td>${clientData.assumptions.c1MortalityAge || 'N/A'}</td>
               </tr>
+              ${clientData.isMarried ? `
+                <tr>
+                  <td>Client 2 Mortality Age</td>
+                  <td>${clientData.assumptions.c2MortalityAge || 'N/A'}</td>
+                </tr>
+              ` : ''}
               <tr>
                 <td>Inflation (%)</td>
                 <td>${clientData.assumptions.inflation || 'N/A'}</td>
