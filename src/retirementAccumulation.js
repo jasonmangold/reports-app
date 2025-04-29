@@ -153,14 +153,14 @@ function calculateRetirementIncome(clientData, getAge) {
     const c2RetirementAge = clientData.isMarried ? parseFloat(clientData.client2.personal.retirementAge) || 65 : c1RetirementAge;
     const startAge = Math.max(c1RetirementAge, c2RetirementAge);
 
-    // Parse mortality ages with stricter validation
-    const c1MortalityAgeRaw = parseFloat(clientData.assumptions.c1MortalityAge);
-    const c2MortalityAgeRaw = clientData.isMarried ? parseFloat(clientData.assumptions.c2MortalityAge) : c1MortalityAgeRaw;
+    // Parse mortality ages with fallback for legacy data
+    const c1MortalityAgeRaw = parseFloat(clientData.assumptions.c1MortalityAge) || parseFloat(clientData.assumptions.mortalityAge);
+    const c2MortalityAgeRaw = clientData.isMarried ? (parseFloat(clientData.assumptions.c2MortalityAge) || parseFloat(clientData.assumptions.mortalityAge)) : c1MortalityAgeRaw;
     const c1MortalityAge = isNaN(c1MortalityAgeRaw) || c1MortalityAgeRaw < c1RetirementAge ? 90 : Math.min(c1MortalityAgeRaw, 120);
     const c2MortalityAge = isNaN(c2MortalityAgeRaw) || c2MortalityAgeRaw < c2RetirementAge ? 90 : Math.min(c2MortalityAgeRaw, 120);
     
     // Debug mortality ages
-    console.log('Parsed Mortality Ages:', { c1MortalityAge, c2MortalityAge, c1MortalityAgeRaw, c2MortalityAgeRaw });
+    console.log('Parsed Mortality Ages:', { c1MortalityAge, c2MortalityAge, c1MortalityAgeRaw, c2MortalityAgeRaw, assumptions: clientData.assumptions });
 
     const maxTimelineAge = clientData.isMarried ? Math.max(c1MortalityAge, c2MortalityAge) : c1MortalityAge;
     console.log('Max Timeline Age:', maxTimelineAge);
@@ -362,6 +362,12 @@ export function updateRetirementGraph(chartCanvas, clientData, Chart, getAge) {
     const ctx = chartCanvas.getContext('2d');
     let chartInstance = null;
 
+    // Destroy existing chart if it exists
+    if (chartCanvas.chartInstance) {
+      chartCanvas.chartInstance.destroy();
+      chartCanvas.chartInstance = null;
+    }
+
     const incomeData = calculateRetirementIncome(clientData, getAge);
     if (!incomeData.labels.length) {
       chartInstance = new Chart(ctx, {
@@ -382,6 +388,7 @@ export function updateRetirementGraph(chartCanvas, clientData, Chart, getAge) {
         }
       });
       console.log('Invalid inputs for graph');
+      chartCanvas.chartInstance = chartInstance;
       return chartInstance;
     }
 
@@ -429,6 +436,7 @@ export function updateRetirementGraph(chartCanvas, clientData, Chart, getAge) {
       }
     });
     console.log('Retirement Accumulation bar graph rendered');
+    chartCanvas.chartInstance = chartInstance;
     return chartInstance;
   } catch (error) {
     console.error('Error in updateRetirementGraph:', error);
@@ -448,6 +456,7 @@ export function updateRetirementGraph(chartCanvas, clientData, Chart, getAge) {
         plugins: { title: { display: true, text: 'Error rendering graph' } }
       }
     });
+    chartCanvas.chartInstance = chartInstance;
     return chartInstance;
   }
 }
@@ -471,13 +480,13 @@ export function updateRetirementOutputs(analysisOutputs, clientData, formatCurre
     const c2RetirementAge = clientData.isMarried ? parseFloat(clientData.client2.personal.retirementAge) || 65 : c1RetirementAge;
     const startAge = Math.max(c1RetirementAge, c2RetirementAge);
     
-    // Parse mortality ages with validation
-    const c1MortalityAgeRaw = parseFloat(clientData.assumptions.c1MortalityAge);
-    const c2MortalityAgeRaw = clientData.isMarried ? parseFloat(clientData.assumptions.c2MortalityAge) : c1MortalityAgeRaw;
+    // Parse mortality ages with fallback for legacy data
+    const c1MortalityAgeRaw = parseFloat(clientData.assumptions.c1MortalityAge) || parseFloat(clientData.assumptions.mortalityAge);
+    const c2MortalityAgeRaw = clientData.isMarried ? (parseFloat(clientData.assumptions.c2MortalityAge) || parseFloat(clientData.assumptions.mortalityAge)) : c1MortalityAgeRaw;
     const c1MortalityAge = isNaN(c1MortalityAgeRaw) || c1MortalityAgeRaw < c1RetirementAge ? 90 : Math.min(c1MortalityAgeRaw, 120);
     const c2MortalityAge = isNaN(c2MortalityAgeRaw) || c2MortalityAgeRaw < c2RetirementAge ? 90 : Math.min(c2MortalityAgeRaw, 120);
     
-    console.log('Output Mortality Ages:', { c1MortalityAge, c2MortalityAge });
+    console.log('Output Mortality Ages:', { c1MortalityAge, c2MortalityAge, c1MortalityAgeRaw, c2MortalityAgeRaw, assumptions: clientData.assumptions });
 
     const maxTimelineAge = clientData.isMarried ? Math.max(c1MortalityAge, c2MortalityAge) : c1MortalityAge;
     const inflation = isNaN(parseFloat(clientData.assumptions.inflation)) ? 0.02 : parseFloat(clientData.assumptions.inflation) / 100;
@@ -651,7 +660,7 @@ export function updateRetirementOutputs(analysisOutputs, clientData, formatCurre
         let tempBalance = incomeData.totalBalance;
         for (let j = 0; j < maxTimelineAge - c1RetirementAge; j++) {
           const currentNeed = monthlyNeed * Math.pow(1 + inflation, j) - monthlySources;
-          tempBalance | tempBalance * Math.pow(1 + mid / 12, 12) - (currentNeed > 0 ? currentNeed * 12 : 0);
+          tempBalance = tempBalance * Math.pow(1 + mid / 12, 12) - (currentNeed > 0 ? currentNeed * 12 : 0);
           if (tempBalance <= 0) break;
         }
         if (tempBalance > 0) high = mid;
@@ -863,8 +872,8 @@ export function updateRetirementOutputs(analysisOutputs, clientData, formatCurre
               </tr>
               <tr>
                 <td>Mortality Age</td>
-                <td>${clientData.assumptions.c1MortalityAge || 'N/A'}</td>
-                ${clientData.isMarried ? `<td>${clientData.assumptions.c2MortalityAge || 'N/A'}</td>` : ''}
+                <td>${clientData.assumptions.c1MortalityAge || clientData.assumptions.mortalityAge || 'N/A'}</td>
+                ${clientData.isMarried ? `<td>${clientData.assumptions.c2MortalityAge || clientData.assumptions.mortalityAge || 'N/A'}</td>` : ''}
               </tr>
             </tbody>
           </table>
@@ -906,12 +915,12 @@ export function updateRetirementOutputs(analysisOutputs, clientData, formatCurre
             <tbody>
               <tr>
                 <td>Client 1 Mortality Age</td>
-                <td>${clientData.assumptions.c1MortalityAge || 'N/A'}</td>
+                <td>${clientData.assumptions.c1MortalityAge || clientData.assumptions.mortalityAge || 'N/A'}</td>
               </tr>
               ${clientData.isMarried ? `
                 <tr>
                   <td>Client 2 Mortality Age</td>
-                  <td>${clientData.assumptions.c2MortalityAge || 'N/A'}</td>
+                  <td>${clientData.assumptions.c2MortalityAge || clientData.assumptions.mortalityAge || 'N/A'}</td>
                 </tr>
               ` : ''}
               <tr>
