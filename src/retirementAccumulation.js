@@ -396,6 +396,9 @@ export function updateRetirementGraph(chartCanvas, clientData, Chart, getAge) {
   }
 }
 
+```javascript
+// ... (Previous code unchanged until updateRetirementOutputs) ...
+
 export function updateRetirementOutputs(analysisOutputs, clientData, formatCurrency, getAge, selectedReports, Chart) {
   try {
     if (!analysisOutputs) {
@@ -574,7 +577,7 @@ export function updateRetirementOutputs(analysisOutputs, clientData, formatCurre
       for (let i = 0; i < 20; i++) {
         const mid = (low + high) / 2;
         let tempBalance = incomeData.totalBalance;
-        for (let j = 0; j < mortalityAge - c1RetirementAge; j++) {
+        for (let j = 0; i < mortalityAge - c1RetirementAge; j++) {
           const currentNeed = Math.round(monthlyNeed * Math.pow(1 + inflation, j) - monthlySources);
           tempBalance = Math.round(tempBalance * (1 + mid) - (currentNeed > 0 ? currentNeed * 12 : 0));
           if (tempBalance <= 0) break;
@@ -671,36 +674,6 @@ export function updateRetirementOutputs(analysisOutputs, clientData, formatCurre
       <div class="output-tab-content ${currentSelection === 'output-timeline' ? 'active' : ''}" id="output-timeline" style="display: ${currentSelection === 'output-timeline' ? 'block' : 'none'};">
         <div class="output-card">
           <h3>Retirement Income Timeline</h3>
-          <style>
-            .output-table {
-              width: 100%;
-              border-collapse: collapse;
-              margin-top: 1rem;
-            }
-            .output-table th, .output-table td {
-              border: 1px solid #ddd;
-              padding: 8px;
-              text-align: right;
-            }
-            .output-table th {
-              background-color: #f4f4f4;
-              font-weight: bold;
-            }
-            .output-table tbody tr:nth-child(even) {
-              background-color: #f9f9f9;
-            }
-            .output-table tbody tr:hover {
-              background-color: #f1f1f1;
-            }
-            @media (max-width: 600px) {
-              .output-table {
-                font-size: 0.9em;
-              }
-              .output-table th, .output-table td {
-                padding: 6px;
-              }
-            }
-          </style>
           <table class="output-table">
             <thead>
               <tr>
@@ -869,6 +842,27 @@ export function updateRetirementOutputs(analysisOutputs, clientData, formatCurre
         </div>
       </div>
     `;
+
+    // Setup dropdown and checkbox interactions
+    setupOutputControls(reportOptions, selectedReports, clientData, Chart, getAge);
+
+    // Render the graph if the current selection is output-graph
+    if (currentSelection === 'output-graph') {
+      const chartCanvas = document.getElementById('analysis-chart');
+      if (chartCanvas && typeof Chart !== 'undefined') {
+        setTimeout(() => {
+          updateRetirementGraph(chartCanvas, clientData, Chart, getAge);
+        }, 100);
+      }
+    }
+  } catch (error) {
+    console.error('Error in updateRetirementOutputs:', error);
+    analysisOutputs.innerHTML = '<p class="output-card">Error rendering outputs. Please check input data.</p>';
+    if (tabContainer) tabContainer.innerHTML = '';
+  }
+}
+
+// ... (Rest of the file unchanged) ...
 
     // Setup dropdown and checkbox interactions
     setupOutputControls(reportOptions, selectedReports, clientData, Chart, getAge);
