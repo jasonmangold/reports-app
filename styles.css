@@ -1487,6 +1487,9 @@ body.dark-mode .sub-tab-btn:hover {
 }
 .client-file {
   position: relative;
+  min-width: 200px; /* Ensure the parent has enough width to anchor the modal */
+  max-width: 300px; /* Prevent the parent from being too wide */
+  overflow: visible; /* Ensure the modal can overflow the parent */
 }
 
 .client-file-btn {
@@ -1498,6 +1501,9 @@ body.dark-mode .sub-tab-btn:hover {
   gap: 5px;
   font-size: 16px;
   color: #333;
+  width: 100%;
+  text-align: left;
+  padding: 5px;
 }
 
 .client-file-btn:hover {
@@ -1506,34 +1512,38 @@ body.dark-mode .sub-tab-btn:hover {
 
 .modal {
   position: absolute;
-  top: 40px; /* Adjust based on header height */
+  top: 40px; /* Align below the button */
   left: 0;
   background-color: #fff;
   border: 1px solid #ddd;
   border-radius: 4px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
   z-index: 1000;
-  width: 400px; /* Increased from 300px for better readability */
-  max-height: 500px; /* Increased from 400px to show more clients */
+  width: 500px !important; /* Increased width for better readability */
+  min-width: 500px !important; /* Ensure it doesn't shrink */
+  max-height: 600px !important; /* Increased height for more content */
+  min-height: 300px !important; /* Ensure enough space for content */
   overflow-y: auto;
 }
 
 .modal-content {
-  padding: 20px; /* Increased padding for better spacing */
+  padding: 20px;
 }
 
 .modal-content h3 {
-  margin: 0 0 15px; /* Slightly more margin for separation */
-  font-size: 20px; /* Larger heading for clarity */
+  margin: 0 0 15px;
+  font-size: 20px;
+  font-weight: 600;
 }
 
 .modal-content input {
   width: 100%;
-  padding: 10px; /* Increased padding for better usability */
+  padding: 10px;
   margin-bottom: 15px;
   border: 1px solid #ccc;
   border-radius: 4px;
-  font-size: 16px; /* Larger font for the search input */
+  font-size: 16px;
+  box-sizing: border-box;
 }
 
 .modal-content ul {
@@ -1543,14 +1553,15 @@ body.dark-mode .sub-tab-btn:hover {
 }
 
 .modal-content li {
-  padding: 12px 15px; /* Increased padding for better spacing */
+  padding: 15px; /* More padding for better spacing */
   cursor: pointer;
   border-bottom: 1px solid #eee;
-  font-size: 16px; /* Increased font size for readability */
-  line-height: 1.5; /* Better line height for readability */
-  white-space: nowrap; /* Prevent text wrapping */
-  overflow: hidden;
-  text-overflow: ellipsis; /* Add ellipsis for long names */
+  font-size: 18px; /* Larger font size for readability */
+  line-height: 1.5;
+  /* Allow text wrapping for long names */
+  white-space: normal;
+  word-wrap: break-word;
+  min-height: 40px; /* Ensure enough height for wrapped text */
 }
 
 .modal-content li:hover {
@@ -1564,13 +1575,14 @@ body.dark-mode .sub-tab-btn:hover {
 
 .modal-content button {
   margin-top: 15px;
-  padding: 10px 20px; /* Slightly larger button for better clickability */
+  padding: 10px 20px;
   background-color: #007bff;
   color: #fff;
   border: none;
   border-radius: 4px;
   cursor: pointer;
-  font-size: 16px; /* Larger font for the button */
+  font-size: 16px;
+  width: 100%; /* Full width for better clickability */
 }
 
 .modal-content button:hover {
@@ -1579,10 +1591,18 @@ body.dark-mode .sub-tab-btn:hover {
 
 /* Responsive adjustments */
 @media (max-width: 768px) {
+  .client-file {
+    min-width: 150px;
+    max-width: 200px;
+  }
+
   .modal {
-    width: 90%;
-    left: 5%;
-    max-height: 60vh; /* Adjust height for smaller screens */
+    width: 90vw !important; /* Use viewport width for smaller screens */
+    min-width: 90vw !important;
+    left: 50%;
+    transform: translateX(-50%); /* Center the modal */
+    max-height: 50vh !important;
+    min-height: 200px !important;
   }
 
   .modal-content {
@@ -1590,7 +1610,22 @@ body.dark-mode .sub-tab-btn:hover {
   }
 
   .modal-content li {
-    font-size: 14px; /* Slightly smaller font on mobile, but still readable */
-    padding: 10px 12px;
+    font-size: 16px;
+    padding: 10px;
+    min-height: 35px;
+  }
+
+  .modal-content h3 {
+    font-size: 18px;
+  }
+
+  .modal-content input {
+    font-size: 14px;
+    padding: 8px;
+  }
+
+  .modal-content button {
+    font-size: 14px;
+    padding: 8px 16px;
   }
 }
