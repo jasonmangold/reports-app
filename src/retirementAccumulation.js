@@ -157,54 +157,57 @@ function calculateRetirementIncome(clientData, getAge) {
       return result; // Empty result for invalid ages
     }
 
-    // Adjust annual need for inflation until retirement
-    const yearsToRetirement = startAge - c1Age;
-    let annualNeed = Math.round(monthlyNeed * 12 * Math.pow(1 + inflation, yearsToRetirement));
+    // Adjust monthly need for inflation until retirement with monthly compounding
+    const monthsToRetirement = (startAge - c1Age) * 12;
+    monthlyNeed = Math.round(monthlyNeed * Math.pow(1 + inflation / 12, monthsToRetirement));
+    let annualNeed = Math.round(monthlyNeed * 12);
 
-    // Calculate total balance at retirement
+    // Calculate total balance at retirement with monthly compounding
     let totalBalance = 0;
     const clients = [clientData.client1, clientData.isMarried ? clientData.client2 : null];
     clients.forEach((client, idx) => {
       if (!client) return;
       const clientAge = idx === 0 ? c1Age : c2Age;
       const clientRetirementAge = idx === 0 ? c1RetirementAge : c2RetirementAge;
-      const yearsToClientRetirement = clientRetirementAge - clientAge;
+      const monthsToClientRetirement = (clientRetirementAge - clientAge) * 12;
 
       client.accounts.forEach(account => {
         let balance = Math.round(parseFloat(account.balance) || 0);
-        const contribution = Math.round(parseFloat(account.contribution) || 0);
+        const annualContribution = Math.round(parseFloat(account.contribution) || 0);
+        const monthlyContribution = annualContribution / 12;
         const employmentIncome = Math.round(parseFloat(client.incomeSources.employment) || 0);
         const employerMatchPercent = isNaN(parseFloat(account.employerMatch)) ? 0 : parseFloat(account.employerMatch) / 100;
-        const employerMatch = Math.round(employerMatchPercent * employmentIncome);
+        const annualEmployerMatch = Math.round(employerMatchPercent * employmentIncome);
+        const monthlyEmployerMatch = annualEmployerMatch / 12;
         const ror = isNaN(parseFloat(account.ror)) ? 0.06 : parseFloat(account.ror) / 100;
 
-        // Future value of current balance
-        const fvBalance = Math.round(balance * Math.pow(1 + ror, yearsToClientRetirement));
-        // Future value of contributions (annuity)
-        const fvContributions = contribution && ror ? Math.round(contribution * (Math.pow(1 + ror, yearsToClientRetirement) - 1) / ror) : 0;
-        // Future value of employer match (annuity)
-        const fvEmployerMatch = employerMatch && ror ? Math.round(employerMatch * (Math.pow(1 + ror, yearsToClientRetirement) - 1) / ror) : 0;
+        // Future value of current balance with monthly compounding
+        const fvBalance = Math.round(balance * Math.pow(1 + ror / 12, monthsToClientRetirement));
+        // Future value of contributions (annuity) with monthly compounding
+        const fvContributions = monthlyContribution && ror ? Math.round(monthlyContribution * (Math.pow(1 + ror / 12, monthsToClientRetirement) - 1) / (ror / 12)) : 0;
+        // Future value of employer match (annuity) with monthly compounding
+        const fvEmployerMatch = monthlyEmployerMatch && ror ? Math.round(monthlyEmployerMatch * (Math.pow(1 + ror / 12, monthsToClientRetirement) - 1) / (ror / 12)) : 0;
 
         let accountBalance = Math.round(fvBalance + fvContributions + fvEmployerMatch);
 
-        // Apply rorRetirement if client retires before startAge
+        // Apply rorRetirement if client retires before startAge with monthly compounding
         if (clientRetirementAge < startAge) {
-          const additionalYears = startAge - clientRetirementAge;
-          accountBalance = Math.round(accountBalance * Math.pow(1 + rorRetirement, additionalYears));
+          const additionalMonths = (startAge - clientRetirementAge) * 12;
+          accountBalance = Math.round(accountBalance * Math.pow(1 + rorRetirement / 12, additionalMonths));
         }
 
         totalBalance += accountBalance;
       });
 
-      // Calculate future value of other assets
+      // Calculate future value of other assets with monthly compounding
       if (client.other && client.other.assets) {
         client.other.assets.forEach(asset => {
           let balance = Math.round(parseFloat(asset.balance) || 0);
           const ror = isNaN(parseFloat(asset.ror)) ? 0.06 : parseFloat(asset.ror) / 100;
-          let fvBalance = Math.round(balance * Math.pow(1 + ror, yearsToClientRetirement));
+          let fvBalance = Math.round(balance * Math.pow(1 + ror / 12, monthsToClientRetirement));
           if (clientRetirementAge < startAge) {
-            const additionalYears = startAge - clientRetirementAge;
-            fvBalance = Math.round(fvBalance * Math.pow(1 + rorRetirement, additionalYears));
+            const additionalMonths = (startAge - clientRetirementAge) * 12;
+            fvBalance = Math.round(fvBalance * Math.pow(1 + rorRetirement / 12, additionalMonths));
           }
           totalBalance += fvBalance;
         });
@@ -215,8 +218,8 @@ function calculateRetirementIncome(clientData, getAge) {
     result.totalBalance = totalBalance;
     result.depletionAge = startAge;
 
-    // Add starting balance row
-    result.labels.push(startAge);
+    // Add blank starting row with only balance
+    result.labels.push('Start');
     result.needData.push(0);
     result.incomeData.push(0);
     result.socialSecurityData.push(0);
@@ -225,14 +228,15 @@ function calculateRetirementIncome(clientData, getAge) {
     result.balanceData.push(totalBalance);
     result.shortfallData.push(0);
 
-    // Calculate timeline data
+    // Calculate timeline data with monthly compounding, displayed annually
     for (let i = 0; i < mortalityAge - startAge; i++) {
-      const currentAge = startAge + i + 1;
+      const currentAge = startAge + i;
       result.labels.push(currentAge);
 
-      // Need (inflation-adjusted from retirement start)
-      const adjustedNeed = Math.round(annualNeed * Math.pow(1 + inflation, i));
-      result.needData.push(adjustedNeed);
+      // Need (inflation-adjusted from retirement start with monthly compounding)
+      const adjustedMonthlyNeed = Math.round(monthlyNeed * Math.pow(1 + inflation / 12, i * 12));
+      const adjustedAnnualNeed = Math.round(adjustedMonthlyNeed * 12);
+      result.needData.push(adjustedAnnualNeed);
 
       // Income (Employment + Other)
       let employmentIncome = 0;
@@ -256,34 +260,54 @@ function calculateRetirementIncome(clientData, getAge) {
       }
       result.socialSecurityData.push(socialSecurity);
 
-      // Asset Earnings
-      const earnings = Math.round(balance * rorRetirement);
-      result.earningsData.push(earnings);
+      // Calculate monthly earnings and withdrawals, then aggregate to annual
+      let annualEarnings = 0;
+      let annualWithdrawal = 0;
+      let monthlyBalance = balance;
+      const monthlyRor = rorRetirement / 12;
+      const monthlyNeedAdjusted = adjustedMonthlyNeed;
+      const monthlyIncome = totalIncome / 12;
+      const monthlySocialSecurity = socialSecurity / 12;
 
-      // Withdrawal and Shortfall
-      const remainingNeed = Math.round(adjustedNeed - totalIncome - socialSecurity);
-      let withdrawal = 0;
-      let shortfall = 0;
-      if (remainingNeed > 0) {
-        const availableBalance = Math.round(balance + earnings);
-        if (availableBalance >= remainingNeed) {
-          withdrawal = Math.round(remainingNeed);
-          balance = Math.round(availableBalance - remainingNeed);
-        } else {
-          withdrawal = availableBalance > 0 ? Math.round(availableBalance) : 0;
-          shortfall = Math.round(remainingNeed - withdrawal);
-          balance = 0;
+      for (let m = 0; m < 12; m++) {
+        // Monthly earnings
+        const monthlyEarnings = Math.round(monthlyBalance * monthlyRor);
+        monthlyBalance += monthlyEarnings;
+
+        // Monthly withdrawal
+        const monthlyRemainingNeed = Math.round(monthlyNeedAdjusted - monthlyIncome - monthlySocialSecurity);
+        let monthlyWithdrawal = 0;
+        if (monthlyRemainingNeed > 0) {
+          if (monthlyBalance >= monthlyRemainingNeed) {
+            monthlyWithdrawal = monthlyRemainingNeed;
+            monthlyBalance -= monthlyWithdrawal;
+          } else {
+            monthlyWithdrawal = monthlyBalance;
+            monthlyBalance = 0;
+          }
         }
+
+        annualEarnings += monthlyEarnings;
+        annualWithdrawal += monthlyWithdrawal;
       }
-      result.withdrawalData.push(withdrawal);
-      result.shortfallData.push(shortfall);
+
+      result.earningsData.push(Math.round(annualEarnings));
+      result.withdrawalData.push(Math.round(annualWithdrawal));
+
+      // Shortfall
+      const shortfall = Math.round(adjustedAnnualNeed - totalIncome - socialSecurity - annualWithdrawal);
+      result.shortfallData.push(shortfall > 0 ? shortfall : 0);
+
+      // Update balance
+      balance = Math.round(monthlyBalance);
       result.balanceData.push(balance);
 
-      // Update depletion age (only set once, when balance first depletes)
+      // Update depletion age
       if (balance <= 0 && result.depletionAge === startAge) {
         result.depletionAge = currentAge;
       }
     }
+
     // Ensure depletionAge is mortalityAge if balance remains positive
     result.depletionAge = balance > 0 ? mortalityAge : result.depletionAge;
   } catch (error) {
@@ -332,7 +356,7 @@ export function updateRetirementGraph(chartCanvas, clientData, Chart, getAge) {
     chartInstance = new Chart(ctx, {
       type: 'bar',
       data: {
-        labels: incomeData.labels.slice(1), // Skip starting balance row
+        labels: incomeData.labels.slice(1), // Skip starting blank row
         datasets: [
           {
             label: 'Social Security',
@@ -436,8 +460,8 @@ export function updateRetirementOutputs(analysisOutputs, clientData, formatCurre
     }
 
     // Adjust monthly need for inflation until retirement
-    const yearsToRetirement = startAge - c1Age;
-    monthlyNeed = Math.round(monthlyNeed * Math.pow(1 + inflation, yearsToRetirement));
+    const monthsToRetirement = (startAge - c1Age) * 12;
+    monthlyNeed = Math.round(monthlyNeed * Math.pow(1 + inflation / 12, monthsToRetirement));
 
     const incomeGoals = [
       { age: c1RetirementAge, percentage: 100, amount: Math.round(monthlyNeed) },
@@ -490,28 +514,30 @@ export function updateRetirementOutputs(analysisOutputs, clientData, formatCurre
       if (!client) return;
       const clientAge = idx === 0 ? c1Age : c2Age;
       const clientRetirementAge = idx === 0 ? c1RetirementAge : c2RetirementAge;
-      const yearsToClientRetirement = clientRetirementAge - clientAge;
+      const monthsToClientRetirement = (clientRetirementAge - clientAge) * 12;
 
       client.accounts.forEach(account => {
         let balance = Math.round(parseFloat(account.balance) || 0);
-        const contribution = Math.round(parseFloat(account.contribution) || 0);
+        const annualContribution = Math.round(parseFloat(account.contribution) || 0);
+        const monthlyContribution = annualContribution / 12;
         const employmentIncome = Math.round(parseFloat(client.incomeSources.employment) || 0);
         const employerMatchPercent = isNaN(parseFloat(account.employerMatch)) ? 0 : parseFloat(account.employerMatch) / 100;
-        const employerMatch = Math.round(employerMatchPercent * employmentIncome);
+        const annualEmployerMatch = Math.round(employerMatchPercent * employmentIncome);
+        const monthlyEmployerMatch = annualEmployerMatch / 12;
         const ror = isNaN(parseFloat(account.ror)) ? 0.06 : parseFloat(account.ror) / 100;
 
         // Future value of current balance
-        const fvBalance = Math.round(balance * Math.pow(1 + ror, yearsToClientRetirement));
+        const fvBalance = Math.round(balance * Math.pow(1 + ror / 12, monthsToClientRetirement));
         // Future value of contributions (annuity)
-        const fvContributions = contribution && ror ? Math.round(contribution * (Math.pow(1 + ror, yearsToClientRetirement) - 1) / ror) : 0;
+        const fvContributions = monthlyContribution && ror ? Math.round(monthlyContribution * (Math.pow(1 + ror / 12, monthsToClientRetirement) - 1) / (ror / 12)) : 0;
         // Future value of employer match (annuity)
-        const fvEmployerMatch = employerMatch && ror ? Math.round(employerMatch * (Math.pow(1 + ror, yearsToClientRetirement) - 1) / ror) : 0;
+        const fvEmployerMatch = monthlyEmployerMatch && ror ? Math.round(monthlyEmployerMatch * (Math.pow(1 + ror / 12, monthsToClientRetirement) - 1) / (ror / 12)) : 0;
 
         let accountBalance = Math.round(fvBalance + fvContributions + fvEmployerMatch);
 
         if (clientRetirementAge < startAge) {
-          const additionalYears = startAge - clientRetirementAge;
-          accountBalance = Math.round(accountBalance * Math.pow(1 + rorRetirement, additionalYears));
+          const additionalMonths = (startAge - clientRetirementAge) * 12;
+          accountBalance = Math.round(accountBalance * Math.pow(1 + rorRetirement / 12, additionalMonths));
         }
 
         if (accountBalance > 0) {
@@ -525,12 +551,12 @@ export function updateRetirementOutputs(analysisOutputs, clientData, formatCurre
 
       if (client.other && client.other.assets) {
         client.other.assets.forEach(asset => {
-          let balance = Math.round(parseFloat(asset.balance) || 0);
+          let balance = Math.round(parseFloat(asset.balance)) || 0;
           const ror = isNaN(parseFloat(asset.ror)) ? 0.06 : parseFloat(asset.ror) / 100;
-          let fvBalance = Math.round(balance * Math.pow(1 + ror, yearsToClientRetirement));
+          let fvBalance = Math.round(balance * Math.pow(1 + ror / 12, monthsToClientRetirement));
           if (clientRetirementAge < startAge) {
-            const additionalYears = startAge - clientRetirementAge;
-            fvBalance = Math.round(fvBalance * Math.pow(1 + rorRetirement, additionalYears));
+            const additionalMonths = (startAge - clientRetirementAge) * 12;
+            fvBalance = Math.round(fvBalance * Math.pow(1 + rorRetirement / 12, additionalMonths));
           }
           if (fvBalance > 0) {
             assets.push({
@@ -547,8 +573,8 @@ export function updateRetirementOutputs(analysisOutputs, clientData, formatCurre
     const monthlySources = Math.round(incomeSources.reduce((sum, src) => sum + (src.amount || 0), 0));
     let depletionAge = c1RetirementAge;
     for (let i = 0; i < mortalityAge - c1RetirementAge; i++) {
-      const currentNeed = Math.round(monthlyNeed * Math.pow(1 + inflation, i) - monthlySources);
-      balance = Math.round(balance * (1 + rorRetirement) - (currentNeed > 0 ? currentNeed * 12 : 0));
+      const currentNeed = Math.round(monthlyNeed * Math.pow(1 + inflation / 12, i * 12) - monthlySources);
+      balance = Math.round(balance * Math.pow(1 + rorRetirement / 12, 12) - (currentNeed > 0 ? currentNeed * 12 : 0));
       if (balance <= 0) {
         depletionAge = c1RetirementAge + i;
         break;
@@ -562,7 +588,7 @@ export function updateRetirementOutputs(analysisOutputs, clientData, formatCurre
       const yearsShort = mortalityAge - depletionAge;
       const annualNeed = Math.round((monthlyNeed - monthlySources) * 12);
       requiredAtRetirement = Math.round(annualNeed * (1 - Math.pow(1 + rorRetirement, -yearsShort)) / rorRetirement);
-      additionalSavings = Math.round(requiredAtRetirement / ((Math.pow(1 + rorRetirement, yearsToRetirement) - 1) / rorRetirement));
+      additionalSavings = Math.round(requiredAtRetirement / ((Math.pow(1 + rorRetirement / 12, monthsToRetirement) - 1) / (rorRetirement / 12)));
     }
 
     // Calculate Alternatives
@@ -575,8 +601,8 @@ export function updateRetirementOutputs(analysisOutputs, clientData, formatCurre
         const mid = (low + high) / 2;
         let tempBalance = incomeData.totalBalance;
         for (let j = 0; j < mortalityAge - c1RetirementAge; j++) {
-          const currentNeed = Math.round(monthlyNeed * Math.pow(1 + inflation, j) - monthlySources);
-          tempBalance = Math.round(tempBalance * (1 + mid) - (currentNeed > 0 ? currentNeed * 12 : 0));
+          const currentNeed = Math.round(monthlyNeed * Math.pow(1 + inflation / 12, j * 12) - monthlySources);
+          tempBalance = Math.round(tempBalance * Math.pow(1 + mid / 12, 12) - (currentNeed > 0 ? currentNeed * 12 : 0));
           if (tempBalance <= 0) break;
         }
         if (tempBalance > 0) high = mid;
@@ -593,8 +619,8 @@ export function updateRetirementOutputs(analysisOutputs, clientData, formatCurre
         const mid = (low + high) / 2;
         let tempBalance = incomeData.totalBalance;
         for (let j = 0; j < mortalityAge - c1RetirementAge; j++) {
-          const currentNeed = Math.round(mid * Math.pow(1 + inflation, j) - monthlySources);
-          tempBalance = Math.round(tempBalance * (1 + rorRetirement) - (currentNeed > 0 ? currentNeed * 12 : 0));
+          const currentNeed = Math.round(mid * Math.pow(1 + inflation / 12, j * 12) - monthlySources);
+          tempBalance = Math.round(tempBalance * Math.pow(1 + rorRetirement / 12, 12) - (currentNeed > 0 ? currentNeed * 12 : 0));
           if (tempBalance <= 0) break;
         }
         if (tempBalance > 0) high = mid;
@@ -613,7 +639,7 @@ export function updateRetirementOutputs(analysisOutputs, clientData, formatCurre
     // Define report options for dropdown
     const reportOptions = [
       { id: 'output-graph', label: 'Retirement Analysis', reportId: 'report-graph', title: 'Retirement Income Graph' },
-      { id: 'report-social-security-optimizer', label: 'Social Security Optimizer', reportId: 'report-social-security-optimizer', title: 'Social Security Optimizer' },
+      { id: 'report-social-security-optimizer', label: 'Social Security Optimizer', reportId: 'report-social-security-optimizer', title: 'Social Security optimizer' },
       { id: 'report-capital-available', label: 'Capital Available at Retirement', reportId: 'report-capital-available', title: 'Capital Available at Retirement' },
       { id: 'output-alternatives', label: 'Alternatives to Achieving Retirement Goals', reportId: 'report-alternatives-retirement', title: 'Retirement Alternatives' },
       { id: 'output-timeline', label: 'Retirement Timeline', reportId: 'report-retirement-timeline', title: 'Retirement Income Timeline' },
@@ -685,16 +711,16 @@ export function updateRetirementOutputs(analysisOutputs, clientData, formatCurre
               </tr>
             </thead>
             <tbody>
-              ${incomeData.labels.slice(1).map((age, i) => `
+              ${incomeData.labels.map((label, i) => `
                 <tr>
-                  <td>${age}</td>
-                  <td>${formatCurrency(incomeData.needData[i + 1])}</td>
-                  <td>${formatCurrency(incomeData.incomeData[i + 1])}</td>
-                  <td>${formatCurrency(incomeData.socialSecurityData[i + 1])}</td>
-                  <td>${formatCurrency(incomeData.withdrawalData[i + 1])}</td>
+                  <td>${label}</td>
+                  <td>${formatCurrency(incomeData.needData[i])}</td>
+                  <td>${formatCurrency(incomeData.incomeData[i])}</td>
+                  <td>${formatCurrency(incomeData.socialSecurityData[i])}</td>
+                  <td>${formatCurrency(incomeData.withdrawalData[i])}</td>
                   <td>${formatCurrency(incomeData.earningsData[i])}</td>
-                  <td>${formatCurrency(incomeData.balanceData[i + 1])}</td>
-                  <td>${formatCurrency(incomeData.shortfallData[i + 1])}</td>
+                  <td>${formatCurrency(incomeData.balanceData[i])}</td>
+                  <td>${formatCurrency(incomeData.shortfallData[i])}</td>
                 </tr>
               `).join('')}
             </tbody>
