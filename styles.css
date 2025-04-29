@@ -1499,7 +1499,7 @@ body.dark-mode .sub-tab-btn:hover {
   display: flex;
   align-items: center;
   gap: 5px;
-  font-size: 12px;
+  font-size: 16px;
   color: #333;
   width: 100%;
   text-align: left;
@@ -1532,7 +1532,7 @@ body.dark-mode .sub-tab-btn:hover {
 
 .modal-content h3 {
   margin: 0 0 15px;
-  font-size: 16px;
+  font-size: 20px;
   font-weight: 600;
 }
 
@@ -1542,7 +1542,7 @@ body.dark-mode .sub-tab-btn:hover {
   margin-bottom: 15px;
   border: 1px solid #ccc;
   border-radius: 4px;
-  font-size: 12px;
+  font-size: 16px;
   box-sizing: border-box;
 }
 
@@ -1556,7 +1556,7 @@ body.dark-mode .sub-tab-btn:hover {
   padding: 15px; /* More padding for better spacing */
   cursor: pointer;
   border-bottom: 1px solid #eee;
-  font-size: 12px; /* Larger font size for readability */
+  font-size: 18px; /* Larger font size for readability */
   line-height: 1.5;
   /* Allow text wrapping for long names */
   white-space: normal;
@@ -1581,7 +1581,7 @@ body.dark-mode .sub-tab-btn:hover {
   border: none;
   border-radius: 4px;
   cursor: pointer;
-  font-size: 12px;
+  font-size: 16px;
   width: 100%; /* Full width for better clickability */
 }
 
