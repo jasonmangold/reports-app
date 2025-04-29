@@ -157,9 +157,9 @@ function calculateRetirementIncome(clientData, getAge) {
       return result; // Empty result for invalid ages
     }
 
-    // Adjust monthly need for inflation until retirement with monthly compounding
-    const monthsToRetirement = (startAge - c1Age) * 12;
-    monthlyNeed = monthlyNeed * Math.pow(1 + inflation / 12, monthsToRetirement);
+    // Adjust monthly need for inflation until retirement with annual compounding
+    const yearsToRetirement = startAge - c1Age;
+    monthlyNeed = monthlyNeed * Math.pow(1 + inflation, yearsToRetirement);
     let annualNeed = monthlyNeed * 12;
 
     // Calculate total balance at retirement with monthly compounding
@@ -183,10 +183,10 @@ function calculateRetirementIncome(clientData, getAge) {
 
         // Future value of current balance with monthly compounding (no rounding)
         const fvBalance = balance * Math.pow(1 + ror / 12, monthsToClientRetirement);
-        // Future value of contributions (annuity) with monthly compounding (no rounding)
-        const fvContributions = monthlyContribution && ror ? monthlyContribution * (Math.pow(1 + ror / 12, monthsToClientRetirement) - 1) / (ror / 12) : 0;
-        // Future value of employer match (annuity) with monthly compounding (no rounding)
-        const fvEmployerMatch = monthlyEmployerMatch && ror ? monthlyEmployerMatch * (Math.pow(1 + ror / 12, monthsToClientRetirement) - 1) / (ror / 12) : 0;
+        // Future value of contributions (annuity due) with monthly compounding (no rounding)
+        const fvContributions = monthlyContribution && ror ? monthlyContribution * (Math.pow(1 + ror / 12, monthsToClientRetirement) - 1) / (ror / 12) * (1 + ror / 12) : 0;
+        // Future value of employer match (annuity due) with monthly compounding (no rounding)
+        const fvEmployerMatch = monthlyEmployerMatch && ror ? monthlyEmployerMatch * (Math.pow(1 + ror / 12, monthsToClientRetirement) - 1) / (ror / 12) * (1 + ror / 12) : 0;
 
         let accountBalance = fvBalance + fvContributions + fvEmployerMatch;
 
@@ -233,8 +233,8 @@ function calculateRetirementIncome(clientData, getAge) {
       const currentAge = startAge + i;
       result.labels.push(currentAge);
 
-      // Need (inflation-adjusted from retirement start with monthly compounding)
-      const adjustedMonthlyNeed = monthlyNeed * Math.pow(1 + inflation / 12, i * 12);
+      // Need (inflation-adjusted from retirement start with annual compounding)
+      const adjustedMonthlyNeed = monthlyNeed * Math.pow(1 + inflation, i);
       const adjustedAnnualNeed = adjustedMonthlyNeed * 12;
       result.needData.push(Math.round(adjustedAnnualNeed));
 
@@ -459,9 +459,9 @@ export function updateRetirementOutputs(analysisOutputs, clientData, formatCurre
       return;
     }
 
-    // Adjust monthly need for inflation until retirement
-    const monthsToRetirement = (startAge - c1Age) * 12;
-    monthlyNeed = monthlyNeed * Math.pow(1 + inflation / 12, monthsToRetirement);
+    // Adjust monthly need for inflation until retirement with annual compounding
+    const yearsToRetirement = startAge - c1Age;
+    monthlyNeed = monthlyNeed * Math.pow(1 + inflation, yearsToRetirement);
 
     const incomeGoals = [
       { age: c1RetirementAge, percentage: 100, amount: Math.round(monthlyNeed) },
@@ -528,10 +528,10 @@ export function updateRetirementOutputs(analysisOutputs, clientData, formatCurre
 
         // Future value of current balance (no rounding)
         const fvBalance = balance * Math.pow(1 + ror / 12, monthsToClientRetirement);
-        // Future value of contributions (annuity, no rounding)
-        const fvContributions = monthlyContribution && ror ? monthlyContribution * (Math.pow(1 + ror / 12, monthsToClientRetirement) - 1) / (ror / 12) : 0;
-        // Future value of employer match (annuity, no rounding)
-        const fvEmployerMatch = monthlyEmployerMatch && ror ? monthlyEmployerMatch * (Math.pow(1 + ror / 12, monthsToClientRetirement) - 1) / (ror / 12) : 0;
+        // Future value of contributions (annuity due, no rounding)
+        const fvContributions = monthlyContribution && ror ? monthlyContribution * (Math.pow(1 + ror / 12, monthsToClientRetirement) - 1) / (ror / 12) * (1 + ror / 12) : 0;
+        // Future value of employer match (annuity due, no rounding)
+        const fvEmployerMatch = monthlyEmployerMatch && ror ? monthlyEmployerMatch * (Math.pow(1 + ror / 12, monthsToClientRetirement) - 1) / (ror / 12) * (1 + ror / 12) : 0;
 
         let accountBalance = fvBalance + fvContributions + fvEmployerMatch;
 
@@ -573,7 +573,7 @@ export function updateRetirementOutputs(analysisOutputs, clientData, formatCurre
     const monthlySources = incomeSources.reduce((sum, src) => sum + (src.amount || 0), 0);
     let depletionAge = c1RetirementAge;
     for (let i = 0; i < mortalityAge - c1RetirementAge; i++) {
-      const currentNeed = monthlyNeed * Math.pow(1 + inflation / 12, i * 12) - monthlySources;
+      const currentNeed = monthlyNeed * Math.pow(1 + inflation, i) - monthlySources;
       balance = balance * Math.pow(1 + rorRetirement / 12, 12) - (currentNeed > 0 ? currentNeed * 12 : 0);
       if (balance <= 0) {
         depletionAge = c1RetirementAge + i;
@@ -588,6 +588,7 @@ export function updateRetirementOutputs(analysisOutputs, clientData, formatCurre
       const yearsShort = mortalityAge - depletionAge;
       const annualNeed = (monthlyNeed - monthlySources) * 12;
       requiredAtRetirement = annualNeed * (1 - Math.pow(1 + rorRetirement, -yearsShort)) / rorRetirement;
+      const monthsToRetirement = (startAge - c1Age) * 12;
       additionalSavings = requiredAtRetirement / ((Math.pow(1 + rorRetirement / 12, monthsToRetirement) - 1) / (rorRetirement / 12));
     }
 
@@ -601,7 +602,7 @@ export function updateRetirementOutputs(analysisOutputs, clientData, formatCurre
         const mid = (low + high) / 2;
         let tempBalance = incomeData.totalBalance;
         for (let j = 0; j < mortalityAge - c1RetirementAge; j++) {
-          const currentNeed = monthlyNeed * Math.pow(1 + inflation / 12, j * 12) - monthlySources;
+          const currentNeed = monthlyNeed * Math.pow(1 + inflation, j) - monthlySources;
           tempBalance = tempBalance * Math.pow(1 + mid / 12, 12) - (currentNeed > 0 ? currentNeed * 12 : 0);
           if (tempBalance <= 0) break;
         }
@@ -619,7 +620,7 @@ export function updateRetirementOutputs(analysisOutputs, clientData, formatCurre
         const mid = (low + high) / 2;
         let tempBalance = incomeData.totalBalance;
         for (let j = 0; j < mortalityAge - c1RetirementAge; j++) {
-          const currentNeed = mid * Math.pow(1 + inflation / 12, j * 12) - monthlySources;
+          const currentNeed = mid * Math.pow(1 + inflation, j) - monthlySources;
           tempBalance = tempBalance * Math.pow(1 + rorRetirement / 12, 12) - (currentNeed > 0 ? currentNeed * 12 : 0);
           if (tempBalance <= 0) break;
         }
