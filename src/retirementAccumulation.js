@@ -268,7 +268,7 @@ function calculateRetirementIncome(clientData, getAge) {
         const availableBalance = Math.round(balance + earnings);
         if (availableBalance >= remainingNeed) {
           withdrawal = Math.round(remainingNeed);
-          balance = Math.round(availableBalance - withdrawal);
+          balance = Math.round(availableBalance - remainingNeed);
         } else {
           withdrawal = availableBalance > 0 ? Math.round(availableBalance) : 0;
           shortfall = Math.round(remainingNeed - withdrawal);
@@ -395,9 +395,6 @@ export function updateRetirementGraph(chartCanvas, clientData, Chart, getAge) {
     return chartInstance;
   }
 }
-
-```javascript
-// ... (Previous code unchanged until updateRetirementOutputs) ...
 
 export function updateRetirementOutputs(analysisOutputs, clientData, formatCurrency, getAge, selectedReports, Chart) {
   try {
@@ -577,7 +574,7 @@ export function updateRetirementOutputs(analysisOutputs, clientData, formatCurre
       for (let i = 0; i < 20; i++) {
         const mid = (low + high) / 2;
         let tempBalance = incomeData.totalBalance;
-        for (let j = 0; i < mortalityAge - c1RetirementAge; j++) {
+        for (let j = 0; j < mortalityAge - c1RetirementAge; j++) {
           const currentNeed = Math.round(monthlyNeed * Math.pow(1 + inflation, j) - monthlySources);
           tempBalance = Math.round(tempBalance * (1 + mid) - (currentNeed > 0 ? currentNeed * 12 : 0));
           if (tempBalance <= 0) break;
@@ -678,24 +675,24 @@ export function updateRetirementOutputs(analysisOutputs, clientData, formatCurre
             <thead>
               <tr>
                 <th>Age</th>
-                <th>Need Income</th>
+                <th>Need</th>
+                <th>Income</th>
                 <th>Social Security</th>
                 <th>Withdrawal</th>
-                <th>Earnings</th>
-                <th>Balance</th>
                 <th>Shortfall</th>
+                <th>Balance</th>
               </tr>
             </thead>
             <tbody>
-              ${incomeData.labels.map((age, i) => `
+              ${incomeData.labels.slice(1).map((age, i) => `
                 <tr>
                   <td>${age}</td>
-                  <td>${formatCurrency(incomeData.needData[i])}</td>
-                  <td>${formatCurrency(incomeData.socialSecurityData[i])}</td>
-                  <td>${formatCurrency(incomeData.withdrawalData[i])}</td>
-                  <td>${formatCurrency(incomeData.earningsData[i])}</td>
-                  <td>${formatCurrency(incomeData.balanceData[i])}</td>
-                  <td>${formatCurrency(incomeData.shortfallData[i])}</td>
+                  <td>${formatCurrency(incomeData.needData[i + 1])}</td>
+                  <td>${formatCurrency(incomeData.incomeData[i + 1])}</td>
+                  <td>${formatCurrency(incomeData.socialSecurityData[i + 1])}</td>
+                  <td>${formatCurrency(incomeData.withdrawalData[i + 1])}</td>
+                  <td>${formatCurrency(incomeData.shortfallData[i + 1])}</td>
+                  <td>${formatCurrency(incomeData.balanceData[i + 1])}</td>
                 </tr>
               `).join('')}
             </tbody>
@@ -842,27 +839,6 @@ export function updateRetirementOutputs(analysisOutputs, clientData, formatCurre
         </div>
       </div>
     `;
-
-    // Setup dropdown and checkbox interactions
-    setupOutputControls(reportOptions, selectedReports, clientData, Chart, getAge);
-
-    // Render the graph if the current selection is output-graph
-    if (currentSelection === 'output-graph') {
-      const chartCanvas = document.getElementById('analysis-chart');
-      if (chartCanvas && typeof Chart !== 'undefined') {
-        setTimeout(() => {
-          updateRetirementGraph(chartCanvas, clientData, Chart, getAge);
-        }, 100);
-      }
-    }
-  } catch (error) {
-    console.error('Error in updateRetirementOutputs:', error);
-    analysisOutputs.innerHTML = '<p class="output-card">Error rendering outputs. Please check input data.</p>';
-    if (tabContainer) tabContainer.innerHTML = '';
-  }
-}
-
-// ... (Rest of the file unchanged) ...
 
     // Setup dropdown and checkbox interactions
     setupOutputControls(reportOptions, selectedReports, clientData, Chart, getAge);
