@@ -43,14 +43,10 @@ let clientData = {
   },
   summary: {
     topics: ['Accumulation Funding', 'Critical Illness', 'Debt', 'Disability', 'Education Funding', 'Long Term Care', 'Retirement Accumulation']
-  },
-  scenarios: {
-    base: null, // { name: "Base Case", data: calculateRetirementIncome result }
-    whatIf: []  // Array of { name, data, inputs: modified clientData }
   }
 };
 
-// List of clients for the modal
+// List of clients for the modal (can be expanded or fetched dynamically)
 const clients = [
   { id: 1, name: "Jason Mangold", data: clientData.client1 },
   { id: 2, name: "Jane Doe", data: clientData.client2 }
@@ -63,9 +59,9 @@ function loadClientData() {
     clientData = JSON.parse(savedData);
     clientData.client1.insurance = clientData.client1.insurance || { lifeInsurance: "0", disabilityInsurance: "0", longTermCare: "0" };
     clientData.client2.insurance = clientData.client2.insurance || { lifeInsurance: "0", disabilityInsurance: "0", longTermCare: "0" };
+    // Ensure c1MortalityAge and c2MortalityAge are initialized
     clientData.assumptions.c1MortalityAge = clientData.assumptions.c1MortalityAge || clientData.assumptions.mortalityAge || "90";
     clientData.assumptions.c2MortalityAge = clientData.assumptions.c2MortalityAge || clientData.assumptions.mortalityAge || "90";
-    clientData.scenarios = clientData.scenarios || { base: null, whatIf: [] };
     console.log('Loaded clientData from localStorage:', clientData);
   }
 }
@@ -93,8 +89,7 @@ let currentAnalysis = 'retirement-accumulation';
 let reportCount = 0;
 let selectedReports = [];
 let isTyping = false;
-let selectedClientId = 1;
-let chartInstance = null;
+let selectedClientId = 1; // Track the currently selected client
 
 // DOM elements
 const analysisTopics = document.querySelector('.analysis-topics');
@@ -112,6 +107,7 @@ const clientModal = document.getElementById('client-modal');
 const closeModalBtn = document.getElementById('close-modal');
 const clientList = document.getElementById('client-list');
 const clientSearch = document.getElementById('client-search');
+let chartInstance = null;
 
 // Analysis topics list
 const analysisTopicsList = [
@@ -145,10 +141,10 @@ document.addEventListener('DOMContentLoaded', () => {
     console.log('chartCanvas:', document.getElementById('analysis-chart'));
     populateAnalysisTopics();
     updateTabs(currentAnalysis);
-    populateClientList();
+    populateClientList(); // Populate the client list in the modal
     updateClientFileName();
     setupEventDelegation();
-    setupClientModalListeners();
+    setupClientModalListeners(); // Setup listeners for the client modal
     updateOutputs();
     if (currentAnalysis === 'client-profile') {
       analysisWorkspace.classList.add('client-profile-active');
@@ -172,7 +168,7 @@ document.addEventListener('DOMContentLoaded', () => {
 // Populate client list in the modal
 function populateClientList() {
   try {
-    clientList.innerHTML = '';
+    clientList.innerHTML = ''; // Clear existing list
     clients.forEach(client => {
       const li = document.createElement('li');
       li.textContent = client.name;
@@ -191,6 +187,7 @@ function populateClientList() {
 // Setup listeners for the client modal
 function setupClientModalListeners() {
   try {
+    // Toggle modal visibility
     clientFileToggle.addEventListener('click', (e) => {
       e.stopPropagation();
       const isOpen = clientModal.style.display === 'block';
@@ -198,11 +195,13 @@ function setupClientModalListeners() {
       clientFileToggle.setAttribute('aria-expanded', !isOpen);
     });
 
+    // Close modal
     closeModalBtn.addEventListener('click', () => {
       clientModal.style.display = 'none';
       clientFileToggle.setAttribute('aria-expanded', 'false');
     });
 
+    // Close modal when clicking outside
     document.addEventListener('click', (e) => {
       if (!clientFileToggle.contains(e.target) && !clientModal.contains(e.target)) {
         clientModal.style.display = 'none';
@@ -210,15 +209,18 @@ function setupClientModalListeners() {
       }
     });
 
+    // Handle client selection
     clientList.addEventListener('click', (e) => {
       const li = e.target.closest('li');
       if (!li) return;
 
+      // Update selected client
       selectedClientId = parseInt(li.dataset.clientId);
       clientList.querySelectorAll('li').forEach(item => item.classList.remove('selected'));
       li.classList.add('selected');
       clientFileName.textContent = li.textContent;
 
+      // Update clientData with the selected client's data
       const selectedClient = clients.find(client => client.id === selectedClientId);
       if (selectedClient) {
         clientData.client1 = selectedClient.data;
@@ -226,19 +228,20 @@ function setupClientModalListeners() {
           const otherClient = clients.find(client => client.id !== selectedClientId);
           clientData.client2 = otherClient ? otherClient.data : clientData.client2;
         }
-        clientData.scenarios = { base: null, whatIf: [] }; // Reset scenarios on client change
         saveClientData();
-        updateTabs(currentAnalysis);
+        updateTabs(currentAnalysis); // Refresh tabs to reflect new client data
         updateOutputs();
         if (currentAnalysis !== 'client-profile') {
           setTimeout(updateGraph, 100);
         }
       }
 
+      // Close modal
       clientModal.style.display = 'none';
       clientFileToggle.setAttribute('aria-expanded', 'false');
     });
 
+    // Search functionality
     clientSearch.addEventListener('input', (e) => {
       const searchTerm = e.target.value.toLowerCase();
       const clientItems = clientList.querySelectorAll('li');
@@ -265,6 +268,7 @@ function populateAnalysisTopics() {
       analysisTopics.appendChild(btn);
     });
 
+    // Bind to .topic-btn within .analysis-topics, ensuring no overlap with sub-tabs
     document.querySelectorAll('.analysis-topics .topic-btn').forEach(btn => {
       btn.addEventListener('click', (e) => {
         e.stopPropagation();
@@ -589,7 +593,6 @@ function setupEventDelegation() {
         console.log(`Input event on ${e.target.id}: ${e.target.value}`);
         updateClientData(e);
         saveClientData();
-        clientData.scenarios.base = null; // Invalidate Base Case on input change
         clearTimeout(graphTimeout);
         graphTimeout = setTimeout(() => {
           updateOutputs();
@@ -607,7 +610,6 @@ function setupEventDelegation() {
       if (e.target.id === 'is-married') {
         toggleClient2(e);
         saveClientData();
-        clientData.scenarios = { base: null, whatIf: [] }; // Reset scenarios on marital status change
         updateOutputs();
         if (currentAnalysis !== 'client-profile') {
           setTimeout(updateGraph, 100);
@@ -626,201 +628,6 @@ function setupEventDelegation() {
     });
   } catch (error) {
     console.error('Error in setupEventDelegation:', error);
-  }
-}
-
-// Setup What If scenario controls
-function setupWhatIfControls() {
-  try {
-    const graphTypeSelect = document.getElementById('graph-type');
-    const saveBaseCaseBtn = document.getElementById('save-base-case');
-    const applyScenarioBtn = document.getElementById('apply-scenario');
-    const resetScenarioBtn = document.getElementById('reset-scenario');
-    const scenarioNameInput = document.getElementById('scenario-name');
-    const scenariosList = document.getElementById('scenarios-list');
-    const sliders = document.querySelectorAll('#sliders input[type="range"]');
-    const numberInputs = document.querySelectorAll('#sliders input[type="number"]');
-
-    if (!graphTypeSelect || !saveBaseCaseBtn || !applyScenarioBtn || !resetScenarioBtn || !scenariosList) {
-      console.warn('What If controls not found');
-      return;
-    }
-
-    // Initialize sliders with Base Case values
-    const initializeSliders = () => {
-      const slidersConfig = [
-        { id: 'c1-retirement-age', value: parseFloat(clientData.client1.personal.retirementAge) || 65 },
-        { id: 'c2-retirement-age', value: clientData.isMarried ? (parseFloat(clientData.client2.personal.retirementAge) || 65) : null },
-        { id: 'c1-social-security', value: parseFloat(clientData.client1.incomeSources.socialSecurity) || 0 },
-        { id: 'c2-social-security', value: clientData.isMarried ? (parseFloat(clientData.client2.incomeSources.socialSecurity) || 0) : null },
-        { id: 'monthly-contribution', value: clientData.client1.accounts.reduce((sum, acc) => sum + (parseFloat(acc.contribution) || 0), 0) / 12 + (clientData.isMarried ? clientData.client2.accounts.reduce((sum, acc) => sum + (parseFloat(acc.contribution) || 0), 0) / 12 : 0) },
-        { id: 'ror', value: clientData.client1.accounts[0]?.ror || 6 },
-        { id: 'ror-retirement', value: parseFloat(clientData.assumptions.rorRetirement) || 4 },
-        { id: 'monthly-income', value: parseFloat(clientData.incomeNeeds.monthly) || 5000 },
-        { id: 'inflation', value: parseFloat(clientData.assumptions.inflation) || 2 },
-        { id: 'c1-mortality-age', value: parseFloat(clientData.assumptions.c1MortalityAge) || 90 },
-        { id: 'c2-mortality-age', value: clientData.isMarried ? (parseFloat(clientData.assumptions.c2MortalityAge) || 90) : null }
-      ];
-
-      sliders.forEach(slider => {
-        const config = slidersConfig.find(c => slider.id.startsWith(c.id));
-        if (config && config.value !== null) {
-          slider.value = config.value;
-          const valueSpan = document.getElementById(`${slider.id}-value`);
-          const numberInput = document.getElementById(`${slider.id.replace('-slider', '-number')}`);
-          if (valueSpan) {
-            valueSpan.textContent = slider.id.includes('ror') || slider.id.includes('inflation') ? `${config.value}%` : slider.id.includes('age') ? `${config.value} years` : `$${config.value}`;
-          }
-          if (numberInput) {
-            numberInput.value = config.value;
-          }
-        }
-      });
-    };
-
-    initializeSliders();
-
-    // Update scenarios list
-    const updateScenariosList = () => {
-      scenariosList.innerHTML = '';
-      if (clientData.scenarios.base) {
-        const option = document.createElement('option');
-        option.value = 'base';
-        option.textContent = clientData.scenarios.base.name;
-        option.selected = true;
-        scenariosList.appendChild(option);
-      }
-      clientData.scenarios.whatIf.forEach((scenario, index) => {
-        const option = document.createElement('option');
-        option.value = index;
-        option.textContent = scenario.name;
-        option.selected = true;
-        scenariosList.appendChild(option);
-      });
-      updateGraph();
-    };
-
-    // Handle graph type change
-    graphTypeSelect.addEventListener('change', () => {
-      updateGraph();
-    });
-
-    // Save Base Case
-    saveBaseCaseBtn.addEventListener('click', () => {
-      const incomeData = calculateRetirementIncome(clientData, getAge);
-      clientData.scenarios.base = { name: 'Base Case', data: incomeData };
-      saveClientData();
-      updateScenariosList();
-      initializeSliders();
-    });
-
-    // Apply Scenario
-    applyScenarioBtn.addEventListener('click', () => {
-      if (!clientData.scenarios.base) {
-        alert('Please save a Base Case first.');
-        return;
-      }
-      const name = scenarioNameInput.value.trim() || `Scenario ${clientData.scenarios.whatIf.length + 1}`;
-      if (clientData.scenarios.whatIf.length >= 5) {
-        alert('Maximum 5 scenarios allowed. Remove one to add a new scenario.');
-        return;
-      }
-      const modifiedData = getModifiedClientData();
-      const incomeData = calculateRetirementIncome(modifiedData, getAge);
-      clientData.scenarios.whatIf.push({ name, data: incomeData, inputs: modifiedData });
-      saveClientData();
-      updateScenariosList();
-      scenarioNameInput.value = '';
-    });
-
-    // Reset to Base Case
-    resetScenarioBtn.addEventListener('click', () => {
-      initializeSliders();
-      updateGraph();
-    });
-
-    // Handle scenario selection
-    scenariosList.addEventListener('change', () => {
-      updateGraph();
-    });
-
-    // Handle slider and number input changes
-    let sliderTimeout;
-    const updateScenarioPreview = () => {
-      clearTimeout(sliderTimeout);
-      sliderTimeout = setTimeout(() => {
-        const modifiedData = getModifiedClientData();
-        updateGraph(modifiedData);
-      }, 500);
-    };
-
-    sliders.forEach(slider => {
-      slider.addEventListener('input', () => {
-        const valueSpan = document.getElementById(`${slider.id}-value`);
-        const numberInput = document.getElementById(`${slider.id.replace('-slider', '-number')}`);
-        if (valueSpan) {
-          valueSpan.textContent = slider.id.includes('ror') || slider.id.includes('inflation') ? `${slider.value}%` : slider.id.includes('age') ? `${slider.value} years` : `$${slider.value}`;
-        }
-        if (numberInput) {
-          numberInput.value = slider.value;
-        }
-        updateScenarioPreview();
-      });
-    });
-
-    numberInputs.forEach(input => {
-      input.addEventListener('input', () => {
-        const slider = document.getElementById(`${input.id.replace('-number', '-slider')}`);
-        const valueSpan = document.getElementById(`${slider.id}-value`);
-        if (slider) {
-          slider.value = input.value;
-          if (valueSpan) {
-            valueSpan.textContent = input.id.includes('ror') || input.id.includes('inflation') ? `${input.value}%` : input.id.includes('age') ? `${input.value} years` : `$${input.value}`;
-          }
-          updateScenarioPreview();
-        }
-      });
-    });
-
-    // Get modified clientData from sliders
-    function getModifiedClientData() {
-      const modifiedData = JSON.parse(JSON.stringify(clientData));
-      modifiedData.client1.personal.retirementAge = document.getElementById('c1-retirement-age-slider').value;
-      if (clientData.isMarried) {
-        modifiedData.client2.personal.retirementAge = document.getElementById('c2-retirement-age-slider').value;
-      }
-      modifiedData.client1.incomeSources.socialSecurity = document.getElementById('c1-social-security-slider').value;
-      if (clientData.isMarried) {
-        modifiedData.client2.incomeSources.socialSecurity = document.getElementById('c2-social-security-slider').value;
-      }
-      const monthlyContribution = parseFloat(document.getElementById('monthly-contribution-slider').value);
-      modifiedData.client1.accounts.forEach(acc => {
-        acc.contribution = (monthlyContribution * 12 / (clientData.isMarried ? 2 : 1)).toString();
-      });
-      if (clientData.isMarried) {
-        modifiedData.client2.accounts.forEach(acc => {
-          acc.contribution = (monthlyContribution * 12 / 2).toString();
-        });
-      }
-      modifiedData.client1.accounts.forEach(acc => {
-        acc.ror = document.getElementById('ror-slider').value;
-      });
-      if (clientData.isMarried) {
-        modifiedData.client2.accounts.forEach(acc => {
-          acc.ror = document.getElementById('ror-slider').value;
-        });
-      }
-      modifiedData.assumptions.rorRetirement = document.getElementById('ror-retirement-slider').value;
-      modifiedData.incomeNeeds.monthly = document.getElementById('monthly-income-slider').value;
-      modifiedData.assumptions.inflation = document.getElementById('inflation-slider').value;
-      modifiedData.assumptions.c1MortalityAge = document.getElementById('c1-mortality-age-slider').value;
-      if (clientData.isMarried) {
-        modifiedData.assumptions.c2MortalityAge = document.getElementById('c2-mortality-age-slider').value;
-      }
-      return modifiedData;
-    }
-  } catch (error) {
-    console.error('Error in setupWhatIfControls:', error);
   }
 }
 
@@ -886,7 +693,6 @@ function addAccountHandler(e) {
     clientData[clientKey].accounts.push({ name: "", balance: "", ror: "", contribution: "", employerMatch: "" });
     populateInputFields();
     saveClientData();
-    clientData.scenarios.base = null; // Invalidate Base Case
     updateOutputs();
     if (currentAnalysis !== 'client-profile') {
       setTimeout(updateGraph, 100);
@@ -918,7 +724,6 @@ function addAssetHandler(e) {
     clientData[clientKey].other.assets.push({ name: "", balance: "", ror: "", debt: "" });
     populateInputFields();
     saveClientData();
-    clientData.scenarios.base = null; // Invalidate Base Case
     updateOutputs();
     if (currentAnalysis !== 'client-profile') {
       setTimeout(updateGraph, 100);
@@ -1080,7 +885,7 @@ function updateClientData(e) {
   }
 }
 
-// Format currency
+// Format currency (used for outputs only)
 function formatCurrency(value) {
   return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0 }).format(value);
 }
@@ -1102,7 +907,7 @@ function getAge(dob) {
 }
 
 // Update graph
-function updateGraph(previewData = null) {
+function updateGraph() {
   try {
     console.log('updateGraph called, currentAnalysis:', currentAnalysis);
     console.log('Chart.js available:', typeof Chart !== 'undefined');
@@ -1146,8 +951,7 @@ function updateGraph(previewData = null) {
 
     if (currentAnalysis === 'retirement-accumulation') {
       console.log('Calling updateRetirementGraph');
-      const graphType = document.getElementById('graph-type')?.value || 'income';
-      chartInstance = updateRetirementGraph(chartCanvas, clientData, Chart, getAge, graphType, previewData);
+      chartInstance = updateRetirementGraph(chartCanvas, clientData, Chart, getAge);
       console.log('updateRetirementGraph returned chartInstance:', chartInstance);
     } else if (currentAnalysis === 'personal-finance') {
       console.log('Calling updatePersonalFinanceGraph');
@@ -1194,7 +998,6 @@ function updateOutputs() {
       analysisOutputs.innerHTML = `<p class="output-card">Outputs not available for ${currentAnalysis}.</p>`;
     }
     setupOutputTabSwitching();
-    setupWhatIfControls();
   } catch (error) {
     console.error('Error in updateOutputs:', error);
     analysisOutputs.innerHTML = '<p class="output-error">Error rendering outputs. Please check console for details.</p>';
