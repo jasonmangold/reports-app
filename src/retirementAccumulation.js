@@ -494,13 +494,21 @@ export function updateRetirementOutputs(analysisOutputs, clientData, formatCurre
     const c1RetirementAge = parseFloat(clientData.client1.personal.retirementAge) || 65;
     const c2RetirementAge = clientData.isMarried ? parseFloat(clientData.client2.personal.retirementAge) || 65 : c1RetirementAge;
     const startAge = Math.max(c1RetirementAge, c2RetirementAge);
-    
+
+    // Determine first client to retire
+    const c1YearsToRetirement = c1RetirementAge - c1Age;
+    const c2YearsToRetirement = clientData.isMarried ? c2RetirementAge - c2Age : Infinity;
+    const firstRetirementYears = Math.min(c1YearsToRetirement, c2YearsToRetirement);
+    const firstClientIsC1 = c1YearsToRetirement <= c2YearsToRetirement;
+    const firstRetirementAge = firstClientIsC1 ? c1RetirementAge : c2RetirementAge;
+    const firstCurrentAge = firstClientIsC1 ? c1Age : c2Age;
+
     // Parse mortality ages with fallback for legacy data
     const c1MortalityAgeRaw = parseFloat(clientData.assumptions.c1MortalityAge) || parseFloat(clientData.assumptions.mortalityAge);
     const c2MortalityAgeRaw = clientData.isMarried ? (parseFloat(clientData.assumptions.c2MortalityAge) || parseFloat(clientData.assumptions.mortalityAge)) : c1MortalityAgeRaw;
     const c1MortalityAge = isNaN(c1MortalityAgeRaw) || c1MortalityAgeRaw < c1RetirementAge ? 90 : Math.min(c1MortalityAgeRaw, 120);
     const c2MortalityAge = isNaN(c2MortalityAgeRaw) || c2MortalityAgeRaw < c2RetirementAge ? 90 : Math.min(c2MortalityAgeRaw, 120);
-    
+
     console.log('Output Mortality Ages:', { c1MortalityAge, c2MortalityAge, c1MortalityAgeRaw, c2MortalityAgeRaw, assumptions: clientData.assumptions });
 
     const maxTimelineAge = clientData.isMarried ? Math.max(c1MortalityAge, c2MortalityAge) : c1MortalityAge;
@@ -587,7 +595,7 @@ export function updateRetirementOutputs(analysisOutputs, clientData, formatCurre
       const clientAge = idx === 0 ? c1Age : c2Age;
       const clientRetirementAge = idx === 0 ? c1RetirementAge : c2RetirementAge;
       const monthsToClientRetirement = (clientRetirementAge - clientAge) * 12;
-      const yearsToClientRetirement = clientRetirementAge - clientAge;
+      const yearsToClientRetirement = Math.min(clientRetirementAge - clientAge, firstRetirementYears);
 
       client.accounts.forEach(account => {
         let balance = Math.round(parseFloat(account.balance) || 0);
@@ -599,7 +607,7 @@ export function updateRetirementOutputs(analysisOutputs, clientData, formatCurre
         const monthlyEmployerMatch = annualEmployerMatch / 12;
         const ror = isNaN(parseFloat(account.ror)) ? 0.06 : parseFloat(account.ror) / 100;
 
-        // Calculate balances for each year from now to retirement
+        // Calculate balances for each year from now to first retirement
         const yearlyBalances = [];
         for (let year = 0; year <= yearsToClientRetirement; year++) {
           const months = year * 12;
@@ -706,10 +714,8 @@ export function updateRetirementOutputs(analysisOutputs, clientData, formatCurre
     const select = document.getElementById('output-select');
     const currentSelection = select ? select.value : 'output-graph';
 
-    // Generate labels for the bar graph (years from now to retirement)
-    const currentYear = new Date().getFullYear();
-    const yearsToRetirementMax = Math.max(c1RetirementAge - c1Age, c2RetirementAge - c2Age);
-    const labels = Array.from({ length: yearsToRetirementMax + 1 }, (_, i) => currentYear + i);
+    // Generate labels for the bar graph (ages up to first retirement)
+    const labels = Array.from({ length: firstRetirementYears + 1 }, (_, i) => firstCurrentAge + i);
 
     // Prepare datasets for the bar graph
     const datasets = capitalAccounts.map(account => ({
@@ -978,10 +984,10 @@ export function updateRetirementOutputs(analysisOutputs, clientData, formatCurre
                 responsive: true,
                 plugins: {
                   legend: { display: true, position: 'top' },
-                  title: { display: true, text: 'Capital Account Growth to Retirement' }
+                  title: { display: true, text: 'Capital Account Growth to First Retirement' }
                 },
                 scales: {
-                  x: { title: { display: true, text: 'Year' }, stacked: true },
+                  x: { title: { display: true, text: `${firstClientIsC1 ? clientData.client1.personal.name || 'Client 1' : clientData.client2.personal.name || 'Client 2'} Age` }, stacked: true },
                   y: { title: { display: true, text: 'Balance ($)' }, stacked: true, beginAtZero: true }
                 }
               }
@@ -1066,13 +1072,20 @@ function outputDropdownChangeHandler(clientData, Chart, getAge) {
               chartCanvas.chartInstance.destroy();
               chartCanvas.chartInstance = null;
             }
-            const currentYear = new Date().getFullYear();
             const c1Age = getAge(clientData.client1.personal.dob);
             const c2Age = clientData.isMarried ? getAge(clientData.client2.personal.dob) : c1Age;
             const c1RetirementAge = parseFloat(clientData.client1.personal.retirementAge) || 65;
             const c2RetirementAge = clientData.isMarried ? parseFloat(clientData.client2.personal.retirementAge) || 65 : c1RetirementAge;
-            const yearsToRetirementMax = Math.max(c1RetirementAge - c1Age, c2RetirementAge - c2Age);
-            const labels = Array.from({ length: yearsToRetirementMax + 1 }, (_, i) => currentYear + i);
+
+            // Determine first client to retire
+            const c1YearsToRetirement = c1RetirementAge - c1Age;
+            const c2YearsToRetirement = clientData.isMarried ? c2RetirementAge - c2Age : Infinity;
+            const firstRetirementYears = Math.min(c1YearsToRetirement, c2YearsToRetirement);
+            const firstClientIsC1 = c1YearsToRetirement <= c2YearsToRetirement;
+            const firstCurrentAge = firstClientIsC1 ? c1Age : c2Age;
+
+            // Generate age labels
+            const labels = Array.from({ length: firstRetirementYears + 1 }, (_, i) => firstCurrentAge + i);
 
             const capitalAccounts = [];
             let totalCapital = 0;
@@ -1082,7 +1095,7 @@ function outputDropdownChangeHandler(clientData, Chart, getAge) {
               const clientAge = idx === 0 ? c1Age : c2Age;
               const clientRetirementAge = idx === 0 ? c1RetirementAge : c2RetirementAge;
               const monthsToClientRetirement = (clientRetirementAge - clientAge) * 12;
-              const yearsToClientRetirement = clientRetirementAge - clientAge;
+              const yearsToClientRetirement = Math.min(clientRetirementAge - clientAge, firstRetirementYears);
 
               client.accounts.forEach(account => {
                 let balance = Math.round(parseFloat(account.balance) || 0);
@@ -1132,10 +1145,10 @@ function outputDropdownChangeHandler(clientData, Chart, getAge) {
                 responsive: true,
                 plugins: {
                   legend: { display: true, position: 'top' },
-                  title: { display: true, text: 'Capital Account Growth to Retirement' }
+                  title: { display: true, text: 'Capital Account Growth to First Retirement' }
                 },
                 scales: {
-                  x: { title: { display: true, text: 'Year' }, stacked: true },
+                  x: { title: { display: true, text: `${firstClientIsC1 ? clientData.client1.personal.name || 'Client 1' : clientData.client2.personal.name || 'Client 2'} Age` }, stacked: true },
                   y: { title: { display: true, text: 'Balance ($)' }, stacked: true, beginAtZero: true }
                 }
               }
