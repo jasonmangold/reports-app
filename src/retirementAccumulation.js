@@ -722,11 +722,11 @@ export function updateRetirementOutputs(analysisOutputs, clientData, formatCurre
       const dataset = {
         label: account.name,
         data: account.balances,
-        backgroundColor: account.isClient1 ? '#22c55e' : '#3b82f6', // Green for Client 1, Blue for Client 2
+        backgroundColor: account.isClient1 ? '#22c55e' : '#3b82f6' // Green for Client 1, Blue for Client 2
       };
-      // Only set stack if there are two clients (isMarried is true)
+      // Set the same stack value for all accounts to stack them together when there are two clients
       if (clientData.isMarried) {
-        dataset.stack = account.isClient1 ? 'Client1' : 'Client2';
+        dataset.stack = 'Accounts';
       }
       return dataset;
     });
@@ -1148,11 +1148,11 @@ function outputDropdownChangeHandler(clientData, Chart, getAge) {
               const dataset = {
                 label: account.name,
                 data: account.balances,
-                backgroundColor: account.isClient1 ? '#22c55e' : '#3b82f6',
+                backgroundColor: account.isClient1 ? '#22c55e' : '#3b82f6'
               };
-              // Only set stack if there are two clients (isMarried is true)
+              // Set the same stack value for all accounts to stack them together when there are two clients
               if (clientData.isMarried) {
-                dataset.stack = account.isClient1 ? 'Client1' : 'Client2';
+                dataset.stack = 'Accounts';
               }
               return dataset;
             });
@@ -1194,4 +1194,3 @@ function outputDropdownChangeHandler(clientData, Chart, getAge) {
     console.error('Error in outputDropdownChangeHandler:', error);
   }
 }
-
