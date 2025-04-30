@@ -1194,4 +1194,4 @@ function outputDropdownChangeHandler(clientData, Chart, getAge) {
     console.error('Error in outputDropdownChangeHandler:', error);
   }
 }
-}
+
