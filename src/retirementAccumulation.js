@@ -162,10 +162,12 @@ function calculateRetirementIncome(clientData, getAge) {
     // Debug mortality ages
     console.log('Parsed Mortality Ages:', { c1MortalityAge, c2MortalityAge, c1MortalityAgeRaw, c2MortalityAgeRaw, assumptions: clientData.assumptions });
 
-    // Adjust maxTimelineAge to account for age difference if Client 2 lives longer
+    // Adjust maxTimelineAge to stop at mortalityAge - 1 for each client
+    const c1MaxAge = c1MortalityAge - 1; // Last year before Client 1's mortality
+    const c2MaxAge = c2MortalityAge - 1; // Last year before Client 2's mortality
     const maxTimelineAge = clientData.isMarried
-      ? Math.max(c1MortalityAge, c2MortalityAge + ageDifference) // Ensure Client 2 reaches their mortality age
-      : c1MortalityAge;
+      ? Math.max(c1MaxAge, c2MaxAge + ageDifference) // Ensure Client 2 reaches their max age
+      : c1MaxAge;
     console.log('Max Timeline Age:', maxTimelineAge);
     console.log('Start Age:', startAge, 'Age Difference:', ageDifference);
 
@@ -257,10 +259,10 @@ function calculateRetirementIncome(clientData, getAge) {
     for (let i = 0; i <= maxTimelineAge - startAge; i++) {
       const currentC1Age = startAge + i;
       const currentC2Age = currentC1Age - ageDifference;
-      // Format age label
+      // Format age label, stopping at mortalityAge - 1
       const ageLabel = clientData.isMarried
-        ? `${currentC1Age <= c1MortalityAge ? currentC1Age : ''}/${currentC2Age <= c2MortalityAge ? currentC2Age : ''}`
-        : `${currentC1Age <= c1MortalityAge ? currentC1Age : ''}`;
+        ? `${currentC1Age <= c1MaxAge ? currentC1Age : ''}/${currentC2Age <= c2MaxAge ? currentC2Age : ''}`
+        : `${currentC1Age <= c1MaxAge ? currentC1Age : ''}`;
       result.labels.push(ageLabel);
       console.log(`Age ${i}: C1=${currentC1Age}, C2=${currentC2Age}, Label=${ageLabel}`);
 
@@ -275,13 +277,13 @@ function calculateRetirementIncome(clientData, getAge) {
       if (currentC1Age < c1RetirementAge) {
         employmentIncome += parseFloat(clientData.client1.incomeSources.employment) || 0;
       }
-      if (currentC1Age <= c1MortalityAge) {
+      if (currentC1Age <= c1MaxAge) {
         otherIncome += (parseFloat(clientData.client1.incomeSources.other) || 0) * 12;
       }
       if (clientData.isMarried && currentC2Age < c2RetirementAge) {
         employmentIncome += parseFloat(clientData.client2.incomeSources.employment) || 0;
       }
-      if (clientData.isMarried && currentC2Age <= c2MortalityAge) {
+      if (clientData.isMarried && currentC2Age <= c2MaxAge) {
         otherIncome += (parseFloat(clientData.client2.incomeSources.other) || 0) * 12;
       }
       const totalIncome = employmentIncome + otherIncome;
@@ -289,10 +291,10 @@ function calculateRetirementIncome(clientData, getAge) {
 
       // Social Security
       let socialSecurity = 0;
-      if (currentC1Age >= c1RetirementAge && currentC1Age <= c1MortalityAge) {
+      if (currentC1Age >= c1RetirementAge && currentC1Age <= c1MaxAge) {
         socialSecurity += (parseFloat(clientData.client1.incomeSources.socialSecurity) || 0) * 12;
       }
-      if (clientData.isMarried && currentC2Age >= c2RetirementAge && currentC2Age <= c2MortalityAge) {
+      if (clientData.isMarried && currentC2Age >= c2RetirementAge && currentC2Age <= c2MaxAge) {
         socialSecurity += (parseFloat(clientData.client2.incomeSources.socialSecurity) || 0) * 12;
       }
       result.socialSecurityData.push(Math.round(socialSecurity));
@@ -354,6 +356,7 @@ function calculateRetirementIncome(clientData, getAge) {
   }
   return result;
 }
+
 export function updateRetirementGraph(chartCanvas, clientData, Chart, getAge) {
   try {
     if (!chartCanvas) {
