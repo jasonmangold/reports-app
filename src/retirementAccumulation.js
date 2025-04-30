@@ -309,10 +309,12 @@ function calculateRetirementIncome(clientData, getAge) {
       const monthlySocialSecurity = socialSecurity / 12;
 
       for (let m = 0; m < 12; m++) {
-        // Monthly withdrawal (no rounding for calculation)
+        // Calculate remaining need or surplus
         const monthlyRemainingNeed = monthlyNeedAdjusted - monthlyIncome - monthlySocialSecurity;
         let monthlyWithdrawal = 0;
+
         if (monthlyRemainingNeed > 0) {
+          // Need exceeds income + Social Security: withdraw from balance
           if (monthlyBalance >= monthlyRemainingNeed) {
             monthlyWithdrawal = monthlyRemainingNeed;
             monthlyBalance -= monthlyWithdrawal;
@@ -320,9 +322,13 @@ function calculateRetirementIncome(clientData, getAge) {
             monthlyWithdrawal = monthlyBalance;
             monthlyBalance = 0;
           }
+        } else {
+          // Surplus: save the excess by setting negative withdrawal
+          monthlyWithdrawal = monthlyRemainingNeed; // Negative value increases balance
+          monthlyBalance -= monthlyWithdrawal; // Subtracting a negative increases balance
         }
 
-        // Monthly earnings (calculated after withdrawal, no rounding)
+        // Monthly earnings (calculated after withdrawal/surplus, no rounding)
         const monthlyEarnings = monthlyBalance * monthlyRor;
         monthlyBalance += monthlyEarnings;
 
@@ -333,7 +339,7 @@ function calculateRetirementIncome(clientData, getAge) {
       result.earningsData.push(Math.round(annualEarnings));
       result.withdrawalData.push(Math.round(annualWithdrawal));
 
-      // Shortfall
+      // Shortfall (only positive values)
       const shortfall = adjustedAnnualNeed - totalIncome - socialSecurity - annualWithdrawal;
       result.shortfallData.push(shortfall > 0 ? Math.round(shortfall) : 0);
 
@@ -655,7 +661,7 @@ export function updateRetirementOutputs(analysisOutputs, clientData, formatCurre
       const annualNeed = (monthlyNeed - monthlySources) * 12;
       requiredAtRetirement = annualNeed * (1 - Math.pow(1 + rorRetirement, -yearsShort)) / rorRetirement;
       const monthsToRetirement = (startAge - c1Age) * 12;
-      additionalSavings = requiredAtRetirement / ((Math.pow(1 + rorRetirement / 12, monthsToRetirement) - 1) / (rorRetirement / 12));
+      additionalSavings = requiredAtRetirement / ((Math.pow(1 + rorRetirement / 12, monthsToRetirement) - 1) / (ror / 12));
     }
 
     // Calculate Alternatives
