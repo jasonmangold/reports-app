@@ -718,12 +718,21 @@ export function updateRetirementOutputs(analysisOutputs, clientData, formatCurre
     const labels = Array.from({ length: firstRetirementYears + 1 }, (_, i) => firstCurrentAge + i);
 
     // Prepare datasets for the bar graph
-    const datasets = capitalAccounts.map(account => ({
-      label: account.name,
-      data: account.balances,
-      backgroundColor: account.isClient1 ? '#22c55e' : '#3b82f6', // Green for Client 1, Blue for Client 2
-      stack: account.isClient1 ? 'Client1' : 'Client2'
-    }));
+    const datasets = capitalAccounts.map(account => {
+      const dataset = {
+        label: account.name,
+        data: account.balances,
+        backgroundColor: account.isClient1 ? '#22c55e' : '#3b82f6', // Green for Client 1, Blue for Client 2
+      };
+      // Only set stack if there are two clients (isMarried is true)
+      if (clientData.isMarried) {
+        dataset.stack = account.isClient1 ? 'Client1' : 'Client2';
+      }
+      return dataset;
+    });
+
+    // Determine if stacking should be enabled
+    const shouldStack = clientData.isMarried;
 
     // Render Dropdown and Checkbox in output-tabs-container
     if (tabContainer) {
@@ -987,8 +996,15 @@ export function updateRetirementOutputs(analysisOutputs, clientData, formatCurre
                   title: { display: true, text: 'Capital Account Growth to First Retirement' }
                 },
                 scales: {
-                  x: { title: { display: true, text: `${firstClientIsC1 ? clientData.client1.personal.name || 'Client 1' : clientData.client2.personal.name || 'Client 2'} Age` }, stacked: true },
-                  y: { title: { display: true, text: 'Balance ($)' }, stacked: true, beginAtZero: true }
+                  x: {
+                    title: { display: true, text: `${firstClientIsC1 ? clientData.client1.personal.name || 'Client 1' : clientData.client2.personal.name || 'Client 2'} Age` },
+                    stacked: shouldStack // Stack only if there are two clients
+                  },
+                  y: {
+                    title: { display: true, text: 'Balance ($)' },
+                    stacked: shouldStack, // Stack only if there are two clients
+                    beginAtZero: true
+                  }
                 }
               }
             });
@@ -1128,12 +1144,21 @@ function outputDropdownChangeHandler(clientData, Chart, getAge) {
               });
             });
 
-            const datasets = capitalAccounts.map(account => ({
-              label: account.name,
-              data: account.balances,
-              backgroundColor: account.isClient1 ? '#22c55e' : '#3b82f6',
-              stack: account.isClient1 ? 'Client1' : 'Client2'
-            }));
+            const datasets = capitalAccounts.map(account => {
+              const dataset = {
+                label: account.name,
+                data: account.balances,
+                backgroundColor: account.isClient1 ? '#22c55e' : '#3b82f6',
+              };
+              // Only set stack if there are two clients (isMarried is true)
+              if (clientData.isMarried) {
+                dataset.stack = account.isClient1 ? 'Client1' : 'Client2';
+              }
+              return dataset;
+            });
+
+            // Determine if stacking should be enabled
+            const shouldStack = clientData.isMarried;
 
             chartInstance = new Chart(ctx, {
               type: 'bar',
@@ -1148,8 +1173,15 @@ function outputDropdownChangeHandler(clientData, Chart, getAge) {
                   title: { display: true, text: 'Capital Account Growth to First Retirement' }
                 },
                 scales: {
-                  x: { title: { display: true, text: `${firstClientIsC1 ? clientData.client1.personal.name || 'Client 1' : clientData.client2.personal.name || 'Client 2'} Age` }, stacked: true },
-                  y: { title: { display: true, text: 'Balance ($)' }, stacked: true, beginAtZero: true }
+                  x: {
+                    title: { display: true, text: `${firstClientIsC1 ? clientData.client1.personal.name || 'Client 1' : clientData.client2.personal.name || 'Client 2'} Age` },
+                    stacked: shouldStack // Stack only if there are two clients
+                  },
+                  y: {
+                    title: { display: true, text: 'Balance ($)' },
+                    stacked: shouldStack, // Stack only if there are two clients
+                    beginAtZero: true
+                  }
                 }
               }
             });
@@ -1161,4 +1193,5 @@ function outputDropdownChangeHandler(clientData, Chart, getAge) {
   } catch (error) {
     console.error('Error in outputDropdownChangeHandler:', error);
   }
+}
 }
