@@ -466,28 +466,6 @@ export function updateRetirementGraph(chartCanvas, clientData, Chart, getAge) {
     return chartInstance;
   }
 }
-  catch (error) {
-    console.error('Error in updateRetirementGraph:', error);
-    const ctx = chartCanvas.getContext('2d');
-    let chartInstance = new Chart(ctx, {
-      type: 'bar',
-      data: {
-        labels: ['Error'],
-        datasets: [{
-          label: 'Error',
-          data: [0],
-          backgroundColor: '#ef4444'
-        }]
-      },
-      options: {
-        responsive: true,
-        plugins: { title: { display: true, text: 'Error rendering graph' } }
-      }
-    });
-    chartCanvas.chartInstance = chartInstance;
-    return chartInstance;
-  }
-}
 
 export function updateRetirementOutputs(analysisOutputs, clientData, formatCurrency, getAge, selectedReports, Chart) {
   try {
