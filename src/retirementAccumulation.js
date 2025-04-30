@@ -162,7 +162,10 @@ function calculateRetirementIncome(clientData, getAge) {
     // Debug mortality ages
     console.log('Parsed Mortality Ages:', { c1MortalityAge, c2MortalityAge, c1MortalityAgeRaw, c2MortalityAgeRaw, assumptions: clientData.assumptions });
 
-    const maxTimelineAge = clientData.isMarried ? Math.max(c1MortalityAge, c2MortalityAge) : c1MortalityAge;
+    // Adjust maxTimelineAge to account for age difference if Client 2 lives longer
+    const maxTimelineAge = clientData.isMarried
+      ? Math.max(c1MortalityAge, c2MortalityAge + ageDifference) // Ensure Client 2 reaches their mortality age
+      : c1MortalityAge;
     console.log('Max Timeline Age:', maxTimelineAge);
     console.log('Start Age:', startAge, 'Age Difference:', ageDifference);
 
@@ -251,7 +254,7 @@ function calculateRetirementIncome(clientData, getAge) {
     result.shortfallData.push(0);
 
     // Calculate timeline data with monthly compounding, displayed annually
-    for (let i = 0; i <= maxTimelineAge - startAge; i++) { // Include maxTimelineAge
+    for (let i = 0; i <= maxTimelineAge - startAge; i++) {
       const currentC1Age = startAge + i;
       const currentC2Age = currentC1Age - ageDifference;
       // Format age label
