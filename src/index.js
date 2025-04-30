@@ -43,10 +43,14 @@ let clientData = {
   },
   summary: {
     topics: ['Accumulation Funding', 'Critical Illness', 'Debt', 'Disability', 'Education Funding', 'Long Term Care', 'Retirement Accumulation']
+  },
+  scenarios: {
+    base: null,
+    whatIf: []
   }
 };
 
-// List of clients for the modal (can be expanded or fetched dynamically)
+// List of clients for the modal
 const clients = [
   { id: 1, name: "Jason Mangold", data: clientData.client1 },
   { id: 2, name: "Jane Doe", data: clientData.client2 }
@@ -59,9 +63,9 @@ function loadClientData() {
     clientData = JSON.parse(savedData);
     clientData.client1.insurance = clientData.client1.insurance || { lifeInsurance: "0", disabilityInsurance: "0", longTermCare: "0" };
     clientData.client2.insurance = clientData.client2.insurance || { lifeInsurance: "0", disabilityInsurance: "0", longTermCare: "0" };
-    // Ensure c1MortalityAge and c2MortalityAge are initialized
     clientData.assumptions.c1MortalityAge = clientData.assumptions.c1MortalityAge || clientData.assumptions.mortalityAge || "90";
     clientData.assumptions.c2MortalityAge = clientData.assumptions.c2MortalityAge || clientData.assumptions.mortalityAge || "90";
+    clientData.scenarios = clientData.scenarios || { base: null, whatIf: [] };
     console.log('Loaded clientData from localStorage:', clientData);
   }
 }
@@ -89,7 +93,8 @@ let currentAnalysis = 'retirement-accumulation';
 let reportCount = 0;
 let selectedReports = [];
 let isTyping = false;
-let selectedClientId = 1; // Track the currently selected client
+let selectedClientId = 1;
+let chartInstance = null;
 
 // DOM elements
 const analysisTopics = document.querySelector('.analysis-topics');
@@ -107,7 +112,6 @@ const clientModal = document.getElementById('client-modal');
 const closeModalBtn = document.getElementById('close-modal');
 const clientList = document.getElementById('client-list');
 const clientSearch = document.getElementById('client-search');
-let chartInstance = null;
 
 // Analysis topics list
 const analysisTopicsList = [
@@ -141,10 +145,10 @@ document.addEventListener('DOMContentLoaded', () => {
     console.log('chartCanvas:', document.getElementById('analysis-chart'));
     populateAnalysisTopics();
     updateTabs(currentAnalysis);
-    populateClientList(); // Populate the client list in the modal
+    populateClientList();
     updateClientFileName();
     setupEventDelegation();
-    setupClientModalListeners(); // Setup listeners for the client modal
+    setupClientModalListeners();
     updateOutputs();
     if (currentAnalysis === 'client-profile') {
       analysisWorkspace.classList.add('client-profile-active');
@@ -158,6 +162,7 @@ document.addEventListener('DOMContentLoaded', () => {
         updateGraph();
       }
       setupOutputTabSwitching();
+      setupWhatIfControls();
     }, 100);
   } catch (error) {
     console.error('Initialization error:', error);
@@ -168,7 +173,7 @@ document.addEventListener('DOMContentLoaded', () => {
 // Populate client list in the modal
 function populateClientList() {
   try {
-    clientList.innerHTML = ''; // Clear existing list
+    clientList.innerHTML = '';
     clients.forEach(client => {
       const li = document.createElement('li');
       li.textContent = client.name;
@@ -187,7 +192,6 @@ function populateClientList() {
 // Setup listeners for the client modal
 function setupClientModalListeners() {
   try {
-    // Toggle modal visibility
     clientFileToggle.addEventListener('click', (e) => {
       e.stopPropagation();
       const isOpen = clientModal.style.display === 'block';
@@ -195,13 +199,11 @@ function setupClientModalListeners() {
       clientFileToggle.setAttribute('aria-expanded', !isOpen);
     });
 
-    // Close modal
     closeModalBtn.addEventListener('click', () => {
       clientModal.style.display = 'none';
       clientFileToggle.setAttribute('aria-expanded', 'false');
     });
 
-    // Close modal when clicking outside
     document.addEventListener('click', (e) => {
       if (!clientFileToggle.contains(e.target) && !clientModal.contains(e.target)) {
         clientModal.style.display = 'none';
@@ -209,18 +211,15 @@ function setupClientModalListeners() {
       }
     });
 
-    // Handle client selection
     clientList.addEventListener('click', (e) => {
       const li = e.target.closest('li');
       if (!li) return;
 
-      // Update selected client
       selectedClientId = parseInt(li.dataset.clientId);
       clientList.querySelectorAll('li').forEach(item => item.classList.remove('selected'));
       li.classList.add('selected');
       clientFileName.textContent = li.textContent;
 
-      // Update clientData with the selected client's data
       const selectedClient = clients.find(client => client.id === selectedClientId);
       if (selectedClient) {
         clientData.client1 = selectedClient.data;
@@ -228,20 +227,19 @@ function setupClientModalListeners() {
           const otherClient = clients.find(client => client.id !== selectedClientId);
           clientData.client2 = otherClient ? otherClient.data : clientData.client2;
         }
+        clientData.scenarios = { base: null, whatIf: [] };
         saveClientData();
-        updateTabs(currentAnalysis); // Refresh tabs to reflect new client data
+        updateTabs(currentAnalysis);
         updateOutputs();
         if (currentAnalysis !== 'client-profile') {
           setTimeout(updateGraph, 100);
         }
       }
 
-      // Close modal
       clientModal.style.display = 'none';
       clientFileToggle.setAttribute('aria-expanded', 'false');
     });
 
-    // Search functionality
     clientSearch.addEventListener('input', (e) => {
       const searchTerm = e.target.value.toLowerCase();
       const clientItems = clientList.querySelectorAll('li');
@@ -268,7 +266,6 @@ function populateAnalysisTopics() {
       analysisTopics.appendChild(btn);
     });
 
-    // Bind to .topic-btn within .analysis-topics, ensuring no overlap with sub-tabs
     document.querySelectorAll('.analysis-topics .topic-btn').forEach(btn => {
       btn.addEventListener('click', (e) => {
         e.stopPropagation();
@@ -593,6 +590,7 @@ function setupEventDelegation() {
         console.log(`Input event on ${e.target.id}: ${e.target.value}`);
         updateClientData(e);
         saveClientData();
+        clientData.scenarios.base = null;
         clearTimeout(graphTimeout);
         graphTimeout = setTimeout(() => {
           updateOutputs();
@@ -610,6 +608,7 @@ function setupEventDelegation() {
       if (e.target.id === 'is-married') {
         toggleClient2(e);
         saveClientData();
+        clientData.scenarios = { base: null, whatIf: [] };
         updateOutputs();
         if (currentAnalysis !== 'client-profile') {
           setTimeout(updateGraph, 100);
@@ -631,29 +630,339 @@ function setupEventDelegation() {
   }
 }
 
-// Toggle Client 2 inputs
+// Setup What If scenario controls
+function setupWhatIfControls() {
+  try {
+    const graphTypeSelect = document.getElementById('graph-type');
+    const saveBaseCaseBtn = document.getElementById('save-base-case');
+    const applyScenarioBtn = document.getElementById('apply-scenario');
+    const resetScenarioBtn = document.getElementById('reset-scenario');
+    const scenarioNameInput = document.getElementById('scenario-name');
+    const scenariosList = document.getElementById('scenarios-list');
+    const comparisonTableBody = document.getElementById('comparison-table-body');
+
+    let previewData = JSON.parse(JSON.stringify(clientData));
+    let debounceTimeout;
+
+    // Helper to update graph with preview data
+    const updateGraphWithPreview = () => {
+      if (document.getElementById('output-select').value !== 'retirement-analysis') return;
+      if (chartInstance) chartInstance.destroy();
+      const outputType = graphTypeSelect.value;
+      chartInstance = updateRetirementGraph(
+        document.getElementById('analysis-chart'),
+        clientData,
+        Chart,
+        getAge,
+        outputType,
+        outputType === 'balance' ? previewData : null
+      );
+    };
+
+    // Helper to update comparison table
+    const updateComparisonTable = () => {
+      const selectedScenarios = Array.from(scenariosList.selectedOptions).map(opt => opt.value);
+      comparisonTableBody.innerHTML = '';
+      if (clientData.scenarios.base && (selectedScenarios.includes('base') || selectedScenarios.length === 0)) {
+        comparisonTableBody.innerHTML += `
+          <tr>
+            <td>${clientData.scenarios.base.name}</td>
+            <td>${formatCurrency(clientData.scenarios.base.data.totalBalance)}</td>
+            <td>${clientData.scenarios.base.data.depletionAge > clientData.scenarios.base.data.labels[clientData.scenarios.base.data.labels.length - 1] ? 'N/A' : clientData.scenarios.base.data.depletionAge}</td>
+            <td>${formatCurrency(clientData.scenarios.base.data.totalShortfall)}</td>
+          </tr>
+        `;
+      }
+      clientData.scenarios.whatIf.forEach((scenario, index) => {
+        if (selectedScenarios.includes(index.toString())) {
+          comparisonTableBody.innerHTML += `
+            <tr>
+              <td>${scenario.name}</td>
+              <td>${formatCurrency(scenario.data.totalBalance)}</td>
+              <td>${scenario.data.depletionAge > scenario.data.labels[scenario.data.labels.length - 1] ? 'N/A' : scenario.data.depletionAge}</td>
+              <td>${formatCurrency(scenario.data.totalShortfall)}</td>
+            </tr>
+          `;
+        }
+      });
+    };
+
+    // Graph type toggle
+    if (graphTypeSelect) {
+      graphTypeSelect.addEventListener('change', () => {
+        updateGraphWithPreview();
+      });
+    }
+
+    // Save Base Case
+    if (saveBaseCaseBtn) {
+      saveBaseCaseBtn.addEventListener('click', () => {
+        clientData.scenarios.base = {
+          name: 'Base Case',
+          data: calculateRetirementIncome(clientData, getAge)
+        };
+        scenariosList.innerHTML = `<option value="base" selected>Base Case</option>` + clientData.scenarios.whatIf.map((s, i) => `<option value="${i}" selected>${s.name}</option>`).join('');
+        saveClientData();
+        updateComparisonTable();
+        updateGraphWithPreview();
+      });
+    }
+
+    // Apply Scenario
+    if (applyScenarioBtn && scenarioNameInput) {
+      applyScenarioBtn.addEventListener('click', () => {
+        const scenarioName = scenarioNameInput.value.trim() || `Scenario ${clientData.scenarios.whatIf.length + 1}`;
+        if (clientData.scenarios.whatIf.length >= 5) {
+          alert('Maximum 5 scenarios allowed.');
+          return;
+        }
+        clientData.scenarios.whatIf.push({
+          name: scenarioName,
+          data: calculateRetirementIncome(previewData, getAge)
+        });
+        scenariosList.innerHTML = (clientData.scenarios.base ? `<option value="base" selected>Base Case</option>` : '') +
+                                  clientData.scenarios.whatIf.map((s, i) => `<option value="${i}" selected>${s.name}</option>`).join('');
+        scenarioNameInput.value = '';
+        saveClientData();
+        updateComparisonTable();
+        updateGraphWithPreview();
+      });
+    }
+
+    // Reset to Base Case
+    if (resetScenarioBtn) {
+      resetScenarioBtn.addEventListener('click', () => {
+        if (clientData.scenarios.base) {
+          previewData = JSON.parse(JSON.stringify(clientData));
+          // Reset sliders to Base Case values
+          const sliders = [
+            { id: 'c1-retirement-age', value: clientData.client1.personal.retirementAge || 65, unit: 'years' },
+            { id: 'c2-retirement-age', value: clientData.isMarried ? clientData.client2.personal.retirementAge || 65 : 65, unit: 'years', skip: !clientData.isMarried },
+            { id: 'c1-social-security', value: clientData.client1.incomeSources.socialSecurity || 0, unit: '$' },
+            { id: 'c2-social-security', value: clientData.isMarried ? clientData.client2.incomeSources.socialSecurity || 0 : 0, unit: '$', skip: !clientData.isMarried },
+            { id: 'monthly-contribution', value: Math.round((clientData.client1.accounts.reduce((sum, acc) => sum + (parseFloat(acc.contribution) || 0), 0) + (clientData.isMarried ? clientData.client2.accounts.reduce((sum, acc) => sum + (parseFloat(acc.contribution) || 0), 0) : 0)) / 12), unit: '$' },
+            { id: 'ror', value: clientData.client1.accounts[0]?.ror || 6, unit: '%' },
+            { id: 'ror-retirement', value: clientData.assumptions.rorRetirement || 4, unit: '%' },
+            { id: 'monthly-income', value: clientData.incomeNeeds.monthly || 5000, unit: '$' },
+            { id: 'inflation', value: clientData.assumptions.inflation || 2, unit: '%' },
+            { id: 'c1-mortality-age', value: clientData.assumptions.c1MortalityAge || 90, unit: 'years' },
+            { id: 'c2-mortality-age', value: clientData.isMarried ? clientData.assumptions.c2MortalityAge || 90 : 90, unit: 'years', skip: !clientData.isMarried }
+          ];
+          sliders.forEach(slider => {
+            if (slider.skip) return;
+            const rangeInput = document.getElementById(`${slider.id}-slider`);
+            const numberInput = document.getElementById(`${slider.id}-number`);
+            const valueSpan = document.getElementById(`${slider.id}-value`);
+            if (rangeInput && numberInput && valueSpan) {
+              rangeInput.value = slider.value;
+              numberInput.value = slider.value;
+              valueSpan.textContent = `${slider.unit === '$' ? '$' : ''}${slider.value}${slider.unit === '%' || slider.unit === 'years' ? slider.unit : ''}`;
+            }
+          });
+          updateGraphWithPreview();
+        }
+      });
+    }
+
+    // Scenario selection
+    if (scenariosList) {
+      scenariosList.addEventListener('change', () => {
+        updateComparisonTable();
+        updateGraphWithPreview();
+      });
+    }
+
+    // Slider event listeners
+    const sliders = [
+      { id: 'c1-retirement-age', path: ['client1', 'personal', 'retirementAge'], unit: 'years' },
+      { id: 'c2-retirement-age', path: ['client2', 'personal', 'retirementAge'], unit: 'years', skip: !clientData.isMarried },
+      { id: 'c1-social-security', path: ['client1', 'incomeSources', 'socialSecurity'], unit: '$' },
+      { id: 'c2-social-security', path: ['client2', 'incomeSources', 'socialSecurity'], unit: '$', skip: !clientData.isMarried },
+      { id: 'monthly-contribution', path: null, unit: '$' }, // Special case
+      { id: 'ror', path: null, unit: '%' }, // Special case
+      { id: 'ror-retirement', path: ['assumptions', 'rorRetirement'], unit: '%' },
+      { id: 'monthly-income', path: ['incomeNeeds', 'monthly'], unit: '$' },
+      { id: 'inflation', path: ['assumptions', 'inflation'], unit: '%' },
+      { id: 'c1-mortality-age', path: ['assumptions', 'c1MortalityAge'], unit: 'years' },
+      { id: 'c2-mortality-age', path: ['assumptions', 'c2MortalityAge'], unit: 'years', skip: !clientData.isMarried }
+    ];
+
+    sliders.forEach(slider => {
+      if (slider.skip) return;
+      const rangeInput = document.getElementById(`${slider.id}-slider`);
+      const numberInput = document.getElementById(`${slider.id}-number`);
+      const valueSpan = document.getElementById(`${slider.id}-value`);
+
+      if (rangeInput && numberInput && valueSpan) {
+        const updatePreview = () => {
+          const value = parseFloat(rangeInput.value);
+          if (slider.id === 'monthly-contribution') {
+            const annualContribution = value * 12;
+            const accountCount = clientData.client1.accounts.length + (clientData.isMarried ? clientData.client2.accounts.length : 0);
+            const contributionPerAccount = accountCount > 0 ? annualContribution / accountCount : 0;
+            previewData.client1.accounts = previewData.client1.accounts.map(acc => ({
+              ...acc,
+              contribution: contributionPerAccount.toString()
+            }));
+            if (clientData.isMarried) {
+              previewData.client2.accounts = previewData.client2.accounts.map(acc => ({
+                ...acc,
+                contribution: contributionPerAccount.toString()
+              }));
+            }
+          } else if (slider.id === 'ror') {
+            previewData.client1.accounts = previewData.client1.accounts.map(acc => ({
+              ...acc,
+              ror: value.toString()
+            }));
+            if (clientData.isMarried) {
+              previewData.client2.accounts = previewData.client2.accounts.map(acc => ({
+                ...acc,
+                ror: value.toString()
+              }));
+            }
+          } else {
+            let target = previewData;
+            for (let i = 0; i < slider.path.length - 1; i++) {
+              target = target[slider.path[i]];
+            }
+            target[slider.path[slider.path.length - 1]] = value.toString();
+          }
+          valueSpan.textContent = `${slider.unit === '$' ? '$' : ''}${value}${slider.unit === '%' || slider.unit === 'years' ? slider.unit : ''}`;
+          clearTimeout(debounceTimeout);
+          debounceTimeout = setTimeout(updateGraphWithPreview, 500);
+        };
+
+        rangeInput.addEventListener('input', () => {
+          numberInput.value = rangeInput.value;
+          updatePreview();
+        });
+
+        numberInput.addEventListener('input', () => {
+          const value = Math.max(parseFloat(numberInput.min), Math.min(parseFloat(numberInput.max), parseFloat(numberInput.value) || 0));
+          rangeInput.value = value;
+          numberInput.value = value;
+          updatePreview();
+        });
+      }
+    });
+  } catch (error) {
+    console.error('Error in setupWhatIfControls:', error);
+  }
+}
+
+// Toggle Client 2 visibility
 function toggleClient2(e) {
   try {
     clientData.isMarried = e.target.checked;
-    document.getElementById('client2-section').style.display = e.target.checked ? 'block' : 'none';
-    document.getElementById('client2-income-section').style.display = e.target.checked ? 'block' : 'none';
-    document.getElementById('c2-accounts').style.display = e.target.checked ? 'block' : 'none';
-    const c2Assets = document.getElementById('c2-assets');
-    if (c2Assets) c2Assets.style.display = e.target.checked ? 'block' : 'none';
-    const c2Insurance = document.getElementById('client2-insurance-section');
-    if (c2Insurance) c2Insurance.style.display = e.target.checked ? 'block' : 'none';
-    updateClientFileName();
-    updateOutputs();
-    if (currentAnalysis !== 'client-profile') {
-      setTimeout(updateGraph, 100);
-    }
-    setupOutputTabSwitching();
+    console.log('isMarried toggled:', clientData.isMarried);
+    const client2Section = document.getElementById('client2-section');
+    const client2IncomeSection = document.getElementById('client2-income-section');
+    const client2Accounts = document.getElementById('c2-accounts');
+    const client2Assets = document.getElementById('c2-assets');
+    const displayStyle = clientData.isMarried ? 'block' : 'none';
+    if (client2Section) client2Section.style.display = displayStyle;
+    if (client2IncomeSection) client2IncomeSection.style.display = displayStyle;
+    if (client2Accounts) client2Accounts.style.display = displayStyle;
+    if (client2Assets) client2Assets.style.display = displayStyle;
   } catch (error) {
     console.error('Error in toggleClient2:', error);
   }
 }
 
-// Add account/asset buttons
+// Update client data from inputs
+function updateClientData(e) {
+  try {
+    const input = e.target;
+    const id = input.id;
+    console.log(`Updating clientData for ${id}: ${input.value}`);
+
+    const updateNested = (obj, path, value) => {
+      let current = obj;
+      for (let i = 0; i < path.length - 1; i++) {
+        current = current[path[i]];
+      }
+      current[path[path.length - 1]] = value;
+    };
+
+    const updateAccounts = (client, index, field, value) => {
+      const clientKey = client === 'c1' ? 'client1' : 'client2';
+      if (!clientData[clientKey].accounts[index]) {
+        clientData[clientKey].accounts[index] = { name: '', balance: '0', contribution: '0', employerMatch: '0', ror: '0' };
+      }
+      clientData[clientKey].accounts[index][field] = value;
+    };
+
+    const updateAssets = (client, index, field, value) => {
+      const clientKey = client === 'c1' ? 'client1' : 'client2';
+      if (!clientData[clientKey].other.assets[index]) {
+        clientData[clientKey].other.assets[index] = { name: '', balance: '0', ror: '0', debt: '0' };
+      }
+      clientData[clientKey].other.assets[index][field] = value;
+    };
+
+    const mappings = [
+      { regex: /^c1-name$/, path: ['client1', 'personal', 'name'] },
+      { regex: /^c2-name$/, path: ['client2', 'personal', 'name'] },
+      { regex: /^c1-dob$/, path: ['client1', 'personal', 'dob'] },
+      { regex: /^c2-dob$/, path: ['client2', 'personal', 'dob'] },
+      { regex: /^c1-retirement-age$/, path: ['client1', 'personal', 'retirementAge'] },
+      { regex: /^c2-retirement-age$/, path: ['client2', 'personal', 'retirementAge'] },
+      { regex: /^c1-employment$/, path: ['client1', 'incomeSources', 'employment'] },
+      { regex: /^c2-employment$/, path: ['client2', 'incomeSources', 'employment'] },
+      { regex: /^c1-social-security$/, path: ['client1', 'incomeSources', 'socialSecurity'] },
+      { regex: /^c2-social-security$/, path: ['client2', 'incomeSources', 'socialSecurity'] },
+      { regex: /^c1-other-income$/, path: ['client1', 'incomeSources', 'other'] },
+      { regex: /^c2-other-income$/, path: ['client2', 'incomeSources', 'other'] },
+      { regex: /^c1-interest-dividends$/, path: ['client1', 'incomeSources', 'interestDividends'] },
+      { regex: /^c2-interest-dividends$/, path: ['client2', 'incomeSources', 'interestDividends'] },
+      { regex: /^monthly-income$/, path: ['incomeNeeds', 'monthly'] },
+      { regex: /^mortality-age$/, path: ['assumptions', 'mortalityAge'] },
+      { regex: /^c1-mortality-age$/, path: ['assumptions', 'c1MortalityAge'] },
+      { regex: /^c2-mortality-age$/, path: ['assumptions', 'c2MortalityAge'] },
+      { regex: /^inflation$/, path: ['assumptions', 'inflation'] },
+      { regex: /^ror-retirement$/, path: ['assumptions', 'rorRetirement'] },
+      { regex: /^household-expenses$/, path: ['savingsExpenses', 'householdExpenses'] },
+      { regex: /^taxes$/, path: ['savingsExpenses', 'taxes'] },
+      { regex: /^other-expenses$/, path: ['savingsExpenses', 'otherExpenses'] },
+      { regex: /^monthly-savings$/, path: ['savingsExpenses', 'monthlySavings'] },
+      { regex: /^analysis-date$/, path: ['assumptions', 'analysisDate'] },
+      { regex: /^cash$/, path: ['other', 'cash'] },
+      { regex: /^residence-mortgage$/, path: ['other', 'residenceMortgage'] },
+      { regex: /^other-debt$/, path: ['other', 'otherDebt'] },
+      { regex: /^c1-life-insurance$/, path: ['client1', 'insurance', 'lifeInsurance'] },
+      { regex: /^c2-life-insurance$/, path: ['client2', 'insurance', 'lifeInsurance'] },
+      { regex: /^c1-disability-insurance$/, path: ['client1', 'insurance', 'disabilityInsurance'] },
+      { regex: /^c2-disability-insurance$/, path: ['client2', 'insurance', 'disabilityInsurance'] },
+      { regex: /^c1-long-term-care$/, path: ['client1', 'insurance', 'longTermCare'] },
+      { regex: /^c2-long-term-care$/, path: ['client2', 'insurance', 'longTermCare'] },
+      { regex: /^(c[1-2])-account-(\d+)-name$/, handler: (match) => updateAccounts(match[1], parseInt(match[2]), 'name', input.value) },
+      { regex: /^(c[1-2])-account-(\d+)-balance$/, handler: (match) => updateAccounts(match[1], parseInt(match[2]), 'balance', input.value) },
+      { regex: /^(c[1-2])-account-(\d+)-contribution$/, handler: (match) => updateAccounts(match[1], parseInt(match[2]), 'contribution', input.value) },
+      { regex: /^(c[1-2])-account-(\d+)-employer-match$/, handler: (match) => updateAccounts(match[1], parseInt(match[2]), 'employerMatch', input.value) },
+      { regex: /^(c[1-2])-account-(\d+)-ror$/, handler: (match) => updateAccounts(match[1], parseInt(match[2]), 'ror', input.value) },
+      { regex: /^(c[1-2])-asset-(\d+)-name$/, handler: (match) => updateAssets(match[1], parseInt(match[2]), 'name', input.value) },
+      { regex: /^(c[1-2])-asset-(\d+)-balance$/, handler: (match) => updateAssets(match[1], parseInt(match[2]), 'balance', input.value) },
+      { regex: /^(c[1-2])-asset-(\d+)-ror$/, handler: (match) => updateAssets(match[1], parseInt(match[2]), 'ror', input.value) },
+      { regex: /^(c[1-2])-asset-(\d+)-debt$/, handler: (match) => updateAssets(match[1], parseInt(match[2]), 'debt', input.value) }
+    ];
+
+    for (const mapping of mappings) {
+      if (mapping.regex.test(id)) {
+        if (mapping.handler) {
+          mapping.handler(id.match(mapping.regex));
+        } else {
+          updateNested(clientData, mapping.path, input.value);
+        }
+        break;
+      }
+    }
+  } catch (error) {
+    console.error('Error in updateClientData:', error);
+  }
+}
+
+// Setup add account/asset buttons
 function setupAddButtons() {
   try {
     document.querySelectorAll('.add-account-btn').forEach(btn => {
@@ -673,33 +982,30 @@ function setupAddButtons() {
 function addAccountHandler(e) {
   try {
     const client = e.target.dataset.client;
+    const clientKey = client === 'c1' ? 'client1' : 'client2';
     const container = document.getElementById(`${client}-accounts`);
-    const count = accountCount[client]++;
+    const index = accountCount[client]++;
     const newAccount = document.createElement('div');
     newAccount.classList.add('account');
     newAccount.innerHTML = currentAnalysis === 'personal-finance' ? `
-      <label>Account Name: <input type="text" id="${client}-account-${count}-name" placeholder="Account ${count + 1}"></label>
-      <label>Balance ($): <input type="number" id="${client}-account-${count}-balance" min="0" step="1000" placeholder="0"></label>
-      <label>ROR (%): <input type="number" id="${client}-account-${count}-ror" min="0" max="100" step="0.1" placeholder="0"></label>
+      <label>Account Name: <input type="text" id="${client}-account-${index}-name" placeholder="Account ${index + 1}"></label>
+      <label>Balance ($): <input type="number" id="${client}-account-${index}-balance" min="0" step="1000" placeholder="0"></label>
+      <label>ROR (%): <input type="number" id="${client}-account-${index}-ror" min="0" max="100" step="0.1" placeholder="0"></label>
     ` : `
-      <label>Account Name: <input type="text" id="${client}-account-${count}-name" placeholder="Account ${count + 1}"></label>
-      <label>Balance ($): <input type="number" id="${client}-account-${count}-balance" min="0" step="1000" placeholder="0"></label>
-      <label>Contribution ($/yr): <input type="number" id="${client}-account-${count}-contribution" min="0" step="1000" placeholder="0"></label>
-      <label>Employer Match (%): <input type="number" id="${client}-account-${count}-employer-match" min="0" max="100" step="0.1" placeholder="0"></label>
-      <label>ROR (%): <input type="number" id="${client}-account-${count}-ror" min="0" max="100" step="0.1" placeholder="0"></label>
+      <label>Account Name: <input type="text" id="${client}-account-${index}-name" placeholder="Account ${index + 1}"></label>
+      <label>Balance ($): <input type="number" id="${client}-account-${index}-balance" min="0" step="1000" placeholder="0"></label>
+      <label>Contribution ($/yr): <input type="number" id="${client}-account-${index}-contribution" min="0" step="1000" placeholder="0"></label>
+      <label>Employer Match (%): <input type="number" id="${client}-account-${index}-employer-match" min="0" max="100" step="0.1" placeholder="0"></label>
+      <label>ROR (%): <input type="number" id="${client}-account-${index}-ror" min="0" max="100" step="0.1" placeholder="0"></label>
     `;
-    container.insertBefore(newAccount, e.target);
-    const clientKey = client === 'c1' ? 'client1' : 'client2';
-    clientData[clientKey].accounts.push({ name: "", balance: "", ror: "", contribution: "", employerMatch: "" });
-    populateInputFields();
+    const addButton = container.querySelector('.add-account-btn');
+    container.insertBefore(newAccount, addButton);
+    clientData[clientKey].accounts.push({ name: '', balance: '0', contribution: '0', employerMatch: '0', ror: '0' });
     saveClientData();
+    clientData.scenarios.base = null;
     updateOutputs();
     if (currentAnalysis !== 'client-profile') {
       setTimeout(updateGraph, 100);
-    }
-    setupOutputTabSwitching();
-    if (currentAnalysis === 'retirement-accumulation' || currentAnalysis === 'client-profile') {
-      setupAgeDisplayListeners(getAge);
     }
   } catch (error) {
     console.error('Error in addAccountHandler:', error);
@@ -709,389 +1015,159 @@ function addAccountHandler(e) {
 function addAssetHandler(e) {
   try {
     const client = e.target.dataset.client;
+    const clientKey = client === 'c1' ? 'client1' : 'client2';
     const container = document.getElementById(`${client}-assets`);
-    const count = assetCount[client]++;
+    const index = assetCount[client]++;
     const newAsset = document.createElement('div');
     newAsset.classList.add('asset');
     newAsset.innerHTML = `
-      <label>Asset Name: <input type="text" id="${client}-asset-${count}-name" placeholder="Asset ${count + 1}"></label>
-      <label>Balance ($): <input type="number" id="${client}-asset-${count}-balance" min="0" step="1000" placeholder="0"></label>
-      <label>ROR (%): <input type="number" id="${client}-asset-${count}-ror" min="0" max="100" step="0.1" placeholder="0"></label>
-      <label>Asset Debt ($): <input type="number" id="${client}-asset-${count}-debt" min="0" step="1000" placeholder="0"></label>
+      <label>Asset Name: <input type="text" id="${client}-asset-${index}-name" placeholder="Asset ${index + 1}"></label>
+      <label>Balance ($): <input type="number" id="${client}-asset-${index}-balance" min="0" step="1000" placeholder="0"></label>
+      <label>ROR (%): <input type="number" id="${client}-asset-${index}-ror" min="0" max="100" step="0.1" placeholder="0"></label>
+      <label>Asset Debt ($): <input type="number" id="${client}-asset-${index}-debt" min="0" step="1000" placeholder="0"></label>
     `;
-    container.insertBefore(newAsset, e.target);
-    const clientKey = client === 'c1' ? 'client1' : 'client2';
-    clientData[clientKey].other.assets.push({ name: "", balance: "", ror: "", debt: "" });
-    populateInputFields();
+    const addButton = container.querySelector('.add-asset-btn');
+    container.insertBefore(newAsset, addButton);
+    clientData[clientKey].other.assets.push({ name: '', balance: '0', ror: '0', debt: '0' });
     saveClientData();
     updateOutputs();
-    if (currentAnalysis !== 'client-profile') {
-      setTimeout(updateGraph, 100);
-    }
-    setupOutputTabSwitching();
-    if (currentAnalysis === 'retirement-accumulation' || currentAnalysis === 'client-profile') {
-      setupAgeDisplayListeners(getAge);
-    }
   } catch (error) {
     console.error('Error in addAssetHandler:', error);
   }
 }
 
-// Update client file name
-function updateClientFileName() {
+// Update outputs based on current analysis
+function updateOutputs() {
   try {
-    let name = clientData.client1.personal.name || 'No Client Selected';
-    if (clientData.isMarried && clientData.client2.personal.name) {
-      name = `${clientData.client1.personal.name} & ${clientData.client2.personal.name}`;
-    }
-    clientFileName.textContent = name;
-    localStorage.setItem('clientFileName', name);
-  } catch (error) {
-    console.error('Error in updateClientFileName:', error);
-  }
-}
-
-// Validate client data
-function validateClientData() {
-  try {
-    const errors = [];
-
-    if (!clientData.client1.personal.name) errors.push("Client 1 name is required.");
-    if (!clientData.client1.personal.dob || new Date(clientData.client1.personal.dob) > new Date()) {
-      errors.push("Client 1 date of birth is invalid.");
-    }
-    if (!clientData.client1.personal.retirementAge || clientData.client1.personal.retirementAge < getAge(clientData.client1.personal.dob)) {
-      errors.push("Client 1 retirement age must be greater than current age.");
-    }
-
-    if (clientData.isMarried) {
-      if (!clientData.client2.personal.name) errors.push("Client 2 name is required when married.");
-      if (!clientData.client2.personal.dob || new Date(clientData.client2.personal.dob) > new Date()) {
-        errors.push("Client 2 date of birth is invalid.");
-      }
-      if (!clientData.client2.personal.retirementAge || clientData.client2.personal.retirementAge < getAge(clientData.client2.personal.dob)) {
-        errors.push("Client 2 retirement age must be greater than current age.");
-      }
-    }
-
-    if (!clientData.incomeNeeds.monthly || clientData.incomeNeeds.monthly <= 0) {
-      errors.push("Monthly income needs must be a positive number.");
-    }
-    if (!clientData.assumptions.c1MortalityAge || clientData.assumptions.c1MortalityAge < 0) {
-      errors.push("Client 1 mortality age must be a positive number.");
-    }
-    if (clientData.isMarried && (!clientData.assumptions.c2MortalityAge || clientData.assumptions.c2MortalityAge < 0)) {
-      errors.push("Client 2 mortality age must be a positive number.");
-    }
-    if (!clientData.assumptions.inflation || clientData.assumptions.inflation < 0) {
-      errors.push("Inflation rate must be a non-negative number.");
-    }
-    if (!clientData.assumptions.rorRetirement || clientData.assumptions.rorRetirement < 0) {
-      errors.push("Rate of return in retirement must be a non-negative number.");
-    }
-
-    ['client1', 'client2'].forEach((clientKey, idx) => {
-      const client = clientData[clientKey].accounts;
-      client.forEach((account, i) => {
-        if (!account.name) errors.push(`${clientKey === 'client1' ? 'Client 1' : 'Client 2'} Account ${i + 1} name is required.`);
-        if (account.balance < 0) errors.push(`${clientKey === 'client1' ? 'Client 1' : 'Client 2'} Account ${i + 1} balance must be non-negative.`);
-        if (account.ror < 0) errors.push(`${clientKey === 'client1' ? 'Client 1' : 'Client 2'} Account ${i + 1} ROR must be non-negative.`);
-        if (currentAnalysis !== 'personal-finance') {
-          if (account.contribution < 0) errors.push(`${clientKey === 'client1' ? 'Client 1' : 'Client 2'} Account ${i + 1} contribution must be non-negative.`);
-          if (account.employerMatch < 0) errors.push(`${clientKey === 'client1' ? 'Client 1' : 'Client 2'} Account ${i + 1} employer match must be non-negative.`);
-        }
-      });
-    });
-
-    if (currentAnalysis === 'summary') {
-      if (!clientData.summary?.topics || clientData.summary.topics.length === 0) {
-        errors.push("At least one topic must be selected for Financial Fitness Score.");
-      }
-    }
-
-    return errors.length ? errors.join('<br>') : null;
-  } catch (error) {
-    console.error('Error in validateClientData:', error);
-    return 'Error validating client data. Please check console for details.';
-  }
-}
-
-// Update client data
-function updateClientData(e) {
-  try {
-    const input = e.target;
-    if (input.id === 'is-married') return;
-
-    const value = input.type === 'number' ? (input.value === '' ? '' : parseFloat(input.value)) : input.value;
-    console.log(`Updating ${input.id} with value: ${value}`);
-
-    const clientKey = input.id.startsWith('c1-') ? 'client1' : input.id.startsWith('c2-') ? 'client2' : null;
-
-    if (clientKey) {
-      const prefix = clientKey === 'client1' ? 'c1' : 'c2';
-      if (input.id === `${prefix}-name`) {
-        clientData[clientKey].personal.name = value;
-      } else if (input.id === `${prefix}-dob`) {
-        clientData[clientKey].personal.dob = value;
-      } else if (input.id === `${prefix}-retirement-age`) {
-        clientData[clientKey].personal.retirementAge = value;
-      } else if (input.id === `${prefix}-employment`) {
-        clientData[clientKey].incomeSources.employment = value;
-      } else if (input.id === `${prefix}-social-security`) {
-        clientData[clientKey].incomeSources.socialSecurity = value;
-      } else if (input.id === `${prefix}-other-income`) {
-        clientData[clientKey].incomeSources.other = value;
-      } else if (input.id === `${prefix}-interest-dividends`) {
-        clientData[clientKey].incomeSources.interestDividends = value;
-      } else if (input.id === `${prefix}-life-insurance`) {
-        clientData[clientKey].insurance.lifeInsurance = value;
-      } else if (input.id === `${prefix}-disability-insurance`) {
-        clientData[clientKey].insurance.disabilityInsurance = value;
-      } else if (input.id === `${prefix}-long-term-care`) {
-        clientData[clientKey].insurance.longTermCare = value;
-      } else if (input.id === `${prefix}-mortality-age`) {
-        clientData.assumptions[`${prefix}MortalityAge`] = value;
-      } else if (input.id.startsWith(`${prefix}-account-`)) {
-        const [, , index, field] = input.id.split('-');
-        clientData[clientKey].accounts[parseInt(index)] = {
-          ...clientData[clientKey].accounts[parseInt(index)],
-          [field]: value
-        };
-      } else if (input.id.startsWith(`${prefix}-asset-`)) {
-        const [, , index, field] = input.id.split('-');
-        clientData[clientKey].other.assets[parseInt(index)] = {
-          ...clientData[clientKey].other.assets[parseInt(index)],
-          [field]: value
-        };
-      }
+    console.log(`Updating outputs for ${currentAnalysis}`);
+    if (currentAnalysis === 'retirement-accumulation') {
+      updateRetirementOutputs(analysisOutputs, clientData, formatCurrency, getAge, selectedReports, Chart);
+    } else if (currentAnalysis === 'personal-finance') {
+      updatePersonalFinanceOutputs(analysisOutputs, clientData, formatCurrency, selectedReports, Chart);
+    } else if (currentAnalysis === 'summary') {
+      updateSummaryOutputs(analysisOutputs, clientData, formatCurrency, selectedReports);
+    } else if (currentAnalysis === 'client-profile') {
+      analysisOutputs.innerHTML = '<p class="output-message">Select a client profile tab to view details.</p>';
     } else {
-      if (input.id === 'monthly-income') clientData.incomeNeeds.monthly = value;
-      else if (input.id === 'mortality-age') clientData.assumptions.mortalityAge = value;
-      else if (input.id === 'inflation') clientData.assumptions.inflation = value;
-      else if (input.id === 'ror-retirement') clientData.assumptions.rorRetirement = value;
-      else if (input.id === 'household-expenses') clientData.savingsExpenses.householdExpenses = value;
-      else if (input.id === 'taxes') clientData.savingsExpenses.taxes = value;
-      else if (input.id === 'other-expenses') clientData.savingsExpenses.otherExpenses = value;
-      else if (input.id === 'monthly-savings') clientData.savingsExpenses.monthlySavings = value;
-      else if (input.id === 'analysis-date') clientData.assumptions.analysisDate = value;
-      else if (input.id === 'cash') clientData.other.cash = value;
-      else if (input.id === 'residence-mortgage') clientData.other.residenceMortgage = value;
-      else if (input.id === 'other-debt') clientData.other.otherDebt = value;
+      analysisOutputs.innerHTML = '<p class="output-message">Select an analysis topic to view outputs.</p>';
     }
-
-    if (input.id === 'c1-name' || input.id === 'c2-name') updateClientFileName();
+    setupWhatIfControls();
   } catch (error) {
-    console.error('Error in updateClientData:', error);
+    console.error('Error in updateOutputs:', error);
+    analysisOutputs.innerHTML = '<p class="output-error">Error rendering outputs. Please check console for details.</p>';
   }
 }
 
-// Format currency (used for outputs only)
-function formatCurrency(value) {
-  return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0 }).format(value);
+// Update graph based on current analysis
+function updateGraph() {
+  try {
+    console.log(`Updating graph for ${currentAnalysis}`);
+    if (chartInstance) {
+      chartInstance.destroy();
+      chartInstance = null;
+    }
+    if (currentAnalysis === 'retirement-accumulation') {
+      const outputSelect = document.getElementById('output-select');
+      if (outputSelect?.value === 'retirement-analysis') {
+        const graphType = document.getElementById('graph-type')?.value || 'income';
+        chartInstance = updateRetirementGraph(
+          document.getElementById('analysis-chart'),
+          clientData,
+          Chart,
+          getAge,
+          graphType
+        );
+      }
+    } else if (currentAnalysis === 'personal-finance') {
+      chartInstance = updatePersonalFinanceGraph(
+        document.getElementById('analysis-chart'),
+        clientData,
+        Chart
+      );
+    }
+  } catch (error) {
+    console.error('Error in updateGraph:', error);
+  }
 }
 
-// Calculate age
+// Setup output tab switching
+function setupOutputTabSwitching() {
+  try {
+    const outputSelect = document.getElementById('output-select');
+    if (outputSelect) {
+      outputSelect.removeEventListener('change', outputSelectHandler);
+      outputSelect.addEventListener('change', outputSelectHandler);
+    }
+  } catch (error) {
+    console.error('Error in setupOutputTabSwitching:', error);
+  }
+}
+
+function outputSelectHandler() {
+  try {
+    document.querySelectorAll('.output-content').forEach(content => {
+      content.style.display = content.id === this.value ? 'block' : 'none';
+    });
+    if (this.value === 'retirement-analysis' && currentAnalysis === 'retirement-accumulation') {
+      setTimeout(updateGraph, 100);
+    }
+  } catch (error) {
+    console.error('Error in outputSelectHandler:', error);
+  }
+}
+
+// Toggle report selection for presentation
+function toggleReportSelection(reportId, reportTitle) {
+  try {
+    const index = selectedReports.findIndex(report => report.id === reportId);
+    if (index === -1) {
+      selectedReports.push({ id: reportId, title: reportTitle });
+    } else {
+      selectedReports.splice(index, 1);
+    }
+    reportCount = selectedReports.length;
+    presentationCount.textContent = reportCount;
+    presentationCount.classList.toggle('active', reportCount > 0);
+    localStorage.setItem('selectedReports', JSON.stringify(selectedReports));
+    console.log('Updated selectedReports:', selectedReports);
+  } catch (error) {
+    console.error('Error in toggleReportSelection:', error);
+  }
+}
+
+// Helper functions
 function getAge(dob) {
   try {
-    if (!dob) return 0;
-    const today = new Date();
     const birthDate = new Date(dob);
+    const today = new Date();
     let age = today.getFullYear() - birthDate.getFullYear();
-    const m = today.getMonth() - birthDate.getMonth();
-    if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) age--;
-    return Math.max(0, age);
+    const monthDiff = today.getMonth() - birthDate.getMonth();
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+      age--;
+    }
+    return age;
   } catch (error) {
     console.error('Error in getAge:', error);
     return 0;
   }
 }
 
-// Update graph
-function updateGraph() {
+function formatCurrency(value) {
   try {
-    console.log('updateGraph called, currentAnalysis:', currentAnalysis);
-    console.log('Chart.js available:', typeof Chart !== 'undefined');
-    const chartCanvas = document.getElementById('analysis-chart');
-    console.log('chartCanvas:', chartCanvas);
-
-    if (typeof Chart === 'undefined') {
-      console.error('Chart.js is not loaded. Ensure the CDN script is included in analysis.html.');
-      analysisOutputs.innerHTML = '<p class="output-error">Chart.js is not loaded. Please check your network connection.</p>';
-      return;
-    }
-
-    if (chartInstance) {
-      console.log('Destroying existing chartInstance');
-      chartInstance.destroy();
-      chartInstance = null;
-    }
-
-    if (chartCanvas && Chart.getChart(chartCanvas)) {
-      console.log('Destroying orphaned chart on canvas');
-      Chart.getChart(chartCanvas).destroy();
-    }
-
-    if (!chartCanvas) {
-      console.error('Chart canvas #analysis-chart not found. Ensure outputs are rendered first.');
-      return;
-    }
-
-    if (!clientData) {
-      console.error('clientData is undefined');
-      analysisOutputs.innerHTML = '<p class="output-error">Client data is undefined. Please check your inputs.</p>';
-      return;
-    }
-
-    const validationError = validateClientData();
-    if (validationError) {
-      console.error('Validation failed:', validationError);
-      analysisOutputs.innerHTML = `<p class="output-error">${validationError}</p>`;
-      return;
-    }
-
-    if (currentAnalysis === 'retirement-accumulation') {
-      console.log('Calling updateRetirementGraph');
-      chartInstance = updateRetirementGraph(chartCanvas, clientData, Chart, getAge);
-      console.log('updateRetirementGraph returned chartInstance:', chartInstance);
-    } else if (currentAnalysis === 'personal-finance') {
-      console.log('Calling updatePersonalFinanceGraph');
-      chartInstance = updatePersonalFinanceGraph(chartCanvas, clientData, Chart);
-      console.log('updatePersonalFinanceGraph returned chartInstance:', chartInstance);
-    } else {
-      console.warn(`No graph rendering for analysis type: ${currentAnalysis}`);
-      chartCanvas.style.display = 'none';
-    }
-
-    if (!chartInstance) {
-      console.warn('No chart instance created');
-    } else {
-      chartCanvas.style.display = 'block';
-    }
+    return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0 }).format(value);
   } catch (error) {
-    console.error('Error in updateGraph:', error);
-    analysisOutputs.innerHTML = '<p class="output-error">Error rendering graph. Please check console for details.</p>';
+    console.error('Error in formatCurrency:', error);
+    return value;
   }
 }
 
-// Update outputs
-function updateOutputs() {
+function updateClientFileName() {
   try {
-    const validationError = validateClientData();
-    if (validationError) {
-      analysisOutputs.innerHTML = `<p class="output-error">${validationError}</p>`;
-      if (outputTabsContainer) outputTabsContainer.innerHTML = '';
-      return;
+    const selectedClient = clients.find(client => client.id === selectedClientId);
+    if (selectedClient) {
+      clientFileName.textContent = selectedClient.name;
     }
-
-    analysisOutputs.innerHTML = '';
-    if (outputTabsContainer) outputTabsContainer.innerHTML = '';
-
-    if (currentAnalysis === 'retirement-accumulation') {
-      updateRetirementOutputs(analysisOutputs, clientData, formatCurrency, getAge, selectedReports, Chart);
-    } else if (currentAnalysis === 'personal-finance') {
-      updatePersonalFinanceOutputs(analysisOutputs, clientData, formatCurrency, selectedReports, Chart);
-    } else if (currentAnalysis === 'summary') {
-      updateSummaryOutputs(analysisOutputs, clientData, formatCurrency, selectedReports, Chart, getAge);
-    } else if (currentAnalysis === 'client-profile') {
-      analysisOutputs.innerHTML = '';
-    } else {
-      analysisOutputs.innerHTML = `<p class="output-card">Outputs not available for ${currentAnalysis}.</p>`;
-    }
-    setupOutputTabSwitching();
   } catch (error) {
-    console.error('Error in updateOutputs:', error);
-    analysisOutputs.innerHTML = '<p class="output-error">Error rendering outputs. Please check console for details.</p>';
-    if (outputTabsContainer) outputTabsContainer.innerHTML = '';
+    console.error('Error in updateClientFileName:', error);
   }
 }
-
-// Output tab switching
-function setupOutputTabSwitching() {
-  try {
-    if (currentAnalysis === 'personal-finance' || currentAnalysis === 'summary' || currentAnalysis === 'client-profile') {
-      return;
-    }
-
-    const buttons = document.querySelectorAll('.output-tab-btn');
-    if (!buttons.length) {
-      return;
-    }
-
-    buttons.forEach(button => {
-      button.removeEventListener('click', outputTabClickHandler);
-      button.addEventListener('click', outputTabClickHandler);
-    });
-  } catch (error) {
-    console.error('Error in setupOutputTabSwitching:', error);
-  }
-}
-
-function outputTabClickHandler(e) {
-  try {
-    e.stopPropagation();
-    e.preventDefault();
-    document.querySelectorAll('.output-tab-btn').forEach(btn => btn.classList.remove('active'));
-    document.querySelectorAll('.output-tab-content').forEach(content => {
-      content.style.display = 'none';
-    });
-    this.classList.add('active');
-    const tabContent = document.getElementById(this.dataset.tab);
-    if (tabContent) {
-      tabContent.style.display = 'block';
-    } else {
-      console.warn(`Output tab content #${this.dataset.tab} not found`);
-    }
-    if (this.dataset.tab === 'output-graph') {
-      setTimeout(updateGraph, 100);
-    }
-  } catch (error) {
-    console.error('Error in outputTabClickHandler:', error);
-  }
-}
-
-// Toggle report selection
-function toggleReportSelection(reportId, reportTitle) {
-  try {
-    const existingReport = selectedReports.find(report => report.id === reportId);
-    if (existingReport) {
-      selectedReports = selectedReports.filter(report => report.id !== reportId);
-      reportCount--;
-    } else {
-      selectedReports.push({ id: reportId, title: reportTitle, order: selectedReports.length });
-      reportCount++;
-    }
-    localStorage.setItem('selectedReports', JSON.stringify(selectedReports));
-    presentationCount.textContent = reportCount;
-    presentationCount.classList.toggle('active', reportCount > 0);
-    console.log('Selected reports:', selectedReports);
-  } catch (error) {
-    console.error('Error in toggleReportSelection:', error);
-  }
-}
-
-// Recalculate and export
-recalculateBtn?.addEventListener('click', () => {
-  updateOutputs();
-  if (currentAnalysis !== 'client-profile') {
-    setTimeout(updateGraph, 100);
-  }
-});
-
-exportGraphBtn?.addEventListener('click', () => {
-  try {
-    const chartCanvas = document.getElementById('analysis-chart');
-    if (!chartCanvas) {
-      console.error('Chart canvas not found for export');
-      return;
-    }
-    const link = document.createElement('a');
-    link.href = chartCanvas.toDataURL('image/png');
-    link.download = `${currentAnalysis}-graph.png`;
-    link.click();
-  } catch (error) {
-    console.error('Error in exportGraph:', error);
-  }
-});
-
-// Export functions for use in other modules
-export { formatCurrency, getAge };
