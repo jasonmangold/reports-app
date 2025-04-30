@@ -204,7 +204,7 @@ function calculateRetirementIncome(clientData, getAge) {
         const monthlyContribution = annualContribution / 12;
         const employmentIncome = Math.round(parseFloat(client.incomeSources.employment) || 0);
         const employerMatchPercent = isNaN(parseFloat(account.employerMatch)) ? 0 : parseFloat(account.employerMatch) / 100;
-        const annualEmployerMatch = employerMatchPercent * employmentIncome;
+        Poco el annualEmployerMatch = employerMatchPercent * employmentIncome;
         const monthlyEmployerMatch = annualEmployerMatch / 12;
         const ror = isNaN(parseFloat(account.ror)) ? 0.06 : parseFloat(account.ror) / 100;
 
@@ -529,7 +529,7 @@ export function updateRetirementOutputs(analysisOutputs, clientData, formatCurre
     monthlyNeed = monthlyNeed * Math.pow(1 + inflation, yearsToRetirement);
 
     const incomeGoals = [
-      { age: c1RetirementAge, percentage: 100, amount: Math.round(monthlyNeed) },
+      { age EFFI: c1RetirementAge, percentage: 100, amount: Math.round(monthlyNeed) },
       { age: c1RetirementAge + 10, percentage: 80, amount: Math.round(monthlyNeed * 0.8) },
       { age: c1RetirementAge + 15, percentage: 70, amount: Math.round(monthlyNeed * 0.7) }
     ];
@@ -578,15 +578,16 @@ export function updateRetirementOutputs(analysisOutputs, clientData, formatCurre
       });
     }
 
-    // Calculate future value of assets at retirement
-    let totalAssets = 0;
-    const assets = [];
+    // Calculate future value of capital accounts only (excluding other assets)
+    const capitalAccounts = [];
+    let totalCapital = 0;
     const clients = [clientData.client1, clientData.isMarried ? clientData.client2 : null];
     clients.forEach((client, idx) => {
       if (!client) return;
       const clientAge = idx === 0 ? c1Age : c2Age;
       const clientRetirementAge = idx === 0 ? c1RetirementAge : c2RetirementAge;
       const monthsToClientRetirement = (clientRetirementAge - clientAge) * 12;
+      const yearsToClientRetirement = clientRetirementAge - clientAge;
 
       client.accounts.forEach(account => {
         let balance = Math.round(parseFloat(account.balance) || 0);
@@ -598,50 +599,32 @@ export function updateRetirementOutputs(analysisOutputs, clientData, formatCurre
         const monthlyEmployerMatch = annualEmployerMatch / 12;
         const ror = isNaN(parseFloat(account.ror)) ? 0.06 : parseFloat(account.ror) / 100;
 
-        // Future value of current balance (no rounding)
-        const fvBalance = balance * Math.pow(1 + ror / 12, monthsToClientRetirement);
-        // Future value of contributions (annuity due, no rounding)
-        const fvContributions = monthlyContribution && ror ? monthlyContribution * (Math.pow(1 + ror / 12, monthsToClientRetirement) - 1) / (ror / 12) * (1 + ror / 12) : 0;
-        // Future value of employer match (annuity due, no rounding)
-        const fvEmployerMatch = monthlyEmployerMatch && ror ? monthlyEmployerMatch * (Math.pow(1 + ror / 12, monthsToClientRetirement) - 1) / (ror / 12) * (1 + ror / 12) : 0;
-
-        let accountBalance = fvBalance + fvContributions + fvEmployerMatch;
-
-        if (clientRetirementAge < startAge) {
-          const additionalMonths = (startAge - clientRetirementAge) * 12;
-          accountBalance = accountBalance * Math.pow(1 + rorRetirement / 12, additionalMonths);
+        // Calculate balances for each year from now to retirement
+        const yearlyBalances = [];
+        for (let year = 0; year <= yearsToClientRetirement; year++) {
+          const months = year * 12;
+          // Future value of current balance
+          const fvBalance = balance * Math.pow(1 + ror / 12, months);
+          // Future value of contributions (annuity due)
+          const fvContributions = monthlyContribution && ror ? monthlyContribution * (Math.pow(1 + ror / 12, months) - 1) / (ror / 12) * (1 + ror / 12) : 0;
+          // Future value of employer match (annuity due)
+          const fvEmployerMatch = monthlyEmployerMatch && ror ? monthlyEmployerMatch * (Math.pow(1 + ror / 12, months) - 1) / (ror / 12) * (1 + ror / 12) : 0;
+          const yearBalance = fvBalance + fvContributions + fvEmployerMatch;
+          yearlyBalances.push(Math.round(yearBalance));
         }
 
-        if (accountBalance > 0) {
-          assets.push({
+        if (yearlyBalances[yearlyBalances.length - 1] > 0) {
+          capitalAccounts.push({
             name: `${client.personal.name || (idx === 0 ? 'Client 1' : 'Client 2')}'s ${account.name || 'Retirement Account'}`,
-            balance: Math.round(accountBalance)
+            balances: yearlyBalances,
+            isClient1: idx === 0
           });
-          totalAssets += accountBalance;
+          totalCapital += yearlyBalances[yearlyBalances.length - 1];
         }
       });
-
-      if (client.other && client.other.assets) {
-        client.other.assets.forEach(asset => {
-          let balance = Math.round(parseFloat(asset.balance)) || 0;
-          const ror = isNaN(parseFloat(asset.ror)) ? 0.06 : parseFloat(asset.ror) / 100;
-          let fvBalance = balance * Math.pow(1 + ror / 12, monthsToClientRetirement);
-          if (clientRetirementAge < startAge) {
-            const additionalMonths = (startAge - clientRetirementAge) * 12;
-            fvBalance = fvBalance * Math.pow(1 + rorRetirement / 12, additionalMonths);
-          }
-          if (fvBalance > 0) {
-            assets.push({
-              name: asset.name || 'Other Asset',
-              balance: Math.round(fvBalance)
-            });
-            totalAssets += fvBalance;
-          }
-        });
-      }
     });
 
-    let balance = totalAssets;
+    let balance = totalCapital;
     const monthlySources = incomeSources.reduce((sum, src) => sum + (src.amount || 0), 0);
     let depletionAge = c1RetirementAge;
     for (let i = 0; i < maxTimelineAge - c1RetirementAge; i++) {
@@ -722,6 +705,19 @@ export function updateRetirementOutputs(analysisOutputs, clientData, formatCurre
     // Preserve the current dropdown selection
     const select = document.getElementById('output-select');
     const currentSelection = select ? select.value : 'output-graph';
+
+    // Generate labels for the bar graph (years from now to retirement)
+    const currentYear = new Date().getFullYear();
+    const yearsToRetirementMax = Math.max(c1RetirementAge - c1Age, c2RetirementAge - c2Age);
+    const labels = Array.from({ length: yearsToRetirementMax + 1 }, (_, i) => currentYear + i);
+
+    // Prepare datasets for the bar graph
+    const datasets = capitalAccounts.map(account => ({
+      label: account.name,
+      data: account.balances,
+      backgroundColor: account.isClient1 ? '#22c55e' : '#3b82f6', // Green for Client 1, Blue for Client 2
+      stack: account.isClient1 ? 'Client1' : 'Client2'
+    }));
 
     // Render Dropdown and Checkbox in output-tabs-container
     if (tabContainer) {
@@ -836,23 +832,24 @@ export function updateRetirementOutputs(analysisOutputs, clientData, formatCurre
       <div class="output-tab-content ${currentSelection === 'report-capital-available' ? 'active' : ''}" id="report-capital-available" style="display: ${currentSelection === 'report-capital-available' ? 'block' : 'none'};">
         <div class="output-card">
           <h3>Capital Available at Retirement</h3>
+          <canvas id="capital-growth-chart" style="max-height: 400px;"></canvas>
           <table class="output-table">
             <thead>
               <tr>
-                <th>Asset</th>
-                <th>Balance</th>
+                <th>Account</th>
+                <th>Balance at Retirement</th>
               </tr>
             </thead>
             <tbody>
-              ${assets.map(asset => `
+              ${capitalAccounts.map(account => `
                 <tr>
-                  <td>${asset.name}</td>
-                  <td>${formatCurrency(asset.balance)}</td>
+                  <td>${account.name}</td>
+                  <td>${formatCurrency(account.balances[account.balances.length - 1])}</td>
                 </tr>
               `).join('')}
               <tr>
                 <td><strong>Total</strong></td>
-                <td><strong>${formatCurrency(Math.round(totalAssets))}</strong></td>
+                <td><strong>${formatCurrency(Math.round(totalCapital))}</strong></td>
               </tr>
             </tbody>
           </table>
@@ -955,12 +952,42 @@ export function updateRetirementOutputs(analysisOutputs, clientData, formatCurre
     // Setup dropdown and checkbox interactions
     setupOutputControls(reportOptions, selectedReports, clientData, Chart, getAge);
 
-    // Render the graph if the current selection is output-graph
-    if (currentSelection === 'output-graph') {
-      const chartCanvas = document.getElementById('analysis-chart');
+    // Render the graph if the current selection is output-graph or report-capital-available
+    if (currentSelection === 'output-graph' || currentSelection === 'report-capital-available') {
+      const chartCanvasId = currentSelection === 'output-graph' ? 'analysis-chart' : 'capital-growth-chart';
+      const chartCanvas = document.getElementById(chartCanvasId);
       if (chartCanvas && typeof Chart !== 'undefined') {
         setTimeout(() => {
-          updateRetirementGraph(chartCanvas, clientData, Chart, getAge);
+          if (currentSelection === 'output-graph') {
+            updateRetirementGraph(chartCanvas, clientData, Chart, getAge);
+          } else {
+            // Render the capital growth bar graph
+            const ctx = chartCanvas.getContext('2d');
+            let chartInstance = null;
+            if (chartCanvas.chartInstance) {
+              chartCanvas.chartInstance.destroy();
+              chartCanvas.chartInstance = null;
+            }
+            chartInstance = new Chart(ctx, {
+              type: 'bar',
+              data: {
+                labels: labels,
+                datasets: datasets
+              },
+              options: {
+                responsive: true,
+                plugins: {
+                  legend: { display: true, position: 'top' },
+                  title: { display: true, text: 'Capital Account Growth to Retirement' }
+                },
+                scales: {
+                  x: { title: { display: true, text: 'Year' }, stacked: true },
+                  y: { title: { display: true, text: 'Balance ($)' }, stacked: true, beginAtZero: true }
+                }
+              }
+            });
+            chartCanvas.chartInstance = chartInstance;
+          }
         }, 100);
       }
     }
@@ -1024,13 +1051,99 @@ function outputDropdownChangeHandler(clientData, Chart, getAge) {
     document.querySelectorAll('.output-tab-content').forEach(content => {
       content.style.display = content.id === selectedTab ? 'block' : 'none';
     });
-    if (selectedTab === 'output-graph') {
+    if (selectedTab === 'output-graph' || selectedTab === 'report-capital-available') {
+      const chartCanvasId = selectedTab === 'output-graph' ? 'analysis-chart' : 'capital-growth-chart';
       setTimeout(() => {
-        const chartCanvas = document.getElementById('analysis-chart');
+        const chartCanvas = document.getElementById(chartCanvasId);
         if (chartCanvas && typeof Chart !== 'undefined') {
-          updateRetirementGraph(chartCanvas, clientData, Chart, getAge);
+          if (selectedTab === 'output-graph') {
+            updateRetirementGraph(chartCanvas, clientData, Chart, getAge);
+          } else {
+            // Re-render the capital growth bar graph
+            const ctx = chartCanvas.getContext('2d');
+            let chartInstance = null;
+            if (chartCanvas.chartInstance) {
+              chartCanvas.chartInstance.destroy();
+              chartCanvas.chartInstance = null;
+            }
+            const currentYear = new Date().getFullYear();
+            const c1Age = getAge(clientData.client1.personal.dob);
+            const c2Age = clientData.isMarried ? getAge(clientData.client2.personal.dob) : c1Age;
+            const c1RetirementAge = parseFloat(clientData.client1.personal.retirementAge) || 65;
+            const c2RetirementAge = clientData.isMarried ? parseFloat(clientData.client2.personal.retirementAge) || 65 : c1RetirementAge;
+            const yearsToRetirementMax = Math.max(c1RetirementAge - c1Age, c2RetirementAge - c2Age);
+            const labels = Array.from({ length: yearsToRetirementMax + 1 }, (_, i) => currentYear + i);
+
+            const capitalAccounts = [];
+            let totalCapital = 0;
+            const clients = [clientData.client1, clientData.isMarried ? clientData.client2 : null];
+            clients.forEach((client, idx) => {
+              if (!client) return;
+              const clientAge = idx === 0 ? c1Age : c2Age;
+              const clientRetirementAge = idx === 0 ? c1RetirementAge : c2RetirementAge;
+              const monthsToClientRetirement = (clientRetirementAge - clientAge) * 12;
+              const yearsToClientRetirement = clientRetirementAge - clientAge;
+
+              client.accounts.forEach(account => {
+                let balance = Math.round(parseFloat(account.balance) || 0);
+                const annualContribution = Math.round(parseFloat(account.contribution) || 0);
+                const monthlyContribution = annualContribution / 12;
+                const employmentIncome = Math.round(parseFloat(client.incomeSources.employment) || 0);
+                const employerMatchPercent = isNaN(parseFloat(account.employerMatch)) ? 0 : parseFloat(account.employerMatch) / 100;
+                const annualEmployerMatch = employerMatchPercent * employmentIncome;
+                const monthlyEmployerMatch = annualEmployerMatch / 12;
+                const ror = isNaN(parseFloat(account.ror)) ? 0.06 : parseFloat(account.ror) / 100;
+
+                const yearlyBalances = [];
+                for (let year = 0; year <= yearsToClientRetirement; year++) {
+                  const months = year * 12;
+                  const fvBalance = balance * Math.pow(1 + ror / 12, months);
+                  const fvContributions = monthlyContribution && ror ? monthlyContribution * (Math.pow(1 + ror / 12, months) - 1) / (ror / 12) * (1 + ror / 12) : 0;
+                  const fvEmployerMatch = monthlyEmployerMatch && ror ? monthlyEmployerMatch * (Math.pow(1 + ror / 12, months) - 1) / (ror / 12) * (1 + ror / 12) : 0;
+                  const yearBalance = fvBalance + fvContributions + fvEmployerMatch;
+                  yearlyBalances.push(Math.round(yearBalance));
+                }
+
+                if (yearlyBalances[yearlyBalances.length - 1] > 0) {
+                  capitalAccounts.push({
+                    name: `${client.personal.name || (idx === 0 ? 'Client 1' : 'Client 2')}'s ${account.name || 'Retirement Account'}`,
+                    balances: yearlyBalances,
+                    isClient1: idx === 0
+                  });
+                  totalCapital += yearlyBalances[yearlyBalances.length - 1];
+                }
+              });
+            });
+
+            const datasets = capitalAccounts.map(account => ({
+              label: account.name,
+              data: account.balances,
+              backgroundColor: account.isClient1 ? '#22c55e' : '#3b82f6',
+              stack: account.isClient1 ? 'Client1' : 'Client2'
+            }));
+
+            chartInstance = new Chart(ctx, {
+              type: 'bar',
+              data: {
+                labels: labels,
+                datasets: datasets
+              },
+              options: {
+                responsive: true,
+                plugins: {
+                  legend: { display: true, position: 'top' },
+                  title: { display: true, text: 'Capital Account Growth to Retirement' }
+                },
+                scales: {
+                  x: { title: { display: true, text: 'Year' }, stacked: true },
+                  y: { title: { display: true, text: 'Balance ($)' }, stacked: true, beginAtZero: true }
+                }
+              }
+            });
+            chartCanvas.chartInstance = chartInstance;
+          }
         }
-      }, 100); // Re-render graph when switching to graph tab
+      }, 100);
     }
   } catch (error) {
     console.error('Error in outputDropdownChangeHandler:', error);
