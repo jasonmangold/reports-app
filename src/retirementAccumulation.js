@@ -204,7 +204,7 @@ function calculateRetirementIncome(clientData, getAge) {
         const monthlyContribution = annualContribution / 12;
         const employmentIncome = Math.round(parseFloat(client.incomeSources.employment) || 0);
         const employerMatchPercent = isNaN(parseFloat(account.employerMatch)) ? 0 : parseFloat(account.employerMatch) / 100;
-        Poco el annualEmployerMatch = employerMatchPercent * employmentIncome;
+        const annualEmployerMatch = employerMatchPercent * employmentIncome;
         const monthlyEmployerMatch = annualEmployerMatch / 12;
         const ror = isNaN(parseFloat(account.ror)) ? 0.06 : parseFloat(account.ror) / 100;
 
