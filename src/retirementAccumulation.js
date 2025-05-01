@@ -1329,12 +1329,263 @@ function setupOutputControls(reportOptions, selectedReports, clientData, Chart, 
       return;
     }
 
-    // Function to update checkbox state based on selected option
-    const updateCheckboxState = () => {
-      const selectedOption = reportOptions.find(option => option.id === select.value);
-      if (selectedOption) {
-        checkbox.dataset.report = selectedOption.reportId;
-        checkbox.dataset.title = selectedOption.title;
-        checkbox.checked = selectedReports.some(r => r.id === selectedOption.reportId);
-      }
-    };
+// Function to update checkbox state based on selected option
+const updateCheckboxState = () => {
+  const selectedOption = reportOptions.find(option => option.id === select.value);
+  if (selectedOption) {
+    checkbox.dataset.report = selectedOption.reportId;
+    checkbox.dataset.title = selectedOption.title;
+    checkbox.checked = selectedReports.some(r => r.id === selectedOption.reportId);
+  }
+};
+
+// Initial checkbox state
+updateCheckboxState();
+
+// Handle dropdown change to toggle content visibility and render graphs
+select.addEventListener('change', () => {
+  const selectedValue = select.value;
+
+  // Toggle visibility of output content
+  reportOptions.forEach(option => {
+    const content = document.getElementById(option.id);
+    if (content) {
+      content.style.display = option.id === selectedValue ? 'block' : 'none';
+      content.classList.toggle('active', option.id === selectedValue);
+    }
+  });
+
+  // Update checkbox state
+  updateCheckboxState();
+
+  // Render the appropriate graph if the selected view includes a chart
+  const chartCanvasId = selectedValue === 'output-graph' ? 'analysis-chart' : 
+                       selectedValue === 'report-capital-available' ? 'capital-growth-chart' : 
+                       selectedValue === 'output-alternatives' ? 'alternatives-chart' : null;
+  if (chartCanvasId && typeof Chart !== 'undefined') {
+    const chartCanvas = document.getElementById(chartCanvasId);
+    if (chartCanvas) {
+      setTimeout(() => {
+        if (selectedValue === 'output-graph') {
+          updateRetirementGraph(chartCanvas, clientData, Chart, getAge);
+        } else if (selectedValue === 'report-capital-available') {
+          // Calculate data for capital growth chart
+          const c1Age = getAge(clientData.client1.personal.dob);
+          const c2Age = clientData.isMarried ? getAge(clientData.client2.personal.dob) : c1Age;
+          const c1RetirementAge = parseFloat(clientData.client1.personal.retirementAge) || 65;
+          const c2RetirementAge = clientData.isMarried ? parseFloat(clientData.client2.personal.retirementAge) || 65 : c1RetirementAge;
+          const firstRetirementYears = Math.min(c1RetirementAge - c1Age, clientData.isMarried ? c2RetirementAge - c2Age : Infinity);
+          const firstClientIsC1 = (c1RetirementAge - c1Age) <= (clientData.isMarried ? c2RetirementAge - c2Age : Infinity);
+          const firstCurrentAge = firstClientIsC1 ? c1Age : c2Age;
+          const labels = Array.from({ length: firstRetirementYears + 1 }, (_, i) => firstCurrentAge + i);
+
+          const capitalAccounts = [];
+          const clients = [clientData.client1, clientData.isMarried ? clientData.client2 : null];
+          clients.forEach((client, idx) => {
+            if (!client) return;
+            const clientAge = idx === 0 ? c1Age : c2Age;
+            const clientRetirementAge = idx === 0 ? c1RetirementAge : c2RetirementAge;
+            const yearsToClientRetirement = Math.min(clientRetirementAge - clientAge, firstRetirementYears);
+
+            client.accounts.forEach(account => {
+              let balance = Math.round(parseFloat(account.balance) || 0);
+              const annualContribution = Math.round(parseFloat(account.contribution) || 0);
+              const monthlyContribution = annualContribution / 12;
+              const employmentIncome = Math.round(parseFloat(client.incomeSources.employment) || 0);
+              const employerMatchPercent = isNaN(parseFloat(account.employerMatch)) ? 0 : parseFloat(account.employerMatch) / 100;
+              const annualEmployerMatch = employerMatchPercent * employmentIncome;
+              const monthlyEmployerMatch = annualEmployerMatch / 12;
+              const ror = isNaN(parseFloat(account.ror)) ? 0.06 : parseFloat(account.ror) / 100;
+
+              const yearlyBalances = [];
+              for (let year = 0; year <= yearsToClientRetirement; year++) {
+                const months = year * 12;
+                const fvBalance = balance * Math.pow(1 + ror / 12, months);
+                const fvContributions = monthlyContribution && ror ? monthlyContribution * (Math.pow(1 + ror / 12, months) - 1) / (ror / 12) * (1 + ror / 12) : 0;
+                const fvEmployerMatch = monthlyEmployerMatch && ror ? monthlyEmployerMatch * (Math.pow(1 + ror / 12, months) - 1) / (ror / 12) * (1 + ror / 12) : 0;
+                const yearBalance = fvBalance + fvContributions + fvEmployerMatch;
+                yearlyBalances.push(Math.round(yearBalance));
+              }
+
+              if (yearlyBalances[yearlyBalances.length - 1] > 0) {
+                capitalAccounts.push({
+                  name: `${client.personal.name || (idx === 0 ? 'Client 1' : 'Client 2')}'s ${account.name || 'Retirement Account'}`,
+                  balances: yearlyBalances,
+                  isClient1: idx === 0
+                });
+              }
+            });
+          });
+
+          const datasets = capitalAccounts.map(account => ({
+            label: account.name,
+            data: account.balances,
+            backgroundColor: account.isClient1 ? '#22c55e' : '#3b82f6',
+            stack: clientData.isMarried ? 'Accounts' : undefined
+          }));
+
+          const ctx = chartCanvas.getContext('2d');
+          if (chartCanvas.chartInstance) {
+            chartCanvas.chartInstance.destroy();
+            chartCanvas.chartInstance = null;
+          }
+          const chartInstance = new Chart(ctx, {
+            type: 'bar',
+            data: {
+              labels: labels,
+              datasets: datasets
+            },
+            options: {
+              responsive: true,
+              plugins: {
+                legend: { display: true, position: 'top' },
+                title: { display: true, text: 'Capital Account Growth to First Retirement' }
+              },
+              scales: {
+                x: {
+                  title: { display: true, text: `${firstClientIsC1 ? clientData.client1.personal.name || 'Client 1' : clientData.client2.personal.name || 'Client 2'} Age` },
+                  stacked: clientData.isMarried
+                },
+                y: {
+                  title: { display: true, text: 'Balance ($)' },
+                  stacked: clientData.isMarried,
+                  beginAtZero: true
+                }
+              }
+            }
+          });
+          chartCanvas.chartInstance = chartInstance;
+        } else if (selectedValue === 'output-alternatives') {
+          // Recalculate alternatives percentages
+          const incomeData = calculateRetirementIncome(clientData, getAge);
+          const monthlyNeed = incomeNeedsType === 'percent' ?
+            ((parseFloat(clientData.incomeNeeds.incomePercent) || 80) / 100) * ((parseFloat(clientData.client1.incomeSources.employment) || 0) + (clientData.isMarried ? parseFloat(clientData.client2.incomeSources.employment) || 0 : 0)) / 12 :
+            parseFloat(clientData.incomeNeeds.monthly) || 5000;
+          const yearsToRetirement = Math.max(c1RetirementAge, c2RetirementAge) - c1Age;
+          const monthlyNeedAtRetirement = monthlyNeed * Math.pow(1 + (parseFloat(clientData.assumptions.inflation) / 100 || 0.02), yearsToRetirement);
+          const monthlySources = incomeSources.reduce((sum, src) => sum + (src.amount || 0), 0);
+          const adjustment1Years = parseInt(clientData.incomeNeeds.adjustment1Years) || 0;
+          const adjustment2Years = parseInt(clientData.incomeNeeds.adjustment2Years) || 0;
+          const adjustment1Amount = incomeNeedsType === 'percent' ?
+            ((parseFloat(clientData.incomeNeeds.adjustment1Percent) || 70) / 100) * ((parseFloat(clientData.client1.incomeSources.employment) || 0) + (clientData.isMarried ? parseFloat(clientData.client2.incomeSources.employment) || 0 : 0)) / 12 :
+            parseFloat(clientData.incomeNeeds.adjustment1Amount) || monthlyNeed;
+          const adjustment2Amount = incomeNeedsType === 'percent' ?
+            ((parseFloat(clientData.incomeNeeds.adjustment2Percent) || 60) / 100) * ((parseFloat(clientData.client1.incomeSources.employment) || 0) + (clientData.isMarried ? parseFloat(clientData.client2.incomeSources.employment) || 0 : 0)) / 12 :
+            parseFloat(clientData.incomeNeeds.adjustment2Amount) || monthlyNeed;
+          let depletionAge = incomeData.depletionAge;
+
+          let additionalMonthlySavings = 0;
+          let saveMorePercent = 0;
+          if (depletionAge < maxTimelineAge) {
+            const shortfallValues = incomeData.shortfallData.slice(1);
+            let totalShortfall = 0;
+            for (let i = 0; i < shortfallValues.length; i++) {
+              if (shortfallValues[i] > 0) {
+                totalShortfall += shortfallValues[i] / Math.pow(1 + rorRetirement, i);
+              }
+            }
+            const monthsToRetirement = yearsToRetirement * 12;
+            const avgROR = clients.reduce((sum, client) => {
+              if (!client) return sum;
+              return sum + client.accounts.reduce((s, a) => s + (parseFloat(a.ror) / 100 || 0.06), 0) / (client.accounts.length || 1);
+            }, 0) / (clients.filter(c => c).length || 1);
+            const monthlyROR = avgROR / 12;
+            additionalMonthlySavings = monthsToRetirement > 0 && monthlyROR > 0 ?
+              totalShortfall / ((Math.pow(1 + monthlyROR, monthsToRetirement) - 1) / monthlyROR * (1 + monthlyROR)) :
+              monthsToRetirement > 0 ? totalShortfall / monthsToRetirement : 0;
+            additionalMonthlySavings = Math.round(additionalMonthlySavings);
+            const baseAmount = currentSavings > 0 ? currentSavings :
+              ((parseFloat(clientData.client1.incomeSources.employment) || 0) + (clientData.isMarried ? parseFloat(clientData.client2.incomeSources.employment) || 0 : 0)) / 12;
+            saveMorePercent = baseAmount > 0 ? (additionalMonthlySavings / baseAmount) * 100 : 0;
+            saveMorePercent = Math.min(saveMorePercent, 100);
+          }
+
+          let targetROR = rorRetirement;
+          if (depletionAge < maxTimelineAge) {
+            let low = rorRetirement;
+            let high = 0.2;
+            for (let i = 0; i < 20; i++) {
+              const mid = (low + high) / 2;
+              let tempBalance = incomeData.totalBalance;
+              for (let j = 0; j < maxTimelineAge - c1RetirementAge; j++) {
+                let currentNeed = (j >= adjustment2Years && adjustment2Years > 0 ? adjustment2Amount :
+                                   j >= adjustment1Years && adjustment1Years > 0 ? adjustment1Amount :
+                                   monthlyNeedAtRetirement) * Math.pow(1 + (parseFloat(clientData.assumptions.inflation) / 100 || 0.02), j) - monthlySources;
+                tempBalance = tempBalance * Math.pow(1 + mid / 12, 12) - (currentNeed > 0 ? currentNeed * 12 : 0);
+                if (tempBalance <= 0) break;
+              }
+              if (tempBalance > 0) high = mid;
+              else low = mid;
+            }
+            targetROR = (low + high) / 2;
+          }
+
+          let reducedMonthlyNeed = monthlyNeedAtRetirement;
+          if (depletionAge < maxTimelineAge) {
+            let low = 0;
+            let high = monthlyNeedAtRetirement;
+            for (let i = 0; i < 20; i++) {
+              const mid = (low + high) / 2;
+              let tempBalance = incomeData.totalBalance;
+              for (let j = 0; j < maxTimelineAge - c1RetirementAge; j++) {
+                let currentNeed = mid * Math.pow(1 + (parseFloat(clientData.assumptions.inflation) / 100 || 0.02), j) - monthlySources;
+                tempBalance = tempBalance * Math.pow(1 + rorRetirement / 12, 12) - (currentNeed > 0 ? currentNeed * 12 : 0);
+                if (tempBalance <= 0) break;
+              }
+              if (tempBalance > 0) high = mid;
+              else low = mid;
+            }
+            reducedMonthlyNeed = (low + high) / 2;
+          }
+
+          let newRetirementAge = c1RetirementAge;
+          if (depletionAge < maxTimelineAge) {
+            const yearsNeeded = maxTimelineAge - depletionAge;
+            newRetirementAge = Math.ceil(c1RetirementAge + yearsNeeded);
+            if (newRetirementAge > maxTimelineAge) newRetirementAge = maxTimelineAge;
+          }
+
+          const currentRORs = [];
+          clients.forEach(client => {
+            if (!client) return;
+            client.accounts.forEach(account => {
+              currentRORs.push(parseFloat(account.ror) / 100 || 0.06);
+            });
+          });
+          const avgCurrentROR = currentRORs.length > 0 ? currentRORs.reduce((sum, ror) => sum + ror, 0) / currentRORs.length : 0.06;
+          const rorIncreasePercent = avgCurrentROR > 0 ? ((targetROR - avgCurrentROR) / avgCurrentROR) * 100 : 0;
+          const cappedRorIncreasePercent = Math.min(rorIncreasePercent, 100);
+          const reductionPercent = monthlyNeedAtRetirement > 0 ? ((monthlyNeedAtRetirement - reducedMonthlyNeed) / monthlyNeedAtRetirement) * 100 : 0;
+          const cappedReductionPercent = Math.min(reductionPercent, 100);
+          const originalYearsToRetirement = c1RetirementAge - c1Age;
+          const additionalYears = newRetirementAge - c1RetirementAge;
+          const retirementDelayPercent = originalYearsToRetirement > 0 ? (additionalYears / originalYearsToRetirement) * 100 : 0;
+          const cappedRetirementDelayPercent = Math.min(retirementDelayPercent, 100);
+
+          updateAlternativesGraph(chartCanvas, saveMorePercent, cappedRorIncreasePercent, cappedReductionPercent, cappedRetirementDelayPercent, Chart);
+        }
+      }, 100);
+    }
+  }
+});
+
+// Handle checkbox change to update selectedReports
+checkbox.addEventListener('change', () => {
+  const reportId = checkbox.dataset.report;
+  const title = checkbox.dataset.title;
+  if (checkbox.checked) {
+    if (!selectedReports.some(r => r.id === reportId)) {
+      selectedReports.push({ id: reportId, title: title });
+    }
+  } else {
+    const index = selectedReports.findIndex(r => r.id === reportId);
+    if (index !== -1) {
+      selectedReports.splice(index, 1);
+    }
+  }
+  console.log('Selected Reports Updated:', selectedReports);
+});
+  } catch (error) {
+    console.error('Error in setupOutputControls:', error);
+  }
+}
