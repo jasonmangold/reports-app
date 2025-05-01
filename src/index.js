@@ -1,4 +1,4 @@
-import { retirementAccumulationTabs, updateRetirementGraph, updateRetirementOutputs, setupAgeDisplayListeners } from './retirementAccumulation.js';
+import { retirementAccumulationTabs, updateRetirementGraph, updateRetirementOutputs, setupAgeDisplayListeners, calculateRetirementIncome } from './retirementAccumulation.js';
 import { personalFinanceTabs, updatePersonalFinanceGraph, updatePersonalFinanceOutputs } from './personalFinance.js';
 import { summaryTabs, updateSummaryOutputs } from './summary.js';
 import { clientProfileTabs } from './clientProfile.js';
@@ -1183,7 +1183,7 @@ function updateOutputs() {
     if (outputTabsContainer) outputTabsContainer.innerHTML = '';
 
     if (currentAnalysis === 'retirement-accumulation') {
-      updateRetirementOutputs(analysisOutputs, clientData, formatCurrency, getAge, selectedReports, Chart);
+      updateRetirementOutputs(analysisOutputs, clientData, formatCurrency, getAge, selectedReports, Chart, calculateRetirementIncome);
     } else if (currentAnalysis === 'personal-finance') {
       updatePersonalFinanceOutputs(analysisOutputs, clientData, formatCurrency, selectedReports, Chart);
     } else if (currentAnalysis === 'summary') {
