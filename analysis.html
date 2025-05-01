@@ -10,6 +10,64 @@
   <!-- Chart.js CDN (single version, UMD for global Chart object) -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
   <style>
+    /* Header Layout */
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 20px;
+      background-color: #fff;
+      border-bottom: 1px solid #e0e0e0;
+    }
+    .logo {
+      flex-shrink: 0;
+    }
+    .logo-img {
+      height: 40px;
+    }
+    .client-file {
+      flex-grow: 0;
+      margin: 0 20px;
+    }
+    nav {
+      flex-grow: 1;
+      display: flex;
+      justify-content: center;
+    }
+    nav ul {
+      display: flex;
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      gap: 20px;
+    }
+    nav ul li a {
+      text-decoration: none;
+      color: #333;
+      font-family: 'Inter', sans-serif;
+      font-size: 16px;
+    }
+    nav ul li a.active {
+      color: #007bff;
+      font-weight: 600;
+    }
+    /* Icons Section (Right-Aligned) */
+    .icons {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      margin-left: auto; /* Pushes icons to the right */
+      margin-right: 20px; /* Consistent padding from right edge */
+    }
+    .icons i {
+      cursor: pointer;
+      font-size: 18px;
+      color: #333;
+      transition: color 0.3s;
+    }
+    .icons i:hover {
+      color: #007bff;
+    }
     /* Profile Picture and Dropdown Styles */
     .profile-container {
       position: relative;
@@ -54,21 +112,6 @@
     .dropdown-menu a i {
       margin-right: 8px;
     }
-    /* Adjust icons section to align with profile picture */
-    .icons {
-      display: flex;
-      align-items: center;
-      gap: 15px;
-      margin-right: 10px;
-    }
-    .icons i {
-      cursor: pointer;
-      font-size: 18px;
-      color: #333;
-    }
-    .icons i:hover {
-      color: #007bff;
-    }
   </style>
 </head>
 <body>
@@ -106,7 +149,6 @@
         <li><a href="#">Calculators</a></li>
         <li><a href="presentation.html" id="presentation-tab">Presentation <span id="presentation-count" class="count-badge">0</span></a></li>
         <li><a href="#">Search</a></li>
-        
       </ul>
     </nav>
     <div class="icons">
