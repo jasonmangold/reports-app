@@ -1,4 +1,4 @@
-import { retirementAccumulationTabs, updateRetirementGraph, updateRetirementOutputs, setupAgeDisplayListeners, calculateRetirementIncome } from './retirementAccumulation.js';
+import { retirementAccumulationTabs, updateRetirementGraph, updateRetirementOutputs, setupAgeDisplayListeners } from './retirementAccumulation.js';
 import { personalFinanceTabs, updatePersonalFinanceGraph, updatePersonalFinanceOutputs } from './personalFinance.js';
 import { summaryTabs, updateSummaryOutputs } from './summary.js';
 import { clientProfileTabs } from './clientProfile.js';
