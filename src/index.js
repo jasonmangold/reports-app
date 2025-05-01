@@ -6,28 +6,28 @@ import { clientProfileTabs } from './clientProfile.js';
 // Client data structure with default values
 let clientData = {
   client1: {
-    personal: { name: "Jason Mangold", dob: "1970-01-01", retirementAge: "65" },
-    incomeSources: { employment: "50000", socialSecurity: "2000", other: "500", interestDividends: "1000" },
-    accounts: [{ name: "401(k)", balance: "100000", contribution: "10000", employerMatch: "3", ror: "6" }],
+    personal: { name: "Paul Johnson", dob: "1985-01-01", retirementAge: "67" },
+    incomeSources: { employment: "65000", socialSecurity: "2000", other: "500", interestDividends: "1000" },
+    accounts: [{ name: "401(k)", balance: "91000", contribution: "3600", employerMatch: "3", ror: "6" }],
     other: { assets: [{ name: "Rental Property", balance: "200000", ror: "4", debt: "50000" }] },
     insurance: { lifeInsurance: "0", disabilityInsurance: "0", longTermCare: "0" }
   },
   client2: {
-    personal: { name: "Jane Doe", dob: "1972-01-01", retirementAge: "65" },
-    incomeSources: { employment: "40000", socialSecurity: "1500", other: "300", interestDividends: "800" },
-    accounts: [{ name: "IRA", balance: "80000", contribution: "8000", employerMatch: "0", ror: "5" }],
+    personal: { name: "Sally Johnson", dob: "1987-01-01", retirementAge: "67" },
+    incomeSources: { employment: "50000", socialSecurity: "1500", other: "0", interestDividends: "800" },
+    accounts: [{ name: "IRA", balance: "80000", contribution: "2400", employerMatch: "0", ror: "5" }],
     other: { assets: [] },
     insurance: { lifeInsurance: "0", disabilityInsurance: "0", longTermCare: "0" }
   },
   isMarried: false,
-  incomeNeeds: { monthly: "5000" },
+  incomeNeeds: { monthly: "9000" },
   assumptions: { 
     mortalityAge: "90", 
     c1MortalityAge: "90", 
     c2MortalityAge: "90", 
     inflation: "3", 
-    rorRetirement: "4", 
-    analysisDate: "2025-04-25" 
+    rorRetirement: "5", 
+    analysisDate: "2025-05-01" 
   },
   savingsExpenses: {
     householdExpenses: "3000",
@@ -52,8 +52,8 @@ let clientData = {
 
 // List of clients for the modal
 const clients = [
-  { id: 1, name: "Jason Mangold", data: clientData.client1 },
-  { id: 2, name: "Jane Doe", data: clientData.client2 }
+  { id: 1, name: "Paul Johnson", data: clientData.client1 },
+  { id: 2, name: "Sally Johnson", data: clientData.client2 }
 ];
 
 // Load clientData from localStorage if available
