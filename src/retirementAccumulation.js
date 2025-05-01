@@ -1338,5 +1338,3 @@ function setupOutputControls(reportOptions, selectedReports, clientData, Chart, 
         checkbox.checked = selectedReports.some(r => r.id === selectedOption.reportId);
       }
     };
-
-    //
