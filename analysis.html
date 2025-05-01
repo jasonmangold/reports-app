@@ -9,6 +9,67 @@
   <link rel="stylesheet" href="styles.css">
   <!-- Chart.js CDN (single version, UMD for global Chart object) -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <style>
+    /* Profile Picture and Dropdown Styles */
+    .profile-container {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+    }
+    .profile-pic {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      object-fit: cover;
+      cursor: pointer;
+      border: 2px solid #ccc;
+      transition: border-color 0.3s;
+    }
+    .profile-pic:hover {
+      border-color: #007bff;
+    }
+    .dropdown-menu {
+      display: none;
+      position: absolute;
+      top: 50px;
+      right: 0;
+      background-color: #fff;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+      z-index: 1000;
+      min-width: 150px;
+    }
+    .dropdown-menu a {
+      display: block;
+      padding: 10px 15px;
+      text-decoration: none;
+      color: #333;
+      font-size: 14px;
+      font-family: 'Inter', sans-serif;
+    }
+    .dropdown-menu a:hover {
+      background-color: #f0f0f0;
+    }
+    .dropdown-menu a i {
+      margin-right: 8px;
+    }
+    /* Adjust icons section to align with profile picture */
+    .icons {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      margin-right: 10px;
+    }
+    .icons i {
+      cursor: pointer;
+      font-size: 18px;
+      color: #333;
+    }
+    .icons i:hover {
+      color: #007bff;
+    }
+  </style>
 </head>
 <body>
   <header>
@@ -52,6 +113,14 @@
       <i class="fas fa-bell"></i>
       <i class="fas fa-question-circle"></i>
       <i class="fas fa-moon dark-mode-toggle"></i>
+      <div class="profile-container">
+        <img src="https://via.placeholder.com/40" alt="Profile Picture" class="profile-pic" id="profile-pic">
+        <div class="dropdown-menu" id="dropdown-menu">
+          <a href="#" id="help-link"><i class="fas fa-question-circle"></i> Help</a>
+          <a href="#" id="settings-link"><i class="fas fa-cog"></i> Settings</a>
+          <a href="#" id="logout-link"><i class="fas fa-sign-out-alt"></i> Logout</a>
+        </div>
+      </div>
     </div>
   </header>
 
