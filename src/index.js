@@ -216,7 +216,7 @@ document.addEventListener('DOMContentLoaded', () => {
     console.warn('Profile picture or dropdown menu elements not found.');
   }
 });
-});
+
 
 // Populate client list in the modal
 function populateClientList() {
