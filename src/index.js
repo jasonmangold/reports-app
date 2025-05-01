@@ -454,7 +454,7 @@ function populateInputFields() {
         const newAsset = document.createElement('div');
         newAsset.classList.add('asset');
         newAsset.innerHTML = `
-          <label>Asset Name: <input type="text" id="${client}-asset-${index}-name" placeholder="Asset ${index + 1}"></label>
+          <label>Asset Name: <input type=" text" id="${client}-asset-${index}-name" placeholder="Asset ${index + 1}"></label>
           <label>Balance ($): <input type="number" id="${client}-asset-${index}-balance" min="0" step="1000" placeholder="0"></label>
           <label>ROR (%): <input type="number" id="${client}-asset-${index}-ror" min="0" max="100" step="0.1" placeholder="0"></label>
           <label>Asset Debt ($): <input type="number" id="${client}-asset-${index}-debt" min="0" step="1000" placeholder="0"></label>
