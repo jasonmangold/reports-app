@@ -99,8 +99,8 @@ export const retirementAccumulationTabs = [
   }
 ];
 
-// Setup age display listeners for DOB inputs and handle Client 2 visibility
-export function setupAgeDisplayListeners(getAge) {
+// Setup input listeners for DOB, marital status, and income needs
+export function setupInputListeners(getAge, clientData, updateRetirementOutputs, formatCurrency, selectedReports, Chart) {
   try {
     const dobInputs = document.querySelectorAll('#c1-dob, #c2-dob');
     const isMarriedInput = document.getElementById('is-married');
@@ -121,6 +121,12 @@ export function setupAgeDisplayListeners(getAge) {
         } else if (ageDisplay) {
           ageDisplay.textContent = '';
         }
+        // Update clientData and refresh outputs
+        if (clientData) {
+          const clientKey = clientPrefix === 'c1' ? 'client1' : 'client2';
+          clientData[clientKey].personal.dob = dob;
+          updateRetirementOutputs(document.getElementById('analysis-outputs'), clientData, formatCurrency, getAge, selectedReports, Chart);
+        }
       });
 
       // Trigger initial age display
@@ -137,6 +143,12 @@ export function setupAgeDisplayListeners(getAge) {
         if (client2IncomeSection) client2IncomeSection.style.display = isChecked ? 'block' : 'none';
         if (c2Accounts) c2Accounts.style.display = isChecked ? 'block' : 'none';
         if (c2MortalityLabel) c2MortalityLabel.style.display = isChecked ? 'block' : 'none';
+        // Update clientData
+        if (clientData) {
+          clientData.isMarried = isChecked;
+          if (!isChecked) delete clientData.client2;
+          updateRetirementOutputs(document.getElementById('analysis-outputs'), clientData, formatCurrency, getAge, selectedReports, Chart);
+        }
         // Trigger age update for Client 2 if visible
         if (isChecked && document.getElementById('c2-dob')?.value) {
           document.getElementById('c2-dob').dispatchEvent(new Event('change'));
@@ -146,23 +158,69 @@ export function setupAgeDisplayListeners(getAge) {
       toggleClient2Visibility(); // Initial visibility
     }
 
-    // Setup income needs input type toggle
+    // Setup income needs input type toggle and listeners
+    setupIncomeNeedsListeners(clientData, updateRetirementOutputs, formatCurrency, getAge, selectedReports, Chart);
+  } catch (error) {
+    console.error('Error in setupInputListeners:', error);
+  }
+}
+
+// Setup listeners for income needs inputs
+function setupIncomeNeedsListeners(clientData, updateRetirementOutputs, formatCurrency, getAge, selectedReports, Chart) {
+  try {
     const incomeNeedsDollar = document.getElementById('income-needs-dollar');
     const incomeNeedsPercent = document.getElementById('income-needs-percent');
     const dollarInputs = document.getElementById('income-needs-dollar-input');
     const percentInputs = document.getElementById('income-needs-percent-input');
 
+    // Toggle visibility of dollar vs percent inputs
     if (incomeNeedsDollar && incomeNeedsPercent && dollarInputs && percentInputs) {
       const toggleInputs = () => {
-        dollarInputs.style.display = incomeNeedsDollar.checked ? 'block' : 'none';
-        percentInputs.style.display = incomeNeedsPercent.checked ? 'block' : 'none';
+        const isDollar = incomeNeedsDollar.checked;
+        dollarInputs.style.display = isDollar ? 'block' : 'none';
+        percentInputs.style.display = isDollar ? 'none' : 'block';
+        // Update clientData
+        if (clientData) {
+          clientData.incomeNeeds.type = isDollar ? 'dollar' : 'percent';
+          updateRetirementOutputs(document.getElementById('analysis-outputs'), clientData, formatCurrency, getAge, selectedReports, Chart);
+        }
       };
       incomeNeedsDollar.addEventListener('change', toggleInputs);
       incomeNeedsPercent.addEventListener('change', toggleInputs);
       toggleInputs(); // Initial visibility
     }
+
+    // Setup listeners for income needs inputs
+    const incomeNeedsInputs = [
+      { id: 'monthly-income', key: 'monthly', type: 'number' },
+      { id: 'income-percent', key: 'incomePercent', type: 'number' },
+      { id: 'adjustment1-years', key: 'adjustment1Years', type: 'number' },
+      { id: 'adjustment1-amount', key: 'adjustment1Amount', type: 'number' },
+      { id: 'adjustment2-years', key: 'adjustment2Years', type: 'number' },
+      { id: 'adjustment2-amount', key: 'adjustment2Amount', type: 'number' },
+      { id: 'adjustment1-years-percent', key: 'adjustment1Years', type: 'number' },
+      { id: 'adjustment1-percent', key: 'adjustment1Percent', type: 'number' },
+      { id: 'adjustment2-years-percent', key: 'adjustment2Years', type: 'number' },
+      { id: 'adjustment2-percent', key: 'adjustment2Percent', type: 'number' }
+    ];
+
+    incomeNeedsInputs.forEach(({ id, key, type }) => {
+      const input = document.getElementById(id);
+      if (input) {
+        input.addEventListener('change', () => {
+          if (clientData) {
+            clientData.incomeNeeds[key] = type === 'number' ? parseFloat(input.value) || 0 : input.value;
+            updateRetirementOutputs(document.getElementById('analysis-outputs'), clientData, formatCurrency, getAge, selectedReports, Chart);
+          }
+        });
+        // Initialize clientData with current values
+        if (clientData && input.value) {
+          clientData.incomeNeeds[key] = type === 'number' ? parseFloat(input.value) || 0 : input.value;
+        }
+      }
+    });
   } catch (error) {
-    console.error('Error in setupAgeDisplayListeners:', error);
+    console.error('Error in setupIncomeNeedsListeners:', error);
   }
 }
 
@@ -1200,6 +1258,7 @@ export function setupOutputControls(reportOptions, selectedReports, clientData, 
       return;
     }
 
+    // Function to update checkbox state based on selected option
     const updateCheckboxState = () => {
       const selectedOption = reportOptions.find(option => option.id === select.value);
       if (selectedOption) {
@@ -1209,10 +1268,13 @@ export function setupOutputControls(reportOptions, selectedReports, clientData, 
       }
     };
 
+    // Initialize checkbox state
     updateCheckboxState();
 
+    // Handle dropdown change to toggle output views
     select.addEventListener('change', () => {
       const selectedValue = select.value;
+      // Toggle visibility of output content divs
       reportOptions.forEach(option => {
         const content = document.getElementById(option.id);
         if (content) {
@@ -1221,8 +1283,10 @@ export function setupOutputControls(reportOptions, selectedReports, clientData, 
         }
       });
 
+      // Update checkbox state
       updateCheckboxState();
 
+      // Render charts for graph-related views
       if (['output-graph', 'report-capital-available', 'output-alternatives'].includes(selectedValue) && typeof Chart !== 'undefined') {
         const chartCanvasId = selectedValue === 'output-graph' ? 'analysis-chart' :
                              selectedValue === 'report-capital-available' ? 'capital-growth-chart' :
@@ -1234,8 +1298,12 @@ export function setupOutputControls(reportOptions, selectedReports, clientData, 
               updateRetirementGraph(chartCanvas, clientData, Chart, getAge);
             } else if (selectedValue === 'report-capital-available') {
               const { capitalAccounts, firstRetirementYears, firstCurrentAge, firstClientIsC1 } = graphData;
-              const labels = Array.from({ length: (firstRetirementYears || 0) + 1 }, (_, i) => (firstCurrentAge || 0) + i);
-              const datasets = (capitalAccounts || []).map(account => ({
+              if (!capitalAccounts || !firstRetirementYears || !firstCurrentAge) {
+                console.warn('Missing graphData for capital-available chart');
+                return;
+              }
+              const labels = Array.from({ length: firstRetirementYears + 1 }, (_, i) => firstCurrentAge + i);
+              const datasets = capitalAccounts.map(account => ({
                 label: account.name,
                 data: account.balances,
                 backgroundColor: account.isClient1 ? '#22c55e' : '#3b82f6',
@@ -1256,7 +1324,10 @@ export function setupOutputControls(reportOptions, selectedReports, clientData, 
                   },
                   scales: {
                     x: {
-                      title: { display: true, text: `${firstClientIsC1 ? clientData.client1.personal.name || 'Client 1' : clientData.client2.personal.name || 'Client 2'} Age` },
+                      title: {
+                        display: true,
+                        text: `${firstClientIsC1 ? clientData.client1.personal.name || 'Client 1' : clientData.client2.personal.name || 'Client 2'} Age`
+                      },
                       stacked: clientData.isMarried
                     },
                     y: {
@@ -1273,18 +1344,23 @@ export function setupOutputControls(reportOptions, selectedReports, clientData, 
               updateAlternativesGraph(chartCanvas, saveMorePercent || 0, cappedRorIncreasePercent || 0, cappedReductionPercent || 0, cappedRetirementDelayPercent || 0, Chart);
             }
           }, 100);
+        } else {
+          console.warn(`Chart canvas #${chartCanvasId} not found`);
         }
       }
     });
 
+    // Handle checkbox change to update selectedReports
     checkbox.addEventListener('change', () => {
       const reportId = checkbox.dataset.report;
-      const title = checkbox.dataset.title;
+      const reportTitle = checkbox.dataset.title;
       if (checkbox.checked) {
+        // Add report to selectedReports if not already present
         if (!selectedReports.some(r => r.id === reportId)) {
-          selectedReports.push({ id: reportId, title });
+          selectedReports.push({ id: reportId, title: reportTitle });
         }
       } else {
+        // Remove report from selectedReports
         const index = selectedReports.findIndex(r => r.id === reportId);
         if (index !== -1) {
           selectedReports.splice(index, 1);
