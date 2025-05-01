@@ -1436,7 +1436,7 @@ function outputDropdownChangeHandler(clientData, Chart, getAge) {
 
                 if (yearlyBalances[yearlyBalances.length - 1] > 0) {
                   capitalAccounts.push({
-                    name: `${client.personal.name || (idx === 0 ? 'Client 1' : 'Client 2')}'s ${account.name || 'Retirement Account'}`,
+                    name: `{client.personal.name || (idx === 0 ? 'Client 1' : 'Client 2')}'s ${account.name || 'Retirement Account'}`,
                     balances: yearlyBalances,
                     isClient1: idx === 0
                   });
