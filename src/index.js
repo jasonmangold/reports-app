@@ -167,6 +167,55 @@ document.addEventListener('DOMContentLoaded', () => {
     console.error('Initialization error:', error);
     analysisOutputs.innerHTML = '<p class="output-error">Error initializing page. Please check console for details.</p>';
   }
+
+  // Profile Dropdown Functionality
+  const profilePic = document.getElementById('profile-pic');
+  const dropdownMenu = document.getElementById('dropdown-menu');
+
+  if (profilePic && dropdownMenu) {
+    profilePic.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const isOpen = dropdownMenu.style.display === 'block';
+      dropdownMenu.style.display = isOpen ? 'none' : 'block';
+      profilePic.setAttribute('aria-expanded', !isOpen);
+    });
+
+    document.addEventListener('click', (e) => {
+      if (!profilePic.contains(e.target) && !dropdownMenu.contains(e.target)) {
+        dropdownMenu.style.display = 'none';
+        profilePic.setAttribute('aria-expanded', 'false');
+      }
+    });
+
+    // Handle dropdown menu actions
+    document.getElementById('help-link').addEventListener('click', (e) => {
+      e.preventDefault();
+      alert('Help: Please visit our support page for assistance.');
+      dropdownMenu.style.display = 'none';
+      profilePic.setAttribute('aria-expanded', 'false');
+    });
+
+    document.getElementById('settings-link').addEventListener('click', (e) => {
+      e.preventDefault();
+      alert('Settings: User settings are not yet implemented.');
+      dropdownMenu.style.display = 'none';
+      profilePic.setAttribute('aria-expanded', 'false');
+    });
+
+    document.getElementById('logout-link').addEventListener('click', (e) => {
+      e.preventDefault();
+      if (confirm('Are you sure you want to logout?')) {
+        // Replace with actual logout logic
+        alert('Logging out...');
+        window.location.href = '/login';
+      }
+      dropdownMenu.style.display = 'none';
+      profilePic.setAttribute('aria-expanded', 'false');
+    });
+  } else {
+    console.warn('Profile picture or dropdown menu elements not found.');
+  }
+});
 });
 
 // Populate client list in the modal
