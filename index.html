@@ -124,7 +124,24 @@
       <img src="logo.png" alt="Advisys Logo" class="logo-img">
     </div>
     <div class="client-file">
-      <span id="client-file-name">No Client Selected</span>
+      <button id="client-file-toggle" class="client-file-btn" aria-haspopup="true" aria-expanded="false">
+        <span id="client-file-name">No Client Selected</span>
+        <i class="fas fa-chevron-down"></i>
+        </button>
+      <!-- Modal for client list -->
+      <div id="client-modal" class="modal" style="display: none;">
+        <div class="modal-content">
+          <h3>Select Client</h3>
+          <input type="text" placeholder="Search clients..." id="client-search">
+          <ul id="client-list">
+            <!-- Populated dynamically -->
+            <li data-client-id="1" class="selected">John Doe</li>
+            <li data-client-id="2">Jane Smith</li>
+            <!-- Add more clients dynamically -->
+          </ul>
+          <button id="close-modal">Close</button>
+        </div>
+      </div>
     </div>
     <nav>
       <ul>
