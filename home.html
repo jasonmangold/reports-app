@@ -29,37 +29,67 @@
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
       display: flex;
       align-items: center;
+      justify-content: space-between;
       padding: 15px 30px;
       z-index: 1000;
     }
 
     .logo {
+      flex-shrink: 0;
       font-size: 24px;
       font-weight: 700;
       background: linear-gradient(90deg, #3b82f6, #60a5fa);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
     }
-    
+
     .logo-img {
-  height: 30px;
-  width: auto;
-}
+      height: 30px;
+      width: auto;
+    }
+
+    .client-file {
+      flex-grow: 0;
+      margin: 0 20px;
+    }
+
+    .client-file-btn {
+      padding: 8px 12px;
+      background-color: #f5f5f5;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      cursor: pointer;
+      font-family: 'Inter', sans-serif;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      color: #333;
+      font-size: 14px;
+    }
+
+    nav {
+      flex-grow: 1;
+      display: flex;
+      justify-content: center;
+    }
 
     nav ul {
       list-style: none;
       display: flex;
-      margin-left: 40px;
+      margin: 0;
+      padding: 0;
+      gap: 20px;
     }
 
     nav ul li {
-      margin: 0 20px;
+      margin: 0;
     }
 
     nav ul li a {
       text-decoration: none;
       color: #64748b;
       font-weight: 600;
+      font-size: 16px;
       transition: color 0.2s;
     }
 
@@ -68,16 +98,74 @@
       color: #3b82f6;
     }
 
+    .icons {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      margin-left: auto;
+      margin-right: 20px;
+    }
+
     .icons i {
-      margin-left: 20px;
       cursor: pointer;
-      font-size: 20px;
+      font-size: 18px;
       color: #64748b;
       transition: color 0.2s;
     }
 
     .icons i:hover {
       color: #3b82f6;
+    }
+
+    /* Profile Picture and Dropdown Styles */
+    .profile-container {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+    }
+
+    .profile-pic {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      object-fit: cover;
+      cursor: pointer;
+      border: 2px solid #ccc;
+      transition: border-color 0.3s;
+    }
+
+    .profile-pic:hover {
+      border-color: #3b82f6;
+    }
+
+    .dropdown-menu {
+      display: none;
+      position: absolute;
+      top: 50px;
+      right: 0;
+      background-color: #fff;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+      z-index: 1000;
+      min-width: 150px;
+    }
+
+    .dropdown-menu a {
+      display: block;
+      padding: 10px 15px;
+      text-decoration: none;
+      color: #333;
+      font-size: 14px;
+      font-family: 'Inter', sans-serif;
+    }
+
+    .dropdown-menu a:hover {
+      background-color: #f0f0f0;
+    }
+
+    .dropdown-menu a i {
+      margin-right: 8px;
     }
 
     /* Grid Styles for Featured Reports */
@@ -284,8 +372,44 @@
       border-bottom: 1px solid #475569;
     }
 
+    body.dark-mode .dropdown-menu {
+      background-color: #334155;
+      border-color: #475569;
+    }
+
+    body.dark-mode .dropdown-menu a {
+      color: #f1f5f9;
+    }
+
+    body.dark-mode .dropdown-menu a:hover {
+      background-color: #475569;
+    }
+
     /* Responsive Design */
     @media (max-width: 768px) {
+      header {
+        flex-wrap: wrap;
+        padding: 10px 15px;
+      }
+
+      .client-file {
+        margin: 10px 0;
+      }
+
+      nav {
+        justify-content: flex-start;
+        margin: 10px 0;
+      }
+
+      nav ul {
+        flex-wrap: wrap;
+        gap: 10px;
+      }
+
+      .icons {
+        margin-right: 10px;
+      }
+
       .grid {
         grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
         gap: 20px;
@@ -303,19 +427,45 @@
     <div class="logo">
       <img src="logo.png" alt="Advisys Logo" class="logo-img">
     </div>
+    <div class="client-file">
+      <button id="client-file-toggle" class="client-file-btn" aria-haspopup="true" aria-expanded="false">
+        <span id="client-file-name">No Client Selected</span>
+        <i class="fas fa-chevron-down"></i>
+      </button>
+      <!-- Modal for client list -->
+      <div id="client-modal" class="modal" style="display: none;">
+        <div class="modal-content">
+          <h3>Select Client</h3>
+          <input type="text" placeholder="Search clients..." id="client-search">
+          <ul id="client-list">
+            <!-- Populated dynamically -->
+            <li data-client-id="1" class="selected">John Doe</li>
+            <li data-client-id="2">Jane Smith</li>
+            <!-- Add more clients dynamically -->
+          </ul>
+          <button id="close-modal">Close</button>
+        </div>
+      </div>
+    </div>
     <nav>
       <ul>
         <li><a href="home.html" class="active">Home</a></li>
         <li><a href="analysis.html">Analysis</a></li>
         <li><a href="index.html">Education</a></li>
         <li><a href="#">Calculators</a></li>
-        <li><a href="#">Profile</a></li>
       </ul>
     </nav>
     <div class="icons">
       <i class="fas fa-bell"></i>
-      <i class="fas fa-question-circle"></i>
       <i class="fas fa-moon dark-mode-toggle"></i>
+      <div class="profile-container">
+        <img src="headshot.png" alt="Profile Picture" class="profile-pic" id="profile-pic">
+        <div class="dropdown-menu" id="dropdown-menu">
+          <a href="#" id="help-link"><i class="fas fa-question-circle"></i> Help</a>
+          <a href="#" id="settings-link"><i class="fas fa-cog"></i> Settings</a>
+          <a href="#" id="logout-link"><i class="fas fa-sign-out-alt"></i> Logout</a>
+        </div>
+      </div>
     </div>
   </header>
 
@@ -419,13 +569,91 @@
         </div>
       </div>
     </section>
-
   </main>
 
-  <!-- JavaScript for dark mode toggle -->
+  <!-- JavaScript for interactions -->
   <script>
-    document.querySelector('.dark-mode-toggle').addEventListener('click', () => {
-      document.body.classList.toggle('dark-mode');
+    document.addEventListener('DOMContentLoaded', () => {
+      // Dark mode toggle
+      const darkModeToggle = document.querySelector('.dark-mode-toggle');
+      darkModeToggle.addEventListener('click', () => {
+        document.body.classList.toggle('dark-mode');
+      });
+
+      // Profile dropdown functionality
+      const profilePic = document.getElementById('profile-pic');
+      const dropdownMenu = document.getElementById('dropdown-menu');
+      if (profilePic && dropdownMenu) {
+        profilePic.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const isOpen = dropdownMenu.style.display === 'block';
+          dropdownMenu.style.display = isOpen ? 'none' : 'block';
+          profilePic.setAttribute('aria-expanded', !isOpen);
+        });
+
+        document.addEventListener('click', (e) => {
+          if (!profilePic.contains(e.target) && !dropdownMenu.contains(e.target)) {
+            dropdownMenu.style.display = 'none';
+            profilePic.setAttribute('aria-expanded', 'false');
+          }
+        });
+
+        document.getElementById('help-link').addEventListener('click', (e) => {
+          e.preventDefault();
+          alert('Help: Please visit our support page for assistance.');
+          dropdownMenu.style.display = 'none';
+          profilePic.setAttribute('aria-expanded', 'false');
+        });
+
+        document.getElementById('settings-link').addEventListener('click', (e) => {
+          e.preventDefault();
+          alert('Settings: User settings are not yet implemented.');
+          dropdownMenu.style.display = 'none';
+          profilePic.setAttribute('aria-expanded', 'false');
+        });
+
+        document.getElementById('logout-link').addEventListener('click', (e) => {
+          e.preventDefault();
+          if (confirm('Are you sure you want to logout?')) {
+            alert('Logging out...');
+            window.location.href = '/login';
+          }
+          dropdownMenu.style.display = 'none';
+          profilePic.setAttribute('aria-expanded', 'false');
+        });
+      } else {
+        console.warn('Profile picture or dropdown menu elements not found.');
+      }
+
+      // Client modal functionality
+      const clientFileToggle = document.getElementById('client-file-toggle');
+      const clientModal = document.getElementById('client-modal');
+      const closeModal = document.getElementById('close-modal');
+      const clientList = document.getElementById('client-list');
+      const clientFileName = document.getElementById('client-file-name');
+
+      if (clientFileToggle && clientModal && closeModal && clientList) {
+        clientFileToggle.addEventListener('click', () => {
+          clientModal.style.display = 'block';
+          clientFileToggle.setAttribute('aria-expanded', 'true');
+        });
+
+        closeModal.addEventListener('click', () => {
+          clientModal.style.display = 'none';
+          clientFileToggle.setAttribute('aria-expanded', 'false');
+        });
+
+        clientList.addEventListener('click', (e) => {
+          const li = e.target.closest('li');
+          if (li) {
+            const clientName = li.textContent;
+            clientFileName.textContent = clientName;
+            clientModal.style.display = 'none';
+            clientFileToggle.setAttribute('aria-expanded', 'false');
+            // Update client data or profile picture if needed
+          }
+        });
+      }
     });
   </script>
 </body>
