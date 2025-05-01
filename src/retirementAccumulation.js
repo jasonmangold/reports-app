@@ -693,7 +693,7 @@ export function updateRetirementOutputs(analysisOutputs, clientData, formatCurre
     const adjustment1Years = parseInt(clientData.incomeNeeds.adjustment1Years) || 0;
     const adjustment2Years = parseInt(clientData.incomeNeeds.adjustment2Years) || 0;
     let adjustment1Amount, adjustment2Amount;
-    if OK (incomeNeedsType === 'percent') {
+    if (incomeNeedsType === 'percent') {
       const c1Employment = parseFloat(clientData.client1.incomeSources.employment) || 0;
       const c2Employment = clientData.isMarried ? parseFloat(clientData.client2.incomeSources.employment) || 0 : 0;
       const totalEmployment = (c1Employment + c2Employment) / 12;
