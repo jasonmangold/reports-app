@@ -122,6 +122,8 @@ const subfolderContainer = document.getElementById('subfolder-container');
 const breadcrumb = document.getElementById('breadcrumb');
 const categoryFilter = document.getElementById('category-filter');
 const searchInput = document.getElementById('search-input');
+const gridViewBtn = document.getElementById('grid-view-btn');
+const listViewBtn = document.getElementById('list-view-btn');
 const modal = document.getElementById('report-modal');
 const modalTitle = document.getElementById('modal-title');
 const modalContent = document.getElementById('modal-content');
@@ -134,6 +136,7 @@ const presentationCount = document.getElementById('presentation-count');
 
 let selectedCategory = 'all';
 let selectedSubcategory = null;
+let viewMode = 'grid';
 let lastSearchTerm = '';
 let presentationReports = [];
 
@@ -143,8 +146,8 @@ function updatePresentationCount() {
   
   // Only trigger animation if count increases from 0 to 1 or higher
   if (presentationReports.length > 0 && previousCount === 0) {
-    presentationCount.classList.remove('active');
-    void presentationCount.offsetWidth;
+    presentationCount.classList.remove('active'); // Reset animation
+    void presentationCount.offsetWidth; // Trigger reflow to restart animation
     presentationCount.classList.add('active');
   } else if (presentationReports.length === 0) {
     presentationCount.classList.remove('active');
@@ -191,7 +194,7 @@ function renderSubfolders(category) {
     updateBreadcrumb();
   } else {
     subfolderContainer.style.display = 'none';
-    reportGrid.style.display = 'block'; // Changed to block for list view
+    reportGrid.style.display = 'grid';
     updateBreadcrumb();
     renderReports();
   }
@@ -210,20 +213,21 @@ function renderReports() {
     const plainContent = report.content.replace(/<[^>]+>/g, '');
     const matchesCategory = selectedCategory === 'all' || report.category === selectedCategory;
     const matchesSubcategory = !selectedSubcategory || (report.subcategory && report.subcategory === selectedSubcategory);
-    const matchesSearch = !searchTerm || reportbliktitle.toLowerCase().includes(searchTerm) || plainContent.toLowerCase().includes(searchTerm);
+    const matchesSearch = !searchTerm || report.title.toLowerCase().includes(searchTerm) || plainContent.toLowerCase().includes(searchTerm);
     const matchesOnePager = !isOnePagerFilter || (report.tags && report.tags.includes('one-pager'));
     const matchesTopic = selectedTopics.length === 0 || (report.tags && selectedTopics.some(topic => report.tags.includes(topic)));
     
     if (matchesCategory && matchesSubcategory && matchesSearch && matchesOnePager && matchesTopic) {
       const card = document.createElement('div');
       card.classList.add('report-card');
-      card.classList.add('list-view'); // Always use list-view
+      card.classList.add(`${viewMode}-view`);
       card.setAttribute('data-title', report.title);
       card.setAttribute('data-content', report.content);
       const isSelected = presentationReports.includes(report.title);
       card.innerHTML = `
         <div class="report-card-content">
           <h3>${report.title}</h3>
+          ${viewMode === 'grid' ? `<p>${plainContent.substring(0, 100)}...</p>` : ''}
           <div class="card-actions">
             <input type="checkbox" class="presentation-checkbox" ${isSelected ? 'checked' : ''}>
           </div>
@@ -233,10 +237,11 @@ function renderReports() {
     }
   });
 
-  reportGrid.classList.add('list-view'); // Ensure list-view class is applied
+  reportGrid.classList.remove('grid-view', 'list-view');
+  reportGrid.classList.add(`${viewMode}-view`);
   updateBreadcrumb();
 
-  // Add event listeners to checkboxes
+  // Add event listeners to checkboxes within renderReports
   document.querySelectorAll('.presentation-checkbox').forEach(checkbox => {
     checkbox.addEventListener('change', (e) => {
       const card = e.target.closest('.report-card');
@@ -277,7 +282,7 @@ subfolderContainer.addEventListener('click', (e) => {
   if (subfolder) {
     selectedSubcategory = subfolder.getAttribute('data-subcategory');
     subfolderContainer.style.display = 'none';
-    reportGrid.style.display = 'block'; // Changed to block for list view
+    reportGrid.style.display = 'grid';
     renderReports();
   }
 });
@@ -288,9 +293,23 @@ searchInput.addEventListener('input', () => {
     reportGrid.style.display = 'none';
   } else {
     subfolderContainer.style.display = 'none';
-    reportGrid.style.display = 'block'; // Changed to block for list view
+    reportGrid.style.display = 'grid';
     renderReports();
   }
+});
+
+gridViewBtn.addEventListener('click', () => {
+  viewMode = 'grid';
+  gridViewBtn.classList.add('active');
+  listViewBtn.classList.remove('active');
+  renderReports();
+});
+
+listViewBtn.addEventListener('click', () => {
+  viewMode = 'list';
+  listViewBtn.classList.add('active');
+  gridViewBtn.classList.remove('active');
+  renderReports();
 });
 
 reportGrid.addEventListener('click', (e) => {
@@ -366,18 +385,16 @@ document.querySelectorAll('#tag-filters input[type="checkbox"]').forEach(checkbo
     renderReports();
   });
 });
-
 // Initialize client file name on page load
 document.addEventListener('DOMContentLoaded', () => {
-  const clientFileNameElement = document.getElementById('client-file-name');
-  if (clientFileNameElement) {
-    const storedClientName = localStorage.getItem('clientFileName') || 'No Client Selected';
-    clientFileNameElement.textContent = storedClientName;
-  } else {
-    console.warn('Client file name element (#client-file-name) not found in Education tab');
-  }
+    const clientFileNameElement = document.getElementById('client-file-name');
+    if (clientFileNameElement) {
+        const storedClientName = localStorage.getItem('clientFileName') || 'No Client Selected';
+        clientFileNameElement.textContent = storedClientName;
+    } else {
+        console.warn('Client file name element (#client-file-name) not found in Education tab');
+    }
 });
-
 // Initial render
 renderReports();
 updatePresentationCount();
