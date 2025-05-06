@@ -216,7 +216,7 @@ const yearsAfterRetirement2 = parseInt(document.getElementById('years-after-reti
 const monthlyNeed2 = parseFloat(document.getElementById('monthly-income-2').value) || 4000;
 
 const yearsToRetirement = startAge - c1Age;
-const inflation = 0.02; // Example inflation rate (2%)
+
 
 // Adjust each income need for inflation to the point it applies
 // Initial need at retirement
