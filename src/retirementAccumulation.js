@@ -1618,12 +1618,17 @@ if (selectedTab === 'output-alternatives') {
     }, 100);
   }
 }
-  } catch (error) {
+} catch (error) {
     console.error('Error in outputDropdownChangeHandler:', error);
     const chartCanvas = document.getElementById('alternatives-chart');
     if (chartCanvas && typeof Chart !== 'undefined') {
       const ctx = chartCanvas.getContext('2d');
-      let chartInstance = new Chart(ctx, {
+      let chartInstance = null;
+      if (chartCanvas.chartInstance) {
+        chartCanvas.chartInstance.destroy();
+        chartCanvas.chartInstance = null;
+      }
+      chartInstance = new Chart(ctx, {
         type: 'bar',
         data: {
           labels: ['Error'],
