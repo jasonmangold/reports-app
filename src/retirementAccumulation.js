@@ -1,3 +1,7 @@
+/**
+ * Defines the tabs for the retirement accumulation form, including personal details,
+ * income needs, income sources, capital accounts, and assumptions.
+ */
 export const retirementAccumulationTabs = [
   {
     id: 'personal',
@@ -85,7 +89,10 @@ export const retirementAccumulationTabs = [
   }
 ];
 
-// Setup age display listeners for DOB inputs and handle Client 2 mortality input visibility
+/**
+ * Sets up event listeners for date of birth inputs to display current age
+ * and toggles visibility of Client 2 mortality input based on marital status.
+ */
 export function setupAgeDisplayListeners(getAge) {
   try {
     const dobInputs = document.querySelectorAll('#c1-dob, #c2-dob');
@@ -130,7 +137,10 @@ export function setupAgeDisplayListeners(getAge) {
   }
 }
 
-// Helper function to calculate retirement income data
+/**
+ * Calculates retirement income data, including needs, income sources, withdrawals,
+ * earnings, and balance over time, accounting for inflation and mortality ages.
+ */
 function calculateRetirementIncome(clientData, getAge) {
   const result = {
     labels: [],
@@ -363,6 +373,10 @@ function calculateRetirementIncome(clientData, getAge) {
   return result;
 }
 
+/**
+ * Updates the retirement income bar graph using Chart.js, displaying Social Security,
+ * income, withdrawals, and shortfall over time.
+ */
 export function updateRetirementGraph(chartCanvas, clientData, Chart, getAge) {
   try {
     if (!chartCanvas) {
@@ -476,6 +490,10 @@ export function updateRetirementGraph(chartCanvas, clientData, Chart, getAge) {
   }
 }
 
+/**
+ * Updates the alternatives bar graph, showing the impact of saving more, increasing ROR,
+ * reducing income needs, and delaying retirement.
+ */
 export function updateAlternativesGraph(chartCanvas, saveMorePercent, rorIncreasePercent, reductionPercent, retirementDelayPercent, Chart) {
   try {
     if (!chartCanvas) {
@@ -568,6 +586,10 @@ export function updateAlternativesGraph(chartCanvas, saveMorePercent, rorIncreas
   }
 }
 
+/**
+ * Updates the retirement analysis outputs, including graphs, tables, and reports
+ * for retirement income, capital growth, alternatives, and fact finder.
+ */
 export function updateRetirementOutputs(analysisOutputs, clientData, formatCurrency, getAge, selectedReports, Chart) {
   try {
     if (!analysisOutputs) {
@@ -1193,7 +1215,10 @@ export function updateRetirementOutputs(analysisOutputs, clientData, formatCurre
   }
 }
 
-// Setup dropdown and checkbox interactions
+/**
+ * Sets up event listeners for the output dropdown and checkbox to handle view changes
+ * and adding reports to a presentation.
+ */
 function setupOutputControls(reportOptions, selectedReports, clientData, Chart, getAge) {
   try {
     const select = document.getElementById('output-select');
@@ -1239,7 +1264,10 @@ function setupOutputControls(reportOptions, selectedReports, clientData, Chart, 
   }
 }
 
-// Dropdown change handler
+/**
+ * Handles changes to the output dropdown, updating the displayed content and
+ * rendering graphs as needed.
+ */
 function outputDropdownChangeHandler(clientData, Chart, getAge) {
   try {
     const selectedTab = this.value;
@@ -1402,38 +1430,40 @@ function outputDropdownChangeHandler(clientData, Chart, getAge) {
               });
             }
 
-            const monthlySources = incomeSources.reduce((sum, src) => sum + (src.amount || 0), 0);
+                        const monthlySources = incomeSources.reduce((sum, src) => sum + (src.amount || 0), 0);
+            const incomeData = calculateRetirementIncome(clientData, getAge);
             const currentSavings = parseFloat(clientData.savingsExpenses?.monthlySavings) || 0;
 
-            // Recalculate income data to get shortfall and total balance
-            const incomeData = calculateRetirementIncome(clientData, getAge);
-            const depletionAge = incomeData.depletionAge;
+            // Calculate depletion age
+            let balance = incomeData.totalBalance;
+            let depletionAge = startAge;
+            for (let i = 0; i <= maxTimelineAge - startAge; i++) {
+              const currentNeed = monthlyNeed * Math.pow(1 + inflation, i) - monthlySources;
+              balance = balance * Math.pow(1 + rorRetirement / 12, 12) - (currentNeed > 0 ? currentNeed * 12 : 0);
+              if (balance <= 0) {
+                depletionAge = startAge + i;
+                break;
+              }
+            }
+            if (balance > 0) depletionAge = maxTimelineAge;
 
-            // Initialize percentages for the alternatives graph
+            // Calculate "Save More" option
+            let additionalMonthlySavings = 0;
             let saveMorePercent = 0;
-            let rorIncreasePercent = 0;
-            let reductionPercent = 0;
-            let retirementDelayPercent = 0;
-
             if (depletionAge < maxTimelineAge) {
-              // Calculate "Save More" option
-              const shortfallValues = incomeData.shortfallData.slice(1); // Skip the initial blank row
+              const shortfallValues = incomeData.shortfallData.slice(1);
               let totalShortfall = 0;
               for (let i = 0; i < shortfallValues.length; i++) {
                 if (shortfallValues[i] > 0) {
-                  // Discount each year's shortfall back to the start of retirement
                   const discountedShortfall = shortfallValues[i] / Math.pow(1 + rorRetirement, i);
                   totalShortfall += discountedShortfall;
                 }
               }
-
-              // Calculate the additional capital needed at retirement
               const capitalNeededAtRetirement = totalShortfall;
 
-              // Calculate the average ROR across all accounts
+              // Calculate average ROR across all accounts
               let totalROR = 0;
               let accountCount = 0;
-              const clients = [clientData.client1, clientData.isMarried ? clientData.client2 : null];
               clients.forEach(client => {
                 if (!client) return;
                 client.accounts.forEach(account => {
@@ -1446,7 +1476,6 @@ function outputDropdownChangeHandler(clientData, Chart, getAge) {
 
               // Calculate monthly savings needed
               const monthsToRetirement = yearsToRetirement * 12;
-              let additionalMonthlySavings = 0;
               if (avgROR > 0 && monthsToRetirement > 0) {
                 const monthlyROR = avgROR / 12;
                 const denominator = (Math.pow(1 + monthlyROR, monthsToRetirement) - 1) / monthlyROR * (1 + monthlyROR);
@@ -1456,19 +1485,20 @@ function outputDropdownChangeHandler(clientData, Chart, getAge) {
                 additionalMonthlySavings = monthsToRetirement > 0 ? Math.round(capitalNeededAtRetirement / monthsToRetirement) : 0;
               }
 
-              // Calculate saveMorePercent
               const baseAmount = currentSavings > 0 ? currentSavings : ((parseFloat(clientData.client1.incomeSources.employment) || 0) + (clientData.isMarried ? (parseFloat(clientData.client2.incomeSources.employment) || 0) : 0)) / 12;
               saveMorePercent = baseAmount > 0 ? (additionalMonthlySavings / baseAmount) * 100 : 0;
               saveMorePercent = Math.min(saveMorePercent, 100);
+            }
 
-              // Calculate "Increase ROR" option
-              let targetROR = rorRetirement;
+            // Calculate "Increase ROR" option
+            let targetROR = rorRetirement;
+            if (depletionAge < maxTimelineAge) {
               let low = rorRetirement;
               let high = 0.2; // Max 20% ROR
               for (let i = 0; i < 20; i++) {
                 const mid = (low + high) / 2;
                 let tempBalance = incomeData.totalBalance;
-                for (let j = 0; j < maxTimelineAge - startAge; j++) {
+                for (let j = 0; j <= maxTimelineAge - startAge; j++) {
                   const currentNeed = monthlyNeed * Math.pow(1 + inflation, j) - monthlySources;
                   tempBalance = tempBalance * Math.pow(1 + mid / 12, 12) - (currentNeed > 0 ? currentNeed * 12 : 0);
                   if (tempBalance <= 0) break;
@@ -1477,28 +1507,30 @@ function outputDropdownChangeHandler(clientData, Chart, getAge) {
                 else low = mid;
               }
               targetROR = (low + high) / 2;
+            }
 
-              // Calculate rorIncreasePercent
-              const currentRORs = [];
-              clients.forEach(client => {
-                if (!client) return;
-                client.accounts.forEach(account => {
-                  const ror = isNaN(parseFloat(account.ror)) ? 0.06 : parseFloat(account.ror) / 100;
-                  currentRORs.push(ror);
-                });
+            // Calculate ROR increase percentage
+            const currentRORs = [];
+            clients.forEach(client => {
+              if (!client) return;
+              client.accounts.forEach(account => {
+                const ror = isNaN(parseFloat(account.ror)) ? 0.06 : parseFloat(account.ror) / 100;
+                currentRORs.push(ror);
               });
-              const avgCurrentROR = currentRORs.length > 0 ? currentRORs.reduce((sum, ror) => sum + ror, 0) / currentRORs.length : 0.06;
-              rorIncreasePercent = avgCurrentROR > 0 ? ((targetROR - avgCurrentROR) / avgCurrentROR) * 100 : 0;
-              rorIncreasePercent = Math.min(rorIncreasePercent, 100);
+            });
+            const avgCurrentROR = currentRORs.length > 0 ? currentRORs.reduce((sum, ror) => sum + ror, 0) / currentRORs.length : 0.06;
+            const rorIncreasePercent = avgCurrentROR > 0 ? ((targetROR - avgCurrentROR) / avgCurrentROR) * 100 : 0;
+            const cappedRorIncreasePercent = Math.min(rorIncreasePercent, 100);
 
-              // Calculate "Reduce Income Needs" option
-              let reducedMonthlyNeed = monthlyNeed;
-              low = 0;
-              high = monthlyNeed;
+            // Calculate "Reduce Income Needs" option
+            let reducedMonthlyNeed = monthlyNeed;
+            if (depletionAge < maxTimelineAge) {
+              let low = 0;
+              let high = monthlyNeed;
               for (let i = 0; i < 20; i++) {
                 const mid = (low + high) / 2;
                 let tempBalance = incomeData.totalBalance;
-                for (let j = 0; j < maxTimelineAge - startAge; j++) {
+                for (let j = 0; j <= maxTimelineAge - startAge; j++) {
                   const currentNeed = mid * Math.pow(1 + inflation, j) - monthlySources;
                   tempBalance = tempBalance * Math.pow(1 + rorRetirement / 12, 12) - (currentNeed > 0 ? currentNeed * 12 : 0);
                   if (tempBalance <= 0) break;
@@ -1507,31 +1539,102 @@ function outputDropdownChangeHandler(clientData, Chart, getAge) {
                 else low = mid;
               }
               reducedMonthlyNeed = (low + high) / 2;
-
-              // Calculate reductionPercent
-              reductionPercent = monthlyNeed > 0 ? ((monthlyNeed - reducedMonthlyNeed) / monthlyNeed) * 100 : 0;
-              reductionPercent = Math.min(reductionPercent, 100);
-
-              // Calculate "Delay Retirement" option
-              let newRetirementAge = startAge;
-              const yearsNeeded = maxTimelineAge - depletionAge;
-              newRetirementAge = Math.ceil(startAge + yearsNeeded);
-              if (newRetirementAge > maxTimelineAge) newRetirementAge = maxTimelineAge;
-
-              // Calculate retirementDelayPercent
-              const originalYearsToRetirement = startAge - c1Age;
-              const additionalYears = newRetirementAge - startAge;
-              retirementDelayPercent = originalYearsToRetirement > 0 ? (additionalYears / originalYearsToRetirement) * 100 : 0;
-              retirementDelayPercent = Math.min(retirementDelayPercent, 100);
             }
+            const reductionPercent = monthlyNeed > 0 ? ((monthlyNeed - reducedMonthlyNeed) / monthlyNeed) * 100 : 0;
+            const cappedReductionPercent = Math.min(reductionPercent, 100);
 
-            // Update the alternatives graph
-            updateAlternativesGraph(chartCanvas, saveMorePercent, rorIncreasePercent, reductionPercent, retirementDelayPercent, Chart);
+            // Calculate "Delay Retirement" option
+            let newRetirementAge = c1RetirementAge;
+            if (depletionAge < maxTimelineAge) {
+              const yearsNeeded = maxTimelineAge - depletionAge;
+              newRetirementAge = Math.ceil(c1RetirementAge + yearsNeeded);
+              if (newRetirementAge > maxTimelineAge) newRetirementAge = maxTimelineAge;
+            }
+            const originalYearsToRetirement = c1RetirementAge - c1Age;
+            const additionalYears = newRetirementAge - c1RetirementAge;
+            const retirementDelayPercent = originalYearsToRetirement > 0 ? (additionalYears / originalYearsToRetirement) * 100 : 0;
+            const cappedRetirementDelayPercent = Math.min(retirementDelayPercent, 100);
+
+            // Render the alternatives graph
+            const ctx = chartCanvas.getContext('2d');
+            let chartInstance = null;
+            if (chartCanvas.chartInstance) {
+              chartCanvas.chartInstance.destroy();
+              chartCanvas.chartInstance = null;
+            }
+            chartInstance = new Chart(ctx, {
+              type: 'bar',
+              data: {
+                labels: ['Save More', 'Increase ROR', 'Reduce Income Needs', 'Delay Retirement'],
+                datasets: [
+                  {
+                    label: 'Base',
+                    data: [
+                      Math.max(0, 100 - saveMorePercent),
+                      Math.max(0, 100 - cappedRorIncreasePercent),
+                      Math.max(0, 100 - cappedReductionPercent),
+                      Math.max(0, 100 - cappedRetirementDelayPercent)
+                    ],
+                    backgroundColor: '#22c55e',
+                    stack: 'Stack0'
+                  },
+                  {
+                    label: 'Adjustment',
+                    data: [
+                      saveMorePercent,
+                      cappedRorIncreasePercent,
+                      cappedReductionPercent,
+                      cappedRetirementDelayPercent
+                    ],
+                    backgroundColor: '#ef4444',
+                    stack: 'Stack0'
+                  }
+                ]
+              },
+              options: {
+                responsive: true,
+                plugins: {
+                  legend: { display: true, position: 'top' },
+                  title: { display: true, text: 'Retirement Alternatives Impact (%)' }
+                },
+                scales: {
+                  x: { title: { display: true, text: 'Options' }, stacked: true },
+                  y: {
+                    title: { display: true, text: 'Percentage (%)' },
+                    stacked: true,
+                    beginAtZero: true,
+                    max: 100
+                  }
+                }
+              }
+            });
+            chartCanvas.chartInstance = chartInstance;
+            console.log('Alternatives bar graph re-rendered for tab change');
           }
-        }
-      }, 100);
+        }, 100);
+      }
     }
   } catch (error) {
     console.error('Error in outputDropdownChangeHandler:', error);
+    const chartCanvas = document.getElementById('alternatives-chart');
+    if (chartCanvas && typeof Chart !== 'undefined') {
+      const ctx = chartCanvas.getContext('2d');
+      let chartInstance = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: ['Error'],
+          datasets: [{
+            label: 'Error',
+            data: [0],
+            backgroundColor: '#ef4444'
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: { title: { display: true, text: 'Error rendering alternatives graph' } }
+        }
+      });
+      chartCanvas.chartInstance = chartInstance;
+    }
   }
 }
