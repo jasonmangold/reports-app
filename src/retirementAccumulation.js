@@ -336,25 +336,27 @@ result.needData = [];
 // Loop through years of retirement (adjust maxYears as needed, e.g., 30 years)
 const maxYears = 30; // Example: Plan for 30 years post-retirement
 for (let i = 0; i < maxYears; i++) {
-  let adjustedMonthlyNeed;
-
-  // Determine which income need applies based on the year i
+  let monthlyNeedBase;
+  
+  // Determine which base income need applies based on the year i
   if (i < yearsAfterRetirement1) {
     // Initial retirement phase
-    adjustedMonthlyNeed = monthlyNeedInitial * Math.pow(1 + inflation, yearsToRetirement + i);
+    monthlyNeedBase = monthlyNeedInitial;
   } else if (i < yearsAfterRetirement2) {
     // First adjustment phase (X years after retirement)
-    adjustedMonthlyNeed = monthlyNeed1 * Math.pow(1 + inflation, yearsToRetirement + i);
+    monthlyNeedBase = monthlyNeed1;
   } else {
     // Second adjustment phase (Y years after retirement)
-    adjustedMonthlyNeed = monthlyNeed2 * Math.pow(1 + inflation, yearsToRetirement + i);
+    monthlyNeedBase = monthlyNeed2;
   }
 
+  // Adjust the base monthly need for inflation to year i
+  const adjustedMonthlyNeed = monthlyNeedBase * Math.pow(1 + inflation, yearsToRetirement + i);
+  
   // Calculate annual need and push to result
   const adjustedAnnualNeed = adjustedMonthlyNeed * 12;
   result.needData.push(Math.round(adjustedAnnualNeed));
 }
-
       // Income (Employment + Other)
       let employmentIncome = 0;
       let otherIncome = 0;
