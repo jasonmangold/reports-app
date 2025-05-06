@@ -1611,7 +1611,7 @@ function outputDropdownChangeHandler(clientData, Chart, getAge) {
             chartCanvas.chartInstance = chartInstance;
             console.log('Alternatives bar graph re-rendered for tab change');
           }
-        }, 100);
+        });
       }
     }
   } catch (error) {
