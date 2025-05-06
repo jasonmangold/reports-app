@@ -6,16 +6,16 @@ import { clientProfileTabs } from './clientProfile.js';
 // Client data structure with default values
 let clientData = {
   client1: {
-    personal: { name: "Jason Mangold", dob: "1970-01-01", retirementAge: "65" },
-    incomeSources: { employment: "50000", socialSecurity: "2000", other: "500", interestDividends: "1000" },
+    personal: { name: "Paul Johnson", dob: "1980-01-01", retirementAge: "67" },
+    incomeSources: { employment: "65000", socialSecurity: "2000", other: "500", interestDividends: "1000" },
     accounts: [{ name: "401(k)", balance: "100000", contribution: "10000", employerMatch: "3", ror: "6" }],
     other: { assets: [{ name: "Rental Property", balance: "200000", ror: "4", debt: "50000" }] },
     insurance: { lifeInsurance: "0", disabilityInsurance: "0", longTermCare: "0" }
   },
   client2: {
-    personal: { name: "Jane Doe", dob: "1972-01-01", retirementAge: "65" },
-    incomeSources: { employment: "40000", socialSecurity: "1500", other: "300", interestDividends: "800" },
-    accounts: [{ name: "IRA", balance: "80000", contribution: "8000", employerMatch: "0", ror: "5" }],
+    personal: { name: "Sally Johnson", dob: "1982-01-01", retirementAge: "67" },
+    incomeSources: { employment: "50000", socialSecurity: "1500", other: "300", interestDividends: "800" },
+    accounts: [{ name: "IRA", balance: "80000", contribution: "8000", employerMatch: "0", ror: "6" }],
     other: { assets: [] },
     insurance: { lifeInsurance: "0", disabilityInsurance: "0", longTermCare: "0" }
   },
@@ -27,7 +27,7 @@ let clientData = {
     c2MortalityAge: "90", 
     inflation: "3", 
     rorRetirement: "4", 
-    analysisDate: "2025-04-25" 
+    analysisDate: "2025-05-06" 
   },
   savingsExpenses: {
     householdExpenses: "3000",
