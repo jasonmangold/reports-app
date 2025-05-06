@@ -320,10 +320,40 @@ console.log({
       result.labels.push(ageLabel);
       console.log(`Age ${i}: C1=${currentC1Age}, C2=${currentC2Age}, Label=${ageLabel}`);
 
-      // Need (inflation-adjusted from retirement start with annual compounding)
-      const adjustedMonthlyNeed = monthlyNeed * Math.pow(1 + inflation, i);
-      const adjustedAnnualNeed = adjustedMonthlyNeed * 12;
-      result.needData.push(Math.round(adjustedAnnualNeed));
+// Assume these values are calculated from the previous step
+const monthlyNeedInitial = parseFloat(document.getElementById('monthly-income-initial').value) || 5000;
+const yearsAfterRetirement1 = parseInt(document.getElementById('years-after-retirement-1').value) || 5;
+const monthlyNeed1 = parseFloat(document.getElementById('monthly-income-1').value) || 4500;
+const yearsAfterRetirement2 = parseInt(document.getElementById('years-after-retirement-2').value) || 10;
+const monthlyNeed2 = parseFloat(document.getElementById('monthly-income-2').value) || 4000;
+
+const yearsToRetirement = startAge - c1Age;
+const inflation = 0.02; // Example inflation rate (2%)
+
+// Initialize result array for need data
+result.needData = [];
+
+// Loop through years of retirement (adjust maxYears as needed, e.g., 30 years)
+const maxYears = 30; // Example: Plan for 30 years post-retirement
+for (let i = 0; i < maxYears; i++) {
+  let adjustedMonthlyNeed;
+
+  // Determine which income need applies based on the year i
+  if (i < yearsAfterRetirement1) {
+    // Initial retirement phase
+    adjustedMonthlyNeed = monthlyNeedInitial * Math.pow(1 + inflation, yearsToRetirement + i);
+  } else if (i < yearsAfterRetirement2) {
+    // First adjustment phase (X years after retirement)
+    adjustedMonthlyNeed = monthlyNeed1 * Math.pow(1 + inflation, yearsToRetirement + i);
+  } else {
+    // Second adjustment phase (Y years after retirement)
+    adjustedMonthlyNeed = monthlyNeed2 * Math.pow(1 + inflation, yearsToRetirement + i);
+  }
+
+  // Calculate annual need and push to result
+  const adjustedAnnualNeed = adjustedMonthlyNeed * 12;
+  result.needData.push(Math.round(adjustedAnnualNeed));
+}
 
       // Income (Employment + Other)
       let employmentIncome = 0;
