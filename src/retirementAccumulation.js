@@ -208,10 +208,40 @@ function calculateRetirementIncome(clientData, getAge) {
       return result;
     }
 
-    // Adjust monthly need for inflation until retirement with annual compounding
-    const yearsToRetirement = startAge - c1Age;
-    monthlyNeed = monthlyNeed * Math.pow(1 + inflation, yearsToRetirement);
-    let annualNeed = monthlyNeed * 12;
+// Get input values from the form
+const monthlyNeedInitial = parseFloat(document.getElementById('monthly-income-initial').value) || 5000;
+const yearsAfterRetirement1 = parseInt(document.getElementById('years-after-retirement-1').value) || 5;
+const monthlyNeed1 = parseFloat(document.getElementById('monthly-income-1').value) || 4500;
+const yearsAfterRetirement2 = parseInt(document.getElementById('years-after-retirement-2').value) || 10;
+const monthlyNeed2 = parseFloat(document.getElementById('monthly-income-2').value) || 4000;
+
+const yearsToRetirement = startAge - c1Age;
+const inflation = 0.02; // Example inflation rate (2%)
+
+// Adjust each income need for inflation to the point it applies
+// Initial need at retirement
+let monthlyNeedAtRetirement = monthlyNeedInitial * Math.pow(1 + inflation, yearsToRetirement);
+let annualNeedAtRetirement = monthlyNeedAtRetirement * 12;
+
+// Need starting X years after retirement
+const startYear1 = yearsToRetirement + yearsAfterRetirement1;
+let monthlyNeedPhase1 = monthlyNeed1 * Math.pow(1 + inflation, startYear1);
+let annualNeedPhase1 = monthlyNeedPhase1 * 12;
+
+// Need starting Y years after retirement
+const startYear2 = yearsToRetirement + yearsAfterRetirement2;
+let monthlyNeedPhase2 = monthlyNeed2 * Math.pow(1 + inflation, startYear2);
+let annualNeedPhase2 = monthlyNeedPhase2 * 12;
+
+// Example output or use of values
+console.log({
+  annualNeedAtRetirement: annualNeedAtRetirement.toFixed(2),
+  annualNeedPhase1: annualNeedPhase1.toFixed(2),
+  annualNeedPhase2: annualNeedPhase2.toFixed(2),
+  startsAtRetirement: yearsToRetirement,
+  phase1Starts: startYear1,
+  phase2Starts: startYear2
+});
 
     // Calculate total balance at retirement with monthly compounding
     let totalBalance = 0;
