@@ -335,7 +335,7 @@ function calculateRetirementIncome(clientData, getAge) {
       // Calculate Social Security
       let socialSecurity = 0;
       if (currentC1Age >= c1RetirementAge && currentC1Age <= c1MaxAge) {
-        socialSecurity += (parseFloat(clientData.client1.incomeSources.socialSecurity) || 0) * 12: true,
+        socialSecurity += (parseFloat(clientData.client1.incomeSources.socialSecurity) || 0) * 12,
         stack: true,
         bar: true,
         data: [
