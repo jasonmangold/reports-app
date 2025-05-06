@@ -1555,65 +1555,64 @@ function outputDropdownChangeHandler(clientData, Chart, getAge) {
             const retirementDelayPercent = originalYearsToRetirement > 0 ? (additionalYears / originalYearsToRetirement) * 100 : 0;
             const cappedRetirementDelayPercent = Math.min(retirementDelayPercent, 100);
 
-            // Render the alternatives graph
-            const ctx = chartCanvas.getContext('2d');
-            let chartInstance = null;
-            if (chartCanvas.chartInstance) {
-              chartCanvas.chartInstance.destroy();
-              chartCanvas.chartInstance = null;
-            }
-            chartInstance = new Chart(ctx, {
-              type: 'bar',
-              data: {
-                labels: ['Save More', 'Increase ROR', 'Reduce Income Needs', 'Delay Retirement'],
-                datasets: [
-                  {
-                    label: 'Base',
-                    data: [
-                      Math.max(0, 100 - saveMorePercent),
-                      Math.max(0, 100 - cappedRorIncreasePercent),
-                      Math.max(0, 100 - cappedReductionPercent),
-                      Math.max(0, 100 - cappedRetirementDelayPercent)
-                    ],
-                    backgroundColor: '#22c55e',
-                    stack: 'Stack0'
-                  },
-                  {
-                    label: 'Adjustment',
-                    data: [
-                      saveMorePercent,
-                      cappedRorIncreasePercent,
-                      cappedReductionPercent,
-                      cappedRetirementDelayPercent
-                    ],
-                    backgroundColor: '#ef4444',
-                    stack: 'Stack0'
-                  }
-                ]
-              },
-              options: {
-                responsive: true,
-                plugins: {
-                  legend: { display: true, position: 'top' },
-                  title: { display: true, text: 'Retirement Alternatives Impact (%)' }
-                },
-                scales: {
-                  x: { title: { display: true, text: 'Options' }, stacked: true },
-                  y: {
-                    title: { display: true, text: 'Percentage (%)' },
-                    stacked: true,
-                    beginAtZero: true,
-                    max: 100
-                  }
-                }
-              }
-            });
-            chartCanvas.chartInstance = chartInstance;
-            console.log('Alternatives bar graph re-rendered for tab change');
-          }
-        });
+// Render the alternatives graph
+      const ctx = chartCanvas.getContext('2d');
+      let chartInstance = null;
+      if (chartCanvas.chartInstance) {
+        chartCanvas.chartInstance.destroy();
+        chartCanvas.chartInstance = null;
       }
-    }
+      chartInstance = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: ['Save More', 'Increase ROR', 'Reduce Income Needs', 'Delay Retirement'],
+          datasets: [
+            {
+              label: 'Base',
+              data: [
+                Math.max(0, 100 - saveMorePercent),
+                Math.max(0, 100 - cappedRorIncreasePercent),
+                Math.max(0, 100 - cappedReductionPercent),
+                Math.max(0, 100 - cappedRetirementDelayPercent)
+              ],
+              backgroundColor: '#22c55e',
+              stack: 'Stack0'
+            },
+            {
+              label: 'Adjustment',
+              data: [
+                saveMorePercent,
+                cappedRorIncreasePercent,
+                cappedReductionPercent,
+                cappedRetirementDelayPercent
+              ],
+              backgroundColor: '#ef4444',
+              stack: 'Stack0'
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            legend: { display: true, position: 'top' },
+            title: { display: true, text: 'Retirement Alternatives Impact (%)' }
+          },
+          scales: {
+            x: { title: { display: true, text: 'Options' }, stacked: true },
+            y: {
+              title: { display: true, text: 'Percentage (%)' },
+              stacked: true,
+              beginAtZero: true,
+              max: 100
+            }
+          }
+        }
+      });
+      chartCanvas.chartInstance = chartInstance;
+      console.log('Alternatives bar graph re-rendered for tab change');
+    }, 100);
+  }
+}
   } catch (error) {
     console.error('Error in outputDropdownChangeHandler:', error);
     const chartCanvas = document.getElementById('alternatives-chart');
