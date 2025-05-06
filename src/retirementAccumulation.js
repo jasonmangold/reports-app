@@ -1555,7 +1555,8 @@ function outputDropdownChangeHandler(clientData, Chart, getAge) {
             const retirementDelayPercent = originalYearsToRetirement > 0 ? (additionalYears / originalYearsToRetirement) * 100 : 0;
             const cappedRetirementDelayPercent = Math.min(retirementDelayPercent, 100);
 
-// Render the alternatives graph
+
+      // Render the alternatives graph
       const ctx = chartCanvas.getContext('2d');
       let chartInstance = null;
       if (chartCanvas.chartInstance) {
