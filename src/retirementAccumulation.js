@@ -1274,11 +1274,12 @@ function outputDropdownChangeHandler(clientData, Chart, getAge) {
     document.querySelectorAll('.output-tab-content').forEach(content => {
       content.style.display = content.id === selectedTab ? 'block' : 'none';
     });
+
     if (selectedTab === 'output-graph' || selectedTab === 'report-capital-available' || selectedTab === 'output-alternatives') {
       const chartCanvasId = selectedTab === 'output-graph' ? 'analysis-chart' : selectedTab === 'report-capital-available' ? 'capital-growth-chart' : 'alternatives-chart';
-      setTimeout(() => {
-        const chartCanvas = document.getElementById(chartCanvasId);
-        if (chartCanvas && typeof Chart !== 'undefined') {
+      const chartCanvas = document.getElementById(chartCanvasId);
+      if (chartCanvas && typeof Chart !== 'undefined') {
+        setTimeout(() => {
           if (selectedTab === 'output-graph') {
             updateRetirementGraph(chartCanvas, clientData, Chart, getAge);
           } else if (selectedTab === 'report-capital-available') {
@@ -1351,14 +1352,12 @@ function outputDropdownChangeHandler(clientData, Chart, getAge) {
                 data: account.balances,
                 backgroundColor: account.isClient1 ? '#22c55e' : '#3b82f6'
               };
-              // Set the same stack value for all accounts to stack them together when there are two clients
               if (clientData.isMarried) {
                 dataset.stack = 'Accounts';
               }
               return dataset;
             });
 
-            // Determine if stacking should be enabled
             const shouldStack = clientData.isMarried;
 
             chartInstance = new Chart(ctx, {
@@ -1376,11 +1375,11 @@ function outputDropdownChangeHandler(clientData, Chart, getAge) {
                 scales: {
                   x: {
                     title: { display: true, text: `${firstClientIsC1 ? clientData.client1.personal.name || 'Client 1' : clientData.client2.personal.name || 'Client 2'} Age` },
-                    stacked: shouldStack // Stack only if there are two clients
+                    stacked: shouldStack
                   },
                   y: {
                     title: { display: true, text: 'Balance ($)' },
-                    stacked: shouldStack, // Stack only if there are two clients
+                    stacked: shouldStack,
                     beginAtZero: true
                   }
                 }
@@ -1430,7 +1429,7 @@ function outputDropdownChangeHandler(clientData, Chart, getAge) {
               });
             }
 
-                        const monthlySources = incomeSources.reduce((sum, src) => sum + (src.amount || 0), 0);
+            const monthlySources = incomeSources.reduce((sum, src) => sum + (src.amount || 0), 0);
             const incomeData = calculateRetirementIncome(clientData, getAge);
             const currentSavings = parseFloat(clientData.savingsExpenses?.monthlySavings) || 0;
 
@@ -1464,6 +1463,7 @@ function outputDropdownChangeHandler(clientData, Chart, getAge) {
               // Calculate average ROR across all accounts
               let totalROR = 0;
               let accountCount = 0;
+              const clients = [clientData.client1, clientData.isMarried ? clientData.client2 : null];
               clients.forEach(client => {
                 if (!client) return;
                 client.accounts.forEach(account => {
@@ -1494,7 +1494,7 @@ function outputDropdownChangeHandler(clientData, Chart, getAge) {
             let targetROR = rorRetirement;
             if (depletionAge < maxTimelineAge) {
               let low = rorRetirement;
-              let high = 0.2; // Max 20% ROR
+              let high = 0.2;
               for (let i = 0; i < 20; i++) {
                 const mid = (low + high) / 2;
                 let tempBalance = incomeData.totalBalance;
@@ -1555,70 +1555,66 @@ function outputDropdownChangeHandler(clientData, Chart, getAge) {
             const retirementDelayPercent = originalYearsToRetirement > 0 ? (additionalYears / originalYearsToRetirement) * 100 : 0;
             const cappedRetirementDelayPercent = Math.min(retirementDelayPercent, 100);
 
-// Render the graph if the current selection is output-alternatives
-if (selectedTab === 'output-alternatives') {
-  const chartCanvas = document.getElementById('alternatives-chart');
-  if (chartCanvas && typeof Chart !== 'undefined') {
-    setTimeout(() => {
-// Render the alternatives graph
-      const ctx = chartCanvas.getContext('2d');
-      let chartInstance = null;
-      if (chartCanvas.chartInstance) {
-        chartCanvas.chartInstance.destroy();
-        chartCanvas.chartInstance = null;
-      }
-      chartInstance = new Chart(ctx, {
-        type: 'bar',
-        data: {
-          labels: ['Save More', 'Increase ROR', 'Reduce Income Needs', 'Delay Retirement'],
-          datasets: [
-            {
-              label: 'Base',
-              data: [
-                Math.max(0, 100 - saveMorePercent),
-                Math.max(0, 100 - cappedRorIncreasePercent),
-                Math.max(0, 100 - cappedReductionPercent),
-                Math.max(0, 100 - cappedRetirementDelayPercent)
-              ],
-              backgroundColor: '#22c55e',
-              stack: 'Stack0'
-            },
-            {
-              label: 'Adjustment',
-              data: [
-                saveMorePercent,
-                cappedRorIncreasePercent,
-                cappedReductionPercent,
-                cappedRetirementDelayPercent
-              ],
-              backgroundColor: '#ef4444',
-              stack: 'Stack0'
+            // Render the alternatives graph
+            const ctx = chartCanvas.getContext('2d');
+            let chartInstance = null;
+            if (chartCanvas.chartInstance) {
+              chartCanvas.chartInstance.destroy();
+              chartCanvas.chartInstance = null;
             }
-          ]
-        },
-        options: {
-          responsive: true,
-          plugins: {
-            legend: { display: true, position: 'top' },
-            title: { display: true, text: 'Retirement Alternatives Impact (%)' }
-          },
-          scales: {
-            x: { title: { display: true, text: 'Options' }, stacked: true },
-            y: {
-              title: { display: true, text: 'Percentage (%)' },
-              stacked: true,
-              beginAtZero: true,
-              max: 100
-            }
+            chartInstance = new Chart(ctx, {
+              type: 'bar',
+              data: {
+                labels: ['Save More', 'Increase ROR', 'Reduce Income Needs', 'Delay Retirement'],
+                datasets: [
+                  {
+                    label: 'Base',
+                    data: [
+                      Math.max(0, 100 - saveMorePercent),
+                      Math.max(0, 100 - cappedRorIncreasePercent),
+                      Math.max(0, 100 - cappedReductionPercent),
+                      Math.max(0, 100 - cappedRetirementDelayPercent)
+                    ],
+                    backgroundColor: '#22c55e',
+                    stack: 'Stack0'
+                  },
+                  {
+                    label: 'Adjustment',
+                    data: [
+                      saveMorePercent,
+                      cappedRorIncreasePercent,
+                      cappedReductionPercent,
+                      cappedRetirementDelayPercent
+                    ],
+                    backgroundColor: '#ef4444',
+                    stack: 'Stack0'
+                  }
+                ]
+              },
+              options: {
+                responsive: true,
+                plugins: {
+                  legend: { display: true, position: 'top' },
+                  title: { display: true, text: 'Retirement Alternatives Impact (%)' }
+                },
+                scales: {
+                  x: { title: { display: true, text: 'Options' }, stacked: true },
+                  y: {
+                    title: { display: true, text: 'Percentage (%)' },
+                    stacked: true,
+                    beginAtZero: true,
+                    max: 100
+                  }
+                }
+              }
+            });
+            chartCanvas.chartInstance = chartInstance;
+            console.log('Alternatives bar graph re-rendered for tab change');
           }
-        }
-      });
-      chartCanvas.chartInstance = chartInstance;
-      console.log('Alternatives bar graph re-rendered for tab change');
-    }, 100);
-  }
-}
-} catch (error) {
+        }, 100);
+      }
+    }
+  } catch (error) {
     console.error('Error in outputDropdownChangeHandler:', error);
     const chartCanvas = document.getElementById('alternatives-chart');
     if (chartCanvas && typeof Chart !== 'undefined') {
