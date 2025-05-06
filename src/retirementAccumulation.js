@@ -332,9 +332,15 @@ function calculateRetirementIncome(clientData, getAge) {
       const totalIncome = employmentIncome + otherIncome;
       result.incomeData.push(Math.round(totalIncome));
 
-      // Calculate Social Security
+      // Social Security
       let socialSecurity = 0;
       if (currentC1Age >= c1RetirementAge && currentC1Age <= c1MaxAge) {
+        socialSecurity += (parseFloat(clientData.client1.incomeSources.socialSecurity) || 0) * 12;
+      }
+      if (clientData.isMarried && currentC2Age >= c2RetirementAge && currentC2Age <= c2MaxAge) {
+        socialSecurity += (parseFloat(clientData.client2.incomeSources.socialSecurity) || 0) * 12;
+      }
+      result.socialSecurityData.push(Math.round(socialSecurity)); {
         socialSecurity += (parseFloat(clientData.client1.incomeSources.socialSecurity) || 0) * 12,
         stack: true,
         bar: true,
