@@ -24,13 +24,27 @@ export const retirementAccumulationTabs = [
       </div>
     `
   },
-  {
+{
     id: 'income-needs',
     label: 'Income Needs',
     content: `
-      <label>Monthly Income Needs ($): <input type="number" id="monthly-income" min="0" step="100" placeholder="5000"></label>
+      <div class="income-needs-container">
+        <label>Beginning at retirement: 
+          <input type="number" id="monthly-income-initial" min="0" step="100" placeholder="5000">
+        </label>
+        <label>Beginning 
+          <input type="number" id="years-after-retirement-1" min="0" max="30" step="1" placeholder="5"> 
+          years after retirement:
+          <input type="number" id="monthly-income-1" min="0" step="100" placeholder="4500">
+        </label>
+        <label>Beginning 
+          <input type="number" id="years-after-retirement-2" min="0" max="30" step="1" placeholder="10"> 
+          years after retirement:
+          <input type="number" id="monthly-income-2" min="0" step="100" placeholder="4000">
+        </label>
+      </div>
     `
-  },
+},
   {
     id: 'income-sources',
     label: 'Income Sources',
