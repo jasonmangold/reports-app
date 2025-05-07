@@ -424,7 +424,7 @@ result.shortfallData.push(shortfall > 0 ? Math.round(shortfall) : 0);
       if (balance <= 0 && result.depletionAge === startAge) {
         result.depletionAge = currentC1Age;
       }
-    }
+    
 
     // Ensure depletionAge is maxTimelineAge if balance remains positive
     result.depletionAge = balance > 0 ? maxTimelineAge : result.depletionAge;
