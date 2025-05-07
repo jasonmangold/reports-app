@@ -21,11 +21,11 @@ let clientData = {
     insurance: { lifeInsurance: "0", disabilityInsurance: "0", longTermCare: "0" }
   },
   isMarried: false,
-  monthly-income-initial: { initial: "5000" },
-  years-after-retirement-1: { yearsafter1: "5" },
-  monthly-income-1: { monthly1: "4500" },
-  years-after-retirement-2: { yearsafter2: "10" },
-  monthly-income-2: { monthly2: "4000" },
+  monthlyincomeinitial: { initial: "5000" },
+  yearsafterretirement1: { yearsafter1: "5" },
+  monthlyincome1: { monthly1: "4500" },
+  yearsafterretirement2: { yearsafter2: "10" },
+  monthlyincome2: { monthly2: "4000" },
   assumptions: { 
     mortalityAge: "90", 
     c1MortalityAge: "90", 
