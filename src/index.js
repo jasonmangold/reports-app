@@ -1036,20 +1036,24 @@ function updateClientData(e) {
           [field]: value
         };
       }
-    } else {
-      if (input.id === 'monthly-income') clientData.incomeNeeds.monthly = value;
-      else if (input.id === 'mortality-age') clientData.assumptions.mortalityAge = value;
-      else if (input.id === 'inflation') clientData.assumptions.inflation = value;
-      else if (input.id === 'ror-retirement') clientData.assumptions.rorRetirement = value;
-      else if (input.id === 'household-expenses') clientData.savingsExpenses.householdExpenses = value;
-      else if (input.id === 'taxes') clientData.savingsExpenses.taxes = value;
-      else if (input.id === 'other-expenses') clientData.savingsExpenses.otherExpenses = value;
-      else if (input.id === 'monthly-savings') clientData.savingsExpenses.monthlySavings = value;
-      else if (input.id === 'analysis-date') clientData.assumptions.analysisDate = value;
-      else if (input.id === 'cash') clientData.other.cash = value;
-      else if (input.id === 'residence-mortgage') clientData.other.residenceMortgage = value;
-      else if (input.id === 'other-debt') clientData.other.otherDebt = value;
-    }
+} else {
+  if (input.id === 'monthly-income-initial') clientData.incomeNeeds.initial = value;
+  else if (input.id === 'years-after-retirement-1') clientData.incomeNeeds.yearsafter1 = value;
+  else if (input.id === 'monthly-income-1') clientData.incomeNeeds.monthly1 = value;
+  else if (input.id === 'years-after-retirement-2') clientData.incomeNeeds.yearsafter2 = value;
+  else if (input.id === 'monthly-income-2') clientData.incomeNeeds.monthly2 = value;
+  else if (input.id === 'mortality-age') clientData.assumptions.mortalityAge = value;
+  else if (input.id === 'inflation') clientData.assumptions.inflation = value;
+  else if (input.id === 'ror-retirement') clientData.assumptions.rorRetirement = value;
+  else if (input.id === 'household-expenses') clientData.savingsExpenses.householdExpenses = value;
+  else if (input.id === 'taxes') clientData.savingsExpenses.taxes = value;
+  else if (input.id === 'other-expenses') clientData.savingsExpenses.otherExpenses = value;
+  else if (input.id === 'monthly-savings') clientData.savingsExpenses.monthlySavings = value;
+  else if (input.id === 'analysis-date') clientData.assumptions.analysisDate = value;
+  else if (input.id === 'cash') clientData.other.cash = value;
+  else if (input.id === 'residence-mortgage') clientData.other.residenceMortgage = value;
+  else if (input.id === 'other-debt') clientData.other.otherDebt = value;
+}
 
     if (input.id === 'c1-name' || input.id === 'c2-name') updateClientFileName();
   } catch (error) {
