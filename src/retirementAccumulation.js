@@ -197,7 +197,7 @@ function calculateRetirementIncome(clientData, getAge) {
 
     const inflation = isNaN(parseFloat(clientData.assumptions.inflation)) ? 0.02 : parseFloat(clientData.assumptions.inflation) / 100;
     const rorRetirement = isNaN(parseFloat(clientData.assumptions.rorRetirement)) ? 0.04 : parseFloat(clientData.assumptions.rorRetirement) / 100;
-    let monthlyNeed = parseFloat(clientData.incomeNeeds.monthly) || 5000;
+    // let monthlyNeed = parseFloat(clientData.incomeNeeds.monthly) || 5000;
 
     if (!clientData.client1.personal.dob || c1Age >= c1RetirementAge || (clientData.isMarried && (!clientData.client2.personal.dob || c2Age >= c2RetirementAge))) {
       console.warn('Invalid inputs: Returning empty result');
@@ -208,10 +208,33 @@ function calculateRetirementIncome(clientData, getAge) {
       return result;
     }
 
-    // Adjust monthly need for inflation until retirement with annual compounding
-    const yearsToRetirement = startAge - c1Age;
-    monthlyNeed = monthlyNeed * Math.pow(1 + inflation, yearsToRetirement);
-    let annualNeed = monthlyNeed * 12;
+// Inputs from user
+const monthlyNeedInitial = parseFloat({ initial: "5000" }.initial); // $5000
+const yearsAfterRetirement1 = parseInt({ yearsafter1: "5" }.yearsafter1); // 5 years
+const monthlyIncome1 = parseFloat({ monthly1: "4500" }.monthly1); // $4500
+const yearsAfterRetirement2 = parseInt({ yearsafter2: "10" }.yearsafter2); // 10 years
+const monthlyIncome2 = parseFloat({ monthly2: "4000" }.monthly2); // $4000
+
+// Adjust monthly need for inflation until retirement with annual compounding
+const yearsToRetirement = startAge - c1Age; // Assuming startAge and c1Age are defined
+let monthlyNeed = monthlyNeedInitial * Math.pow(1 + inflation, yearsToRetirement);
+
+// Calculate future value of monthly needs at different stages after retirement
+// Stage 1: At retirement (initial monthly need, already adjusted to retirement date)
+let annualNeedAtRetirement = monthlyNeed * 12;
+
+// Stage 2: After `yearsAfterRetirement1` years (e.g., 5 years after retirement)
+const monthlyNeedAfter1 = monthlyIncome1 * Math.pow(1 + inflation, yearsToRetirement + yearsAfterRetirement1);
+const annualNeedAfter1 = monthlyNeedAfter1 * 12;
+
+// Stage 3: After `yearsAfterRetirement2` years (e.g., 10 years after retirement)
+const monthlyNeedAfter2 = monthlyIncome2 * Math.pow(1 + inflation, yearsToRetirement + yearsAfterRetirement2);
+const annualNeedAfter2 = monthlyNeedAfter2 * 12;
+
+// Output results (for debugging or use in further calculations)
+console.log(`Annual need at retirement: $${annualNeedAtRetirement.toFixed(2)}`);
+console.log(`Annual need ${yearsAfterRetirement1} years after retirement: $${annualNeedAfter1.toFixed(2)}`);
+console.log(`Annual need ${yearsAfterRetirement2} years after retirement: $${annualNeedAfter2.toFixed(2)}`);
 
     // Calculate total balance at retirement with monthly compounding
     let totalBalance = 0;
