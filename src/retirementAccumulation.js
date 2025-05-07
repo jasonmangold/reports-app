@@ -155,6 +155,10 @@ export function setupAgeDisplayListeners(getAge) {
  * Calculates retirement income data, including needs, income sources, withdrawals,
  * earnings, and balance over time, accounting for inflation and mortality ages.
  */
+/**
+ * Calculates retirement income data, including needs, income sources, withdrawals,
+ * earnings, and balance over time, accounting for inflation and mortality ages.
+ */
 function calculateRetirementIncome(clientData, getAge) {
   const result = {
     labels: [],
@@ -197,44 +201,17 @@ function calculateRetirementIncome(clientData, getAge) {
 
     const inflation = isNaN(parseFloat(clientData.assumptions.inflation)) ? 0.02 : parseFloat(clientData.assumptions.inflation) / 100;
     const rorRetirement = isNaN(parseFloat(clientData.assumptions.rorRetirement)) ? 0.04 : parseFloat(clientData.assumptions.rorRetirement) / 100;
-    // let monthlyNeed = parseFloat(clientData.incomeNeeds.monthly) || 5000;
 
-    if (!clientData.client1.personal.dob || c1Age >= c1RetirementAge || (clientData.isMarried && (!clientData.client2.personal.dob || c2Age >= c2RetirementAge))) {
-      console.warn('Invalid inputs: Returning empty result');
-      return result;
-    }
-    if (startAge >= maxTimelineAge) {
-      console.warn('Start age >= maxTimelineAge: Returning empty result');
-      return result;
-    }
+    // Inputs from user
+    const monthlyNeedInitial = parseFloat({ initial: "5000" }.initial); // $5000
+    const yearsAfterRetirement1 = parseInt({ yearsafter1: "5" }.yearsafter1); // 5 years
+    const monthlyIncome1 = parseFloat({ monthly1: "4500" }.monthly1); // $4500
+    const yearsAfterRetirement2 = parseInt({ yearsafter2: "10" }.yearsafter2); // 10 years
+    const monthlyIncome2 = parseFloat({ monthly2: "4000" }.monthly2); // $4000
 
-// Inputs from user
-const monthlyNeedInitial = parseFloat({ initial: "5000" }.initial); // $5000
-const yearsAfterRetirement1 = parseInt({ yearsafter1: "5" }.yearsafter1); // 5 years
-const monthlyIncome1 = parseFloat({ monthly1: "4500" }.monthly1); // $4500
-const yearsAfterRetirement2 = parseInt({ yearsafter2: "10" }.yearsafter2); // 10 years
-const monthlyIncome2 = parseFloat({ monthly2: "4000" }.monthly2); // $4000
-
-// Adjust monthly need for inflation until retirement with annual compounding
-const yearsToRetirement = startAge - c1Age; // Assuming startAge and c1Age are defined
-let monthlyNeed = monthlyNeedInitial * Math.pow(1 + inflation, yearsToRetirement);
-
-// Calculate future value of monthly needs at different stages after retirement
-// Stage 1: At retirement (initial monthly need, already adjusted to retirement date)
-let annualNeedAtRetirement = monthlyNeed * 12;
-
-// Stage 2: After `yearsAfterRetirement1` years (e.g., 5 years after retirement)
-const monthlyNeedAfter1 = monthlyIncome1 * Math.pow(1 + inflation, yearsToRetirement + yearsAfterRetirement1);
-const annualNeedAfter1 = monthlyNeedAfter1 * 12;
-
-// Stage 3: After `yearsAfterRetirement2` years (e.g., 10 years after retirement)
-const monthlyNeedAfter2 = monthlyIncome2 * Math.pow(1 + inflation, yearsToRetirement + yearsAfterRetirement2);
-const annualNeedAfter2 = monthlyNeedAfter2 * 12;
-
-// Output results (for debugging or use in further calculations)
-console.log(`Annual need at retirement: $${annualNeedAtRetirement.toFixed(2)}`);
-console.log(`Annual need ${yearsAfterRetirement1} years after retirement: $${annualNeedAfter1.toFixed(2)}`);
-console.log(`Annual need ${yearsAfterRetirement2} years after retirement: $${annualNeedAfter2.toFixed(2)}`);
+    // Adjust monthly need for inflation until retirement with annual compounding
+    const yearsToRetirement = startAge - c1Age;
+    let monthlyNeed = monthlyNeedInitial * Math.pow(1 + inflation, yearsToRetirement);
 
     // Calculate total balance at retirement with monthly compounding
     let totalBalance = 0;
@@ -255,16 +232,16 @@ console.log(`Annual need ${yearsAfterRetirement2} years after retirement: $${ann
         const monthlyEmployerMatch = annualEmployerMatch / 12;
         const ror = isNaN(parseFloat(account.ror)) ? 0.06 : parseFloat(account.ror) / 100;
 
-        // Future value of current balance with monthly compounding (no rounding)
+        // Future value of current balance with monthly compounding
         const fvBalance = balance * Math.pow(1 + ror / 12, monthsToClientRetirement);
-        // Future value of contributions (annuity due) with monthly compounding (no rounding)
+        // Future value of contributions (annuity due) with monthly compounding
         const fvContributions = monthlyContribution && ror ? monthlyContribution * (Math.pow(1 + ror / 12, monthsToClientRetirement) - 1) / (ror / 12) * (1 + ror / 12) : 0;
-        // Future value of employer match (annuity due) with monthly compounding (no rounding)
+        // Future value of employer match (annuity due) with monthly compounding
         const fvEmployerMatch = monthlyEmployerMatch && ror ? monthlyEmployerMatch * (Math.pow(1 + ror / 12, monthsToClientRetirement) - 1) / (ror / 12) * (1 + ror / 12) : 0;
 
         let accountBalance = fvBalance + fvContributions + fvEmployerMatch;
 
-        // Apply rorRetirement if client retires before startAge with monthly compounding (no rounding)
+        // Apply rorRetirement if client retires before startAge with monthly compounding
         if (clientRetirementAge < startAge) {
           const additionalMonths = (startAge - clientRetirementAge) * 12;
           accountBalance = accountBalance * Math.pow(1 + rorRetirement / 12, additionalMonths);
@@ -313,10 +290,20 @@ console.log(`Annual need ${yearsAfterRetirement2} years after retirement: $${ann
       result.labels.push(ageLabel);
       console.log(`Age ${i}: C1=${currentC1Age}, C2=${currentC2Age}, Label=${ageLabel}`);
 
-      // Need (inflation-adjusted from retirement start with annual compounding)
-      const adjustedmonthlyNeed  = monthlyNeedInitial  * Math.pow(1 + inflation, i);
-      const adjustedannualNeedAtRetirement  = adjustedmonthlyNeed * 12;
-      result.needData.push(Math.round(adjustedannualNeedAtRetirement));
+      // Need (inflation-adjusted with adjustments)
+      let adjustedMonthlyNeed;
+      if (i < yearsAfterRetirement1) {
+        // Years 0–4: Initial need adjusted from retirement start
+        adjustedMonthlyNeed = monthlyNeed * Math.pow(1 + inflation, i);
+      } else if (i < yearsAfterRetirement2) {
+        // Years 5–9: $4500 adjusted from current date to year i
+        adjustedMonthlyNeed = monthlyIncome1 * Math.pow(1 + inflation, yearsToRetirement + i);
+      } else {
+        // Years 10+: $4000 adjusted from current date to year i
+        adjustedMonthlyNeed = monthlyIncome2 * Math.pow(1 + inflation, yearsToRetirement + i);
+      }
+      const adjustedAnnualNeed = adjustedMonthlyNeed * 12;
+      result.needData.push(Math.round(adjustedAnnualNeed));
 
       // Income (Employment + Other)
       let employmentIncome = 0;
@@ -346,75 +333,47 @@ console.log(`Annual need ${yearsAfterRetirement2} years after retirement: $${ann
       }
       result.socialSecurityData.push(Math.round(socialSecurity));
 
-// Calculate monthly earnings and withdrawals, then aggregate to annual
-let annualEarnings = 0;
-let annualWithdrawal = 0;
-let monthlyBalance = balance;
-const monthlyRor = rorRetirement / 12;
-const monthlyNeedAdjusted = adjustedMonthlyNeed; // Already calculated with adjustments ($5000, $4500, $4000)
-const monthlyIncome = totalIncome / 12;
-const monthlySocialSecurity = socialSecurity / 12;
+      // Calculate monthly earnings and withdrawals
+      let annualEarnings = 0;
+      let annualWithdrawal = 0;
+      let monthlyBalance = balance;
+      const monthlyRor = rorRetirement / 12;
+      const monthlyIncome = totalIncome / 12;
+      const monthlySocialSecurity = socialSecurity / 12;
 
-// Loop over 12 months to calculate earnings and withdrawals
-for (let month = 0; month < 12; month++) {
-  // Calculate monthly earnings based on the current balance
-  const monthlyEarnings = monthlyBalance * monthlyRor;
-  annualEarnings += monthlyEarnings;
-
-  // Calculate monthly withdrawal: adjusted need minus other income sources
-  const monthlyWithdrawal = Math.max(0, monthlyNeedAdjusted - monthlyIncome - monthlySocialSecurity);
-  annualWithdrawal += monthlyWithdrawal;
-
-  // Update monthly balance: add earnings, subtract withdrawal
-  monthlyBalance = monthlyBalance + monthlyEarnings - monthlyWithdrawal;
-}
-
-// Update balance for the next year
-balance = monthlyBalance;
-
-for (let m = 0; m < 12; m++) {
-  // Calculate monthly earnings based on the current balance
-  const monthlyEarnings = monthlyBalance * monthlyRor;
-  monthlyBalance += monthlyEarnings;
-
-  // Calculate remaining need or surplus
-  const monthlyRemainingNeed = monthlyNeedAdjusted - monthlyIncome - monthlySocialSecurity;
-  let monthlyWithdrawal = 0;
-
-  if (monthlyRemainingNeed > 0) {
-    // Need exceeds income + Social Security: withdraw from balance
-    if (monthlyBalance >= monthlyRemainingNeed) {
-      monthlyWithdrawal = monthlyRemainingNeed;
-      monthlyBalance -= monthlyWithdrawal;
-    } else {
-      monthlyWithdrawal = monthlyBalance;
-      monthlyBalance = 0;
-    }
-  } else {
-    // Surplus: save the excess by adding to balance (negative withdrawal)
-    monthlyWithdrawal = monthlyRemainingNeed; // Negative value
-    monthlyBalance -= monthlyWithdrawal; // Subtracting a negative increases balance
-  }
-
-  // Accumulate annual earnings and withdrawals (if needed)
-  annualEarnings += monthlyEarnings;
-  annualWithdrawal += monthlyWithdrawal;
-}
-
-        // Monthly earnings (calculated after withdrawal/surplus, no rounding)
+      for (let m = 0; m < 12; m++) {
+        // Calculate monthly earnings
         const monthlyEarnings = monthlyBalance * monthlyRor;
         monthlyBalance += monthlyEarnings;
-
         annualEarnings += monthlyEarnings;
+
+        // Calculate remaining need or surplus
+        const monthlyRemainingNeed = adjustedMonthlyNeed - monthlyIncome - monthlySocialSecurity;
+        let monthlyWithdrawal = 0;
+
+        if (monthlyRemainingNeed > 0) {
+          // Need exceeds income + Social Security: withdraw from balance
+          if (monthlyBalance >= monthlyRemainingNeed) {
+            monthlyWithdrawal = monthlyRemainingNeed;
+            monthlyBalance -= monthlyWithdrawal;
+          } else {
+            monthlyWithdrawal = monthlyBalance;
+            monthlyBalance = 0;
+          }
+        } else {
+          // Surplus: save the excess
+          monthlyWithdrawal = monthlyRemainingNeed; // Negative value
+          monthlyBalance -= monthlyWithdrawal; // Increases balance
+        }
         annualWithdrawal += monthlyWithdrawal;
       }
 
       result.earningsData.push(Math.round(annualEarnings));
       result.withdrawalData.push(Math.round(annualWithdrawal));
 
-// Shortfall (only positive values)
-const shortfall = adjustedAnnualNeed - totalIncome - socialSecurity - annualWithdrawal;
-result.shortfallData.push(shortfall > 0 ? Math.round(shortfall) : 0);
+      // Shortfall (only positive values)
+      const shortfall = adjustedAnnualNeed - totalIncome - socialSecurity - annualWithdrawal;
+      result.shortfallData.push(shortfall > 0 ? Math.round(shortfall) : 0);
 
       // Update balance
       balance = monthlyBalance;
@@ -423,8 +382,9 @@ result.shortfallData.push(shortfall > 0 ? Math.round(shortfall) : 0);
       // Update depletion age
       if (balance <= 0 && result.depletionAge === startAge) {
         result.depletionAge = currentC1Age;
+        break; // Stop once balance is depleted
       }
-    
+    }
 
     // Ensure depletionAge is maxTimelineAge if balance remains positive
     result.depletionAge = balance > 0 ? maxTimelineAge : result.depletionAge;
@@ -434,6 +394,7 @@ result.shortfallData.push(shortfall > 0 ? Math.round(shortfall) : 0);
     console.error('Error in calculateRetirementIncome:', error);
   }
   return result;
+}
 
 
 /**
