@@ -21,7 +21,11 @@ let clientData = {
     insurance: { lifeInsurance: "0", disabilityInsurance: "0", longTermCare: "0" }
   },
   isMarried: false,
-  incomeNeeds: { monthly: "5000" },
+  monthly-income-initial: { initial: "5000" },
+  years-after-retirement-1: { yearsafter1: "5" },
+  monthly-income-1: { monthly1: "4500" },
+  years-after-retirement-2: { yearsafter2: "10" },
+  monthly-income-2: { monthly2: "4000" },
   assumptions: { 
     mortalityAge: "90", 
     c1MortalityAge: "90", 
@@ -318,7 +322,11 @@ function populateInputFields() {
     setIfExists('c2-dob', clientData.client2.personal.dob, 'Client 2 DOB');
     setIfExists('c1-retirement-age', clientData.client1.personal.retirementAge, 'Client 1 Retirement Age');
     setIfExists('c2-retirement-age', clientData.client2.personal.retirementAge, 'Client 2 Retirement Age');
-    setIfExists('monthly-income', clientData.incomeNeeds.monthly, 'Monthly Income');
+    setIfExists('monthly-income-initial', clientData.incomeNeeds.initial, 'Monthly Income Initial');
+    setIfExists('years-after-retirement-1', clientData.incomeNeeds.yearsafter1, 'Years After Retirement 1');
+    setIfExists('monthly-income-1', clientData.incomeNeeds.monthly1, 'Monthly Income 1');
+    setIfExists('years-after-retirement-2', clientData.incomeNeeds.yearsafter2, 'Years After Retirement 2');
+    setIfExists('monthly-income-2', clientData.incomeNeeds.monthly2, 'Monthly Income 2');
     setIfExists('mortality-age', clientData.assumptions.mortalityAge, 'Mortality Age');
     setIfExists('c1-mortality-age', clientData.assumptions.c1MortalityAge, 'Client 1 Mortality Age');
     setIfExists('c2-mortality-age', clientData.assumptions.c2MortalityAge, 'Client 2 Mortality Age');
