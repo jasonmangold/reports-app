@@ -966,7 +966,7 @@ const monthlyIncome1 = parseFloat(clientData.incomeNeeds.monthly1) || 4500;
 const yearsAfterRetirement2 = parseInt(clientData.incomeNeeds.yearsafter2) || 10;
 const monthlyIncome2 = parseFloat(clientData.incomeNeeds.monthly2) || 4000;
 const yearsToRetirement = startAge - c1Age;
-const monthlyNeed = monthlyNeedInitial * Math.pow(1 + inflation, yearsToRetirement);
+// const monthlyNeed = monthlyNeedInitial * Math.pow(1 + inflation, yearsToRetirement);
 
 const incomeGoals = [
   {
