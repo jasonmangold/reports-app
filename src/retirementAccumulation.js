@@ -155,10 +155,6 @@ export function setupAgeDisplayListeners(getAge) {
  * Calculates retirement income data, including needs, income sources, withdrawals,
  * earnings, and balance over time, accounting for inflation and mortality ages.
  */
-/**
- * Calculates retirement income data, including needs, income sources, withdrawals,
- * earnings, and balance over time, accounting for inflation and mortality ages.
- */
 function calculateRetirementIncome(clientData, getAge) {
   const result = {
     labels: [],
@@ -202,12 +198,15 @@ function calculateRetirementIncome(clientData, getAge) {
     const inflation = isNaN(parseFloat(clientData.assumptions.inflation)) ? 0.02 : parseFloat(clientData.assumptions.inflation) / 100;
     const rorRetirement = isNaN(parseFloat(clientData.assumptions.rorRetirement)) ? 0.04 : parseFloat(clientData.assumptions.rorRetirement) / 100;
 
-    // Inputs from user
-    const monthlyNeedInitial = parseFloat({ initial: "5000" }.initial); // $5000
-    const yearsAfterRetirement1 = parseInt({ yearsafter1: "5" }.yearsafter1); // 5 years
-    const monthlyIncome1 = parseFloat({ monthly1: "4500" }.monthly1); // $4500
-    const yearsAfterRetirement2 = parseInt({ yearsafter2: "10" }.yearsafter2); // 10 years
-    const monthlyIncome2 = parseFloat({ monthly2: "4000" }.monthly2); // $4000
+    // Inputs from clientData.incomeNeeds
+    const monthlyNeedInitial = parseFloat(clientData.incomeNeeds.initial) || 5000;
+    const yearsAfterRetirement1 = parseInt(clientData.incomeNeeds.yearsafter1) || 5;
+    const monthlyIncome1 = parseFloat(clientData.incomeNeeds.monthly1) || 4500;
+    const yearsAfterRetirement2 = parseInt(clientData.incomeNeeds.yearsafter2) || 10;
+    const monthlyIncome2 = parseFloat(clientData.incomeNeeds.monthly2) || 4000;
+
+    // Debug income needs
+    console.log('Income Needs:', { monthlyNeedInitial, yearsAfterRetirement1, monthlyIncome1, yearsAfterRetirement2, monthlyIncome2 });
 
     // Adjust monthly need for inflation until retirement with annual compounding
     const yearsToRetirement = startAge - c1Age;
@@ -235,9 +234,9 @@ function calculateRetirementIncome(clientData, getAge) {
         // Future value of current balance with monthly compounding
         const fvBalance = balance * Math.pow(1 + ror / 12, monthsToClientRetirement);
         // Future value of contributions (annuity due) with monthly compounding
-        const fvContributions = monthlyContribution && ror ? monthlyContribution * (Math.pow(1 + ror / 12, monthsToClientRetirement) - 1) / (ror / 12) * (1 + ror / 12) : 0;
+        const fvContributions = monthlyContribution && ror ? monthlyContribution * (Math.pow(1 + ror / 12, monthsToRetirement) - 1) / (ror / 12) * (1 + ror / 12) : 0;
         // Future value of employer match (annuity due) with monthly compounding
-        const fvEmployerMatch = monthlyEmployerMatch && ror ? monthlyEmployerMatch * (Math.pow(1 + ror / 12, monthsToClientRetirement) - 1) / (ror / 12) * (1 + ror / 12) : 0;
+        const fvEmployerMatch = monthlyEmployerMatch && ror ? monthlyEmployerMatch * (Math.pow(1 + ror / 12, monthsToRetirement) - 1) / (ror / 12) * (1 + ror / 12) : 0;
 
         let accountBalance = fvBalance + fvContributions + fvEmployerMatch;
 
@@ -296,10 +295,10 @@ function calculateRetirementIncome(clientData, getAge) {
         // Years 0–4: Initial need adjusted from retirement start
         adjustedMonthlyNeed = monthlyNeed * Math.pow(1 + inflation, i);
       } else if (i < yearsAfterRetirement2) {
-        // Years 5–9: $4500 adjusted from current date to year i
+        // Years 5–9: Adjusted need from current date to year i
         adjustedMonthlyNeed = monthlyIncome1 * Math.pow(1 + inflation, yearsToRetirement + i);
       } else {
-        // Years 10+: $4000 adjusted from current date to year i
+        // Years 10+: Adjusted need from current date to year i
         adjustedMonthlyNeed = monthlyIncome2 * Math.pow(1 + inflation, yearsToRetirement + i);
       }
       const adjustedAnnualNeed = adjustedMonthlyNeed * 12;
@@ -961,13 +960,13 @@ export function updateRetirementOutputs(analysisOutputs, clientData, formatCurre
     }
 
 // Adjust monthly need for inflation until retirement with annual compounding
-const monthlyNeedInitial = parseFloat({ initial: "5000" }.initial); // $5000
-const yearsAfterRetirement1 = parseInt({ yearsafter1: "5" }.yearsafter1); // 5 years
-const monthlyIncome1 = parseFloat({ monthly1: "4500" }.monthly1); // $4500
-const yearsAfterRetirement2 = parseInt({ yearsafter2: "10" }.yearsafter2); // 10 years
-const monthlyIncome2 = parseFloat({ monthly2: "4000" }.monthly2); // $4000
+const monthlyNeedInitial = parseFloat(clientData.incomeNeeds.initial) || 5000;
+const yearsAfterRetirement1 = parseInt(clientData.incomeNeeds.yearsafter1) || 5;
+const monthlyIncome1 = parseFloat(clientData.incomeNeeds.monthly1) || 4500;
+const yearsAfterRetirement2 = parseInt(clientData.incomeNeeds.yearsafter2) || 10;
+const monthlyIncome2 = parseFloat(clientData.incomeNeeds.monthly2) || 4000;
 const yearsToRetirement = startAge - c1Age;
-// const monthlyNeed = monthlyNeedInitial * Math.pow(1 + inflation, yearsToRetirement);
+const monthlyNeed = monthlyNeedInitial * Math.pow(1 + inflation, yearsToRetirement);
 
 const incomeGoals = [
   {
