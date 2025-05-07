@@ -434,7 +434,7 @@ result.shortfallData.push(shortfall > 0 ? Math.round(shortfall) : 0);
     console.error('Error in calculateRetirementIncome:', error);
   }
   return result;
-}
+
 
 /**
  * Updates the retirement income bar graph using Chart.js, displaying Social Security,
