@@ -234,9 +234,9 @@ function calculateRetirementIncome(clientData, getAge) {
         // Future value of current balance with monthly compounding
         const fvBalance = balance * Math.pow(1 + ror / 12, monthsToClientRetirement);
         // Future value of contributions (annuity due) with monthly compounding
-        const fvContributions = monthlyContribution && ror ? monthlyContribution * (Math.pow(1 + ror / 12, monthsToRetirement) - 1) / (ror / 12) * (1 + ror / 12) : 0;
+        const fvContributions = monthlyContribution && ror ? monthlyContribution * (Math.pow(1 + ror / 12, monthsToClientRetirement) - 1) / (ror / 12) * (1 + ror / 12) : 0;
         // Future value of employer match (annuity due) with monthly compounding
-        const fvEmployerMatch = monthlyEmployerMatch && ror ? monthlyEmployerMatch * (Math.pow(1 + ror / 12, monthsToRetirement) - 1) / (ror / 12) * (1 + ror / 12) : 0;
+        const fvEmployerMatch = monthlyEmployerMatch && ror ? monthlyEmployerMatch * (Math.pow(1 + ror / 12, monthsToClientRetirement) - 1) / (ror / 12) * (1 + ror / 12) : 0;
 
         let accountBalance = fvBalance + fvContributions + fvEmployerMatch;
 
@@ -823,14 +823,14 @@ if (balance > 0) result.depletionAge = maxTimelineAge;
       const avgROR = accountCount > 0 ? totalROR / accountCount : 0.06;
 
       // Calculate monthly savings needed
-      const monthsToRetirement = yearsToRetirement * 12;
-      if (avgROR > 0 && monthsToRetirement > 0) {
+      const monthsToClientRetirement = yearsToRetirement * 12;
+      if (avgROR > 0 && monthsToClientRetirement > 0) {
         const monthlyROR = avgROR / 12;
-        const denominator = (Math.pow(1 + monthlyROR, monthsToRetirement) - 1) / monthlyROR * (1 + monthlyROR);
+        const denominator = (Math.pow(1 + monthlyROR, monthsToClientRetirement) - 1) / monthlyROR * (1 + monthlyROR);
         result.additionalMonthlySavings = capitalNeededAtRetirement / denominator;
         result.additionalMonthlySavings = Math.round(result.additionalMonthlySavings);
       } else {
-        result.additionalMonthlySavings = monthsToRetirement > 0 ? Math.round(capitalNeededAtRetirement / monthsToRetirement) : 0;
+        result.additionalMonthlySavings = monthsToClientRetirement > 0 ? Math.round(capitalNeededAtRetirement / monthsToClientRetirement) : 0;
       }
 
       const baseAmount = currentSavings > 0 ? currentSavings : ((parseFloat(clientData.client1.incomeSources.employment) || 0) + (clientData.isMarried ? (parseFloat(clientData.client2.incomeSources.employment) || 0) : 0)) / 12;
