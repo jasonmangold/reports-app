@@ -1222,12 +1222,6 @@ function updateSpecificTab(tabId, clientData, formatCurrency, getAge, Chart) {
 /**
  * Sets up event listeners for input fields to update the current output tab on change.
  */
-/**
- * Sets up event listeners for input fields to update the current output tab on change.
- */
-/**
- * Sets up event listeners for input fields to update the current output tab on change.
- */
 export function setupInputListeners(clientData, formatCurrency, getAge, Chart) {
   try {
     // Debounce function
@@ -1251,17 +1245,17 @@ export function setupInputListeners(clientData, formatCurrency, getAge, Chart) {
       // Get current active tab
       let activeTab = document.querySelector('.output-tab-content[style*="display: block"]') ||
                       document.querySelector('.output-tab-content.active');
-      let currentTab = activeTab ? activeTab.id : 'output-graph';
-
-      // Debug logging
-      console.log('Active tab:', activeTab ? activeTab.id : 'none', 'Selected tab:', document.getElementById('output-select')?.value || 'none');
-
-      // If no active tab is found, check the output-select as a fallback
-      if (!activeTab) {
+      
+      // Fallback to output-select value if no active tab is found
+      let currentTab = activeTab ? activeTab.id : null;
+      if (!currentTab) {
         const select = document.getElementById('output-select');
         currentTab = select && select.value ? select.value : 'output-graph';
-        console.warn('No active tab found, using output-select value:', currentTab);
+        console.log('No active tab found, using output-select value:', currentTab);
       }
+
+      // Debug logging
+      console.log('Active tab:', activeTab ? activeTab.id : 'none', 'Selected tab:', currentTab);
 
       // Update the specific tab
       updateSpecificTab(currentTab, clientData, formatCurrency, getAge, Chart);
@@ -1376,7 +1370,6 @@ export function setupInputListeners(clientData, formatCurrency, getAge, Chart) {
     console.error('Error in setupInputListeners:', error);
   }
 }
-
 /**
  * Updates the retirement analysis outputs.
  */
