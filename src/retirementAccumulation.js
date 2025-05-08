@@ -1297,7 +1297,7 @@ export function setupInputListeners(clientData, formatCurrency, getAge, Chart) {
         other: parseFloat(document.getElementById('c1-other-income').value) || 0
       };
       if (data.isMarried) {
-        data.client2.in incomeSources = {
+        data.client2.incomeSources = {
           employment: parseFloat(document.getElementById('c2-employment').value) || 0,
           socialSecurity: parseFloat(document.getElementById('c2-social-security').value) || 0,
           other: parseFloat(document.getElementById('c2-other-income').value) || 0
