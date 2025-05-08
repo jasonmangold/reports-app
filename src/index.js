@@ -135,7 +135,6 @@ document.addEventListener('DOMContentLoaded', () => {
       if (currentAnalysis !== 'client-profile') {
         updateGraph();
       }
-      setupOutputTabSwitching();
     }, 100);
     setupProfileDropdown();
   } catch (error) {
@@ -243,7 +242,6 @@ function populateAnalysisTopics() {
         if (currentAnalysis !== 'client-profile') {
           setTimeout(updateGraph, 100);
         }
-        setupOutputTabSwitching();
       });
     });
   } catch (error) {
@@ -434,7 +432,7 @@ function populateInputFields() {
   }
 }
 
-// === Event Listeners ==
+// === Event Listeners ===
 function setupClientModalListeners() {
   try {
     clientFileToggle.addEventListener('click', (e) => {
@@ -574,7 +572,6 @@ function setupEventDelegation() {
           if (currentAnalysis !== 'client-profile') {
             updateGraph();
           }
-          setupOutputTabSwitching();
           isTyping = false;
           if (activeElement) activeElement.focus();
         }, 500);
@@ -590,7 +587,6 @@ function setupEventDelegation() {
         if (currentAnalysis !== 'client-profile') {
           setTimeout(updateGraph, 100);
         }
-        setupOutputTabSwitching();
         if (currentAnalysis === 'retirement-accumulation' || currentAnalysis === 'client-profile') {
           setupAgeDisplayListeners(getAge);
         }
@@ -734,7 +730,6 @@ function addAccountHandler(e) {
     if (currentAnalysis !== 'client-profile') {
       setTimeout(updateGraph, 100);
     }
-    setupOutputTabSwitching();
     if (currentAnalysis === 'retirement-accumulation' || currentAnalysis === 'client-profile') {
       setupAgeDisplayListeners(getAge);
     }
@@ -766,88 +761,11 @@ function addAssetHandler(e) {
     if (currentAnalysis !== 'client-profile') {
       setTimeout(updateGraph, 100);
     }
-    setupOutputTabSwitching();
     if (currentAnalysis === 'retirement-accumulation' || currentAnalysis === 'client-profile') {
       setupAgeDisplayListeners(getAge);
     }
   } catch (error) {
     console.error('Error in addAssetHandler:', error);
-  }
-}
-
-function setupOutputTabSwitching() {
-  try {
-    console.log('Setting up output tab switching for:', currentAnalysis);
-    if (currentAnalysis === 'personal-finance' || currentAnalysis === 'summary' || currentAnalysis === 'client-profile') {
-      console.log('Skipping output tab switching setup for:', currentAnalysis);
-      return;
-    }
-
-    const buttons = document.querySelectorAll('.output-tab-btn');
-    console.log('Found output-tab-btn elements:', buttons.length);
-    if (!buttons.length) {
-      console.warn('No output tab buttons found');
-      return;
-    }
-
-    buttons.forEach(button => {
-      button.removeEventListener('click', outputTabClickHandler);
-      button.addEventListener('click', outputTabClickHandler);
-      console.log('Attached click handler to button:', button.dataset.tab);
-    });
-
-    // Ensure default tab is output-timeline
-    const timelineBtn = document.querySelector('.output-tab-btn[data-tab="output-timeline"]');
-    const graphBtn = document.querySelector('.output-tab-btn[data-tab="output-graph"]');
-    if (timelineBtn && !document.querySelector('.output-tab-btn.active')) {
-      console.log('Setting default tab to output-timeline');
-      timelineBtn.classList.add('active');
-      document.querySelectorAll('.output-tab-content').forEach(content => {
-        content.style.display = 'none';
-        content.classList.remove('active');
-      });
-      const timelineContent = document.getElementById('output-timeline');
-      if (timelineContent) {
-        timelineContent.style.display = 'block';
-        timelineContent.classList.add('active');
-        console.log('Set output-timeline as active:', timelineContent.style.display, timelineContent.className);
-      }
-      if (graphBtn) graphBtn.classList.remove('active');
-      const chartCanvas = document.getElementById('analysis-chart');
-      if (chartCanvas) chartCanvas.style.display = 'none';
-    }
-  } catch (error) {
-    console.error('Error in setupOutputTabSwitching:', error);
-  }
-}
-
-function outputTabClickHandler(e) {
-  try {
-    e.stopPropagation();
-    e.preventDefault();
-    console.log('Switching to output tab:', this.dataset.tab, 'Previous active:', document.querySelector('.output-tab-btn.active')?.dataset.tab);
-    document.querySelectorAll('.output-tab-btn').forEach(btn => btn.classList.remove('active'));
-    document.querySelectorAll('.output-tab-content').forEach(content => {
-      content.style.display = 'none';
-      content.classList.remove('active');
-    });
-    this.classList.add('active');
-    const tabContent = document.getElementById(this.dataset.tab);
-    if (tabContent) {
-      tabContent.style.display = 'block';
-      tabContent.classList.add('active');
-      console.log('Set active tab:', this.dataset.tab, 'Display:', tabContent.style.display, 'Classes:', tabContent.className);
-    } else {
-      console.warn(`Output tab content #${this.dataset.tab} not found`);
-    }
-    if (this.dataset.tab === 'output-graph') {
-      setTimeout(updateGraph, 100);
-    } else {
-      const chartCanvas = document.getElementById('analysis-chart');
-      if (chartCanvas) chartCanvas.style.display = 'none';
-    }
-  } catch (error) {
-    console.error('Error in outputTabClickHandler:', error);
   }
 }
 
@@ -860,8 +778,8 @@ function setupWhatIfControls() {
     const resetScenarioBtn = document.getElementById('reset-scenario');
     const scenarioNameInput = document.getElementById('scenario-name');
     const scenariosList = document.getElementById('scenarios-list');
-    const sliders = document.querySelectorAll('#sliders input[type="range"]');
-    const numberInputs = document.querySelectorAll('#sliders input[type="number"]');
+    const sliders = document.querySelectorAll('#sl sceptical input[type="range"]');
+    const numberInputs = document.querySelectorAll('#sl sceptical input[type="number"]');
 
     if (!graphTypeSelect || !saveBaseCaseBtn || !applyScenarioBtn || !resetScenarioBtn || !scenariosList) {
       console.warn('What If controls not found');
@@ -1117,23 +1035,25 @@ function updateGraph(previewData = null) {
     const chartCanvas = document.getElementById('analysis-chart');
     console.log('chartCanvas:', chartCanvas);
 
-    // Check if output-graph is the active tab
-    const activeTabBtn = document.querySelector('.output-tab-btn.active');
-    const activeTabContent = document.querySelector('.output-tab-content.active');
-    console.log('Tab check - activeTabBtn:', activeTabBtn?.dataset.tab, 'activeTabContent:', activeTabContent?.id);
+    // Check if output-graph is the selected view
+    const select = document.getElementById('output-select');
+    const isGraphTabActive = select ? select.value === 'output-graph' : false;
+    console.log('isGraphTabActive:', isGraphTabActive, 'output-select value:', select?.value);
     
-    // Default to output-timeline if no active tab is found
-    const isGraphTabActive = activeTabBtn?.dataset.tab === 'output-graph' || 
-                            (activeTabContent?.id === 'output-graph');
     if (!isGraphTabActive) {
-      console.log('Skipping graph update: output-graph is not active, activeTabBtn:', activeTabBtn?.dataset.tab, 'activeTabContent:', activeTabContent?.id);
+      console.log('Skipping graph update: output-graph is not selected');
       if (chartCanvas) chartCanvas.style.display = 'none';
       return;
     }
 
     if (typeof Chart === 'undefined') {
-      console.error('Chart.js is not loaded. Ensure the CDN script is included in analysis.html.');
+      console.error('Chart.js is not loaded.');
       analysisOutputs.innerHTML = '<p class="output-error">Chart.js is not loaded. Please check your network connection.</p>';
+      return;
+    }
+
+    if (!chartCanvas) {
+      console.error('Chart canvas #analysis-chart not found.');
       return;
     }
 
@@ -1143,14 +1063,9 @@ function updateGraph(previewData = null) {
       chartInstance = null;
     }
 
-    if (chartCanvas && Chart.getChart(chartCanvas)) {
+    if (Chart.getChart(chartCanvas)) {
       console.log('Destroying orphaned chart on canvas');
       Chart.getChart(chartCanvas).destroy();
-    }
-
-    if (!chartCanvas) {
-      console.error('Chart canvas #analysis-chart not found. Ensure outputs are rendered first.');
-      return;
     }
 
     if (!clientData) {
@@ -1194,7 +1109,7 @@ function updateGraph(previewData = null) {
 
 function updateOutputs() {
   try {
-    const activeTabBefore = document.querySelector('.output-tab-btn.active')?.dataset.tab || 'none';
+    const activeTabBefore = document.querySelector('.output-tab-content.active')?.id || 'none';
     console.log('updateOutputs called, currentAnalysis:', currentAnalysis, 'activeTabBefore:', activeTabBefore);
     const validationError = validateClientData();
     if (validationError) {
@@ -1208,25 +1123,6 @@ function updateOutputs() {
 
     if (currentAnalysis === 'retirement-accumulation') {
       updateRetirementOutputs(analysisOutputs, clientData, formatCurrency, getAge, selectedReports, Chart);
-      // Ensure output-timeline is the default active tab
-      const timelineBtn = document.querySelector('.output-tab-btn[data-tab="output-timeline"]');
-      const graphBtn = document.querySelector('.output-tab-btn[data-tab="output-graph"]');
-      if (timelineBtn && !document.querySelector('.output-tab-btn.active')) {
-        console.log('Forcing output-timeline as default active tab in updateOutputs');
-        timelineBtn.classList.add('active');
-        document.querySelectorAll('.output-tab-content').forEach(content => {
-          content.style.display = 'none';
-          content.classList.remove('active');
-        });
-        const timelineContent = document.getElementById('output-timeline');
-        if (timelineContent) {
-          timelineContent.style.display = 'block';
-          timelineContent.classList.add('active');
-        }
-        if (graphBtn) graphBtn.classList.remove('active');
-        const chartCanvas = document.getElementById('analysis-chart');
-        if (chartCanvas) chartCanvas.style.display = 'none';
-      }
     } else if (currentAnalysis === 'personal-finance') {
       updatePersonalFinanceOutputs(analysisOutputs, clientData, formatCurrency, selectedReports, Chart);
     } else if (currentAnalysis === 'summary') {
@@ -1236,8 +1132,7 @@ function updateOutputs() {
     } else {
       analysisOutputs.innerHTML = `<p class="output-card">Outputs not available for ${currentAnalysis}.</p>`;
     }
-    setupOutputTabSwitching();
-    const activeTabAfter = document.querySelector('.output-tab-btn.active')?.dataset.tab || 'none';
+    const activeTabAfter = document.querySelector('.output-tab-content.active')?.id || 'none';
     console.log('updateOutputs completed, activeTabAfter:', activeTabAfter);
   } catch (error) {
     console.error('Error in updateOutputs:', error);
@@ -1280,7 +1175,6 @@ function toggleClient2(e) {
     if (currentAnalysis !== 'client-profile') {
       setTimeout(updateGraph, 100);
     }
-    setupOutputTabSwitching();
   } catch (error) {
     console.error('Error in toggleClient2:', error);
   }
