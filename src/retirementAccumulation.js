@@ -1213,6 +1213,9 @@ function updateSpecificTab(tabId, clientData, formatCurrency, getAge, Chart) {
 /**
  * Sets up event listeners for input fields to update the current output tab on change.
  */
+/**
+ * Sets up event listeners for input fields to update the current output tab on change.
+ */
 export function setupInputListeners(clientData, formatCurrency, getAge, Chart) {
   try {
     // Debounce function
@@ -1233,12 +1236,19 @@ export function setupInputListeners(clientData, formatCurrency, getAge, Chart) {
       // Update clientData
       updateClientData(clientData);
 
-      // Get current tab
-      const select = document.getElementById('output-select');
-      const currentTab = select ? select.value : 'output-graph';
+      // Get current active tab
+      const activeTab = document.querySelector('.output-tab-content[style*="display: block"]') || 
+                        document.querySelector('.output-tab-content.active');
+      const currentTab = activeTab ? activeTab.id : 'output-graph';
 
       // Update the specific tab
       updateSpecificTab(currentTab, clientData, formatCurrency, getAge, Chart);
+
+      // Ensure the select dropdown reflects the current tab
+      const select = document.getElementById('output-select');
+      if (select && select.value !== currentTab) {
+        select.value = currentTab;
+      }
     }, 300);
 
     // Function to update clientData from inputs
