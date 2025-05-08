@@ -1216,6 +1216,9 @@ function updateSpecificTab(tabId, clientData, formatCurrency, getAge, Chart) {
 /**
  * Sets up event listeners for input fields to update the current output tab on change.
  */
+/**
+ * Sets up event listeners for input fields to update the current output tab on change.
+ */
 export function setupInputListeners(clientData, formatCurrency, getAge, Chart) {
   try {
     // Debounce function
@@ -1237,19 +1240,28 @@ export function setupInputListeners(clientData, formatCurrency, getAge, Chart) {
       updateClientData(clientData);
 
       // Get current active tab
-      const activeTab = document.querySelector('.output-tab-content[style*="display: block"]') || 
-                        document.querySelector('.output-tab-content.active');
-      const currentTab = activeTab ? activeTab.id : 'output-graph';
+      let activeTab = document.querySelector('.output-tab-content[style*="display: block"]') ||
+                      document.querySelector('.output-tab-content.active');
+      let currentTab = activeTab ? activeTab.id : 'output-graph';
+
+      // Debug logging
+      console.log('Active tab:', activeTab ? activeTab.id : 'none', 'Selected tab:', document.getElementById('output-select')?.value || 'none');
+
+      // If no active tab is found, check the output-select as a fallback
       if (!activeTab) {
-  console.warn('No active output tab found, defaulting to output-graph');
-}
+        const select = document.getElementById('output-select');
+        currentTab = select && select.value ? select.value : 'output-graph';
+        console.warn('No active tab found, using output-select value:', currentTab);
+      }
+
       // Update the specific tab
       updateSpecificTab(currentTab, clientData, formatCurrency, getAge, Chart);
 
-      // Ensure the select dropdown reflects the current tab
+      // Sync the select dropdown without triggering a change event
       const select = document.getElementById('output-select');
       if (select && select.value !== currentTab) {
         select.value = currentTab;
+        console.log('Updated output-select to:', currentTab);
       }
     }, 300);
 
@@ -1285,7 +1297,7 @@ export function setupInputListeners(clientData, formatCurrency, getAge, Chart) {
         other: parseFloat(document.getElementById('c1-other-income').value) || 0
       };
       if (data.isMarried) {
-        data.client2.incomeSources = {
+        data.client2.in UincomeSources = {
           employment: parseFloat(document.getElementById('c2-employment').value) || 0,
           socialSecurity: parseFloat(document.getElementById('c2-social-security').value) || 0,
           other: parseFloat(document.getElementById('c2-other-income').value) || 0
