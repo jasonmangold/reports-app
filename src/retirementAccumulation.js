@@ -1510,3 +1510,6 @@ function outputDropdownChangeHandler(clientData, Chart, getAge) {
   // Deprecated: Replaced by event listener in setupOutputControls
   console.warn('outputDropdownChangeHandler is deprecated. Use setupOutputControls.');
 }
+if (!activeTab) {
+  console.warn('No active output tab found, defaulting to output-graph');
+}
