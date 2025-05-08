@@ -777,12 +777,14 @@ function addAssetHandler(e) {
 
 function setupOutputTabSwitching() {
   try {
+    console.log('Setting up output tab switching for:', currentAnalysis);
     if (currentAnalysis === 'personal-finance' || currentAnalysis === 'summary' || currentAnalysis === 'client-profile') {
       console.log('Skipping output tab switching setup for:', currentAnalysis);
       return;
     }
 
     const buttons = document.querySelectorAll('.output-tab-btn');
+    console.log('Found output-tab-btn elements:', buttons.length);
     if (!buttons.length) {
       console.warn('No output tab buttons found');
       return;
@@ -791,7 +793,29 @@ function setupOutputTabSwitching() {
     buttons.forEach(button => {
       button.removeEventListener('click', outputTabClickHandler);
       button.addEventListener('click', outputTabClickHandler);
+      console.log('Attached click handler to button:', button.dataset.tab);
     });
+
+    // Ensure default tab is output-timeline
+    const timelineBtn = document.querySelector('.output-tab-btn[data-tab="output-timeline"]');
+    const graphBtn = document.querySelector('.output-tab-btn[data-tab="output-graph"]');
+    if (timelineBtn && !document.querySelector('.output-tab-btn.active')) {
+      console.log('Setting default tab to output-timeline');
+      timelineBtn.classList.add('active');
+      document.querySelectorAll('.output-tab-content').forEach(content => {
+        content.style.display = 'none';
+        content.classList.remove('active');
+      });
+      const timelineContent = document.getElementById('output-timeline');
+      if (timelineContent) {
+        timelineContent.style.display = 'block';
+        timelineContent.classList.add('active');
+        console.log('Set output-timeline as active:', timelineContent.style.display, timelineContent.className);
+      }
+      if (graphBtn) graphBtn.classList.remove('active');
+      const chartCanvas = document.getElementById('analysis-chart');
+      if (chartCanvas) chartCanvas.style.display = 'none';
+    }
   } catch (error) {
     console.error('Error in setupOutputTabSwitching:', error);
   }
@@ -1095,11 +1119,12 @@ function updateGraph(previewData = null) {
 
     // Check if output-graph is the active tab
     const activeTabBtn = document.querySelector('.output-tab-btn.active');
-    const activeTabContent = document.querySelector('.output-tab-content.active') ||
-                             document.querySelector('.output-tab-content[style*="display: block"]');
+    const activeTabContent = document.querySelector('.output-tab-content.active');
     console.log('Tab check - activeTabBtn:', activeTabBtn?.dataset.tab, 'activeTabContent:', activeTabContent?.id);
+    
+    // Default to output-timeline if no active tab is found
     const isGraphTabActive = activeTabBtn?.dataset.tab === 'output-graph' || 
-                            (activeTabContent?.id === 'output-graph' && !activeTabBtn);
+                            (activeTabContent?.id === 'output-graph');
     if (!isGraphTabActive) {
       console.log('Skipping graph update: output-graph is not active, activeTabBtn:', activeTabBtn?.dataset.tab, 'activeTabContent:', activeTabContent?.id);
       if (chartCanvas) chartCanvas.style.display = 'none';
@@ -1183,6 +1208,25 @@ function updateOutputs() {
 
     if (currentAnalysis === 'retirement-accumulation') {
       updateRetirementOutputs(analysisOutputs, clientData, formatCurrency, getAge, selectedReports, Chart);
+      // Ensure output-timeline is the default active tab
+      const timelineBtn = document.querySelector('.output-tab-btn[data-tab="output-timeline"]');
+      const graphBtn = document.querySelector('.output-tab-btn[data-tab="output-graph"]');
+      if (timelineBtn && !document.querySelector('.output-tab-btn.active')) {
+        console.log('Forcing output-timeline as default active tab in updateOutputs');
+        timelineBtn.classList.add('active');
+        document.querySelectorAll('.output-tab-content').forEach(content => {
+          content.style.display = 'none';
+          content.classList.remove('active');
+        });
+        const timelineContent = document.getElementById('output-timeline');
+        if (timelineContent) {
+          timelineContent.style.display = 'block';
+          timelineContent.classList.add('active');
+        }
+        if (graphBtn) graphBtn.classList.remove('active');
+        const chartCanvas = document.getElementById('analysis-chart');
+        if (chartCanvas) chartCanvas.style.display = 'none';
+      }
     } else if (currentAnalysis === 'personal-finance') {
       updatePersonalFinanceOutputs(analysisOutputs, clientData, formatCurrency, selectedReports, Chart);
     } else if (currentAnalysis === 'summary') {
@@ -1193,7 +1237,6 @@ function updateOutputs() {
       analysisOutputs.innerHTML = `<p class="output-card">Outputs not available for ${currentAnalysis}.</p>`;
     }
     setupOutputTabSwitching();
-    setupWhatIfControls();
     const activeTabAfter = document.querySelector('.output-tab-btn.active')?.dataset.tab || 'none';
     console.log('updateOutputs completed, activeTabAfter:', activeTabAfter);
   } catch (error) {
