@@ -346,26 +346,25 @@ function calculateRetirementIncome(clientData, getAge) {
         monthlyBalance += monthlyEarnings;
         annualEarnings += monthlyEarnings;
 
-        // Calculate remaining need or surplus
-        const monthlyRemainingNeed = adjustedMonthlyNeed - monthlyIncome - monthlySocialSecurity;
-        let monthlyWithdrawal = 0;
+// Calculate remaining need or surplus
+const monthlyRemainingNeed = adjustedMonthlyNeed - monthlyIncome - monthlySocialSecurity;
+let monthlyWithdrawal = 0;
 
-        if (monthlyRemainingNeed > 0) {
-          // Need exceeds income + Social Security: withdraw from balance
-          if (monthlyBalance >= monthlyRemainingNeed) {
-            monthlyWithdrawal = monthlyRemainingNeed;
-            monthlyBalance -= monthlyWithdrawal;
-          } else {
-            monthlyWithdrawal = monthlyBalance;
-            monthlyBalance = 0;
-          }
-        } else {
-          // Surplus: save the excess
-          monthlyWithdrawal = monthlyRemainingNeed; // Negative value
-          monthlyBalance -= monthlyWithdrawal; // Increases balance
-        }
-        annualWithdrawal += monthlyWithdrawal;
-      }
+if (monthlyRemainingNeed > 0) {
+  // Need exceeds income + Social Security: withdraw from balance
+  if (monthlyBalance >= monthlyRemainingNeed) {
+    monthlyWithdrawal = monthlyRemainingNeed;
+    monthlyBalance -= monthlyWithdrawal;
+  } else {
+    monthlyWithdrawal = monthlyBalance;
+    monthlyBalance = 0;
+  }
+} else {
+  // Surplus: show $0 withdrawal and save the excess
+  monthlyWithdrawal = 0;
+  monthlyBalance += Math.abs(monthlyRemainingNeed); // Add surplus to balance
+}
+annualWithdrawal += monthlyWithdrawal;
 
       result.earningsData.push(Math.round(annualEarnings));
       result.withdrawalData.push(Math.round(annualWithdrawal));
