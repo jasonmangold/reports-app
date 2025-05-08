@@ -501,6 +501,7 @@ function setupClientModalListeners() {
 function setupProfileDropdown() {
   try {
     const profilePic = document.getElementById('profile-pic');
+    const profileDropdown = document.getElementById('profile-dropdown');
     const dropdownMenu = document.getElementById('dropdown-menu');
 
     if (profilePic && dropdownMenu) {
@@ -511,8 +512,15 @@ function setupProfileDropdown() {
         profilePic.setAttribute('aria-expanded', !isOpen);
       });
 
+      profileDropdown.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const isOpen = dropdownMenu.style.display === 'block';
+        dropdownMenu.style.display = isOpen ? 'none' : 'block';
+        profilePic.setAttribute('aria-expanded', !isOpen);
+      });
+
       document.addEventListener('click', (e) => {
-        if (!profilePic.contains(e.target) && !dropdownMenu.contains(e.target)) {
+        if (!profilePic.contains(e.target) && !profileDropdown.contains(e.target) && !dropdownMenu.contains(e.target)) {
           dropdownMenu.style.display = 'none';
           profilePic.setAttribute('aria-expanded', 'false');
         }
@@ -770,11 +778,13 @@ function addAssetHandler(e) {
 function setupOutputTabSwitching() {
   try {
     if (currentAnalysis === 'personal-finance' || currentAnalysis === 'summary' || currentAnalysis === 'client-profile') {
+      console.log('Skipping output tab switching setup for:', currentAnalysis);
       return;
     }
 
     const buttons = document.querySelectorAll('.output-tab-btn');
     if (!buttons.length) {
+      console.warn('No output tab buttons found');
       return;
     }
 
@@ -791,7 +801,7 @@ function outputTabClickHandler(e) {
   try {
     e.stopPropagation();
     e.preventDefault();
-    console.log('Switching to output tab:', this.dataset.tab);
+    console.log('Switching to output tab:', this.dataset.tab, 'Previous active:', document.querySelector('.output-tab-btn.active')?.dataset.tab);
     document.querySelectorAll('.output-tab-btn').forEach(btn => btn.classList.remove('active'));
     document.querySelectorAll('.output-tab-content').forEach(content => {
       content.style.display = 'none';
@@ -802,11 +812,15 @@ function outputTabClickHandler(e) {
     if (tabContent) {
       tabContent.style.display = 'block';
       tabContent.classList.add('active');
+      console.log('Set active tab:', this.dataset.tab, 'Display:', tabContent.style.display, 'Classes:', tabContent.className);
     } else {
       console.warn(`Output tab content #${this.dataset.tab} not found`);
     }
     if (this.dataset.tab === 'output-graph') {
       setTimeout(updateGraph, 100);
+    } else {
+      const chartCanvas = document.getElementById('analysis-chart');
+      if (chartCanvas) chartCanvas.style.display = 'none';
     }
   } catch (error) {
     console.error('Error in outputTabClickHandler:', error);
@@ -1080,12 +1094,14 @@ function updateGraph(previewData = null) {
     console.log('chartCanvas:', chartCanvas);
 
     // Check if output-graph is the active tab
-    const activeTab = document.querySelector('.output-tab-content[style*="display: block"]') ||
-                      document.querySelector('.output-tab-content.active');
     const activeTabBtn = document.querySelector('.output-tab-btn.active');
-    console.log('Tab check - activeTab:', activeTab?.id, 'activeTabBtn:', activeTabBtn?.dataset.tab);
-    if (!activeTab || activeTab.id !== 'output-graph' || (activeTabBtn && activeTabBtn.dataset.tab !== 'output-graph')) {
-      console.log('Skipping graph update: output-graph is not active, activeTab:', activeTab?.id, 'activeTabBtn:', activeTabBtn?.dataset.tab);
+    const activeTabContent = document.querySelector('.output-tab-content.active') ||
+                             document.querySelector('.output-tab-content[style*="display: block"]');
+    console.log('Tab check - activeTabBtn:', activeTabBtn?.dataset.tab, 'activeTabContent:', activeTabContent?.id);
+    const isGraphTabActive = activeTabBtn?.dataset.tab === 'output-graph' || 
+                            (activeTabContent?.id === 'output-graph' && !activeTabBtn);
+    if (!isGraphTabActive) {
+      console.log('Skipping graph update: output-graph is not active, activeTabBtn:', activeTabBtn?.dataset.tab, 'activeTabContent:', activeTabContent?.id);
       if (chartCanvas) chartCanvas.style.display = 'none';
       return;
     }
@@ -1153,7 +1169,8 @@ function updateGraph(previewData = null) {
 
 function updateOutputs() {
   try {
-    console.log('updateOutputs called, currentAnalysis:', currentAnalysis, 'activeTab:', document.querySelector('.output-tab-content.active')?.id);
+    const activeTabBefore = document.querySelector('.output-tab-btn.active')?.dataset.tab || 'none';
+    console.log('updateOutputs called, currentAnalysis:', currentAnalysis, 'activeTabBefore:', activeTabBefore);
     const validationError = validateClientData();
     if (validationError) {
       analysisOutputs.innerHTML = `<p class="output-error">${validationError}</p>`;
@@ -1177,6 +1194,8 @@ function updateOutputs() {
     }
     setupOutputTabSwitching();
     setupWhatIfControls();
+    const activeTabAfter = document.querySelector('.output-tab-btn.active')?.dataset.tab || 'none';
+    console.log('updateOutputs completed, activeTabAfter:', activeTabAfter);
   } catch (error) {
     console.error('Error in updateOutputs:', error);
     analysisOutputs.innerHTML = '<p class="output-error">Error rendering outputs. Please check console for details.</p>';
