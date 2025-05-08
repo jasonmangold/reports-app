@@ -21,11 +21,13 @@ let clientData = {
     insurance: { lifeInsurance: "0", disabilityInsurance: "0", longTermCare: "0" }
   },
   isMarried: false,
-  monthlyincomeinitial: { initial: "5000" },
-  yearsafterretirement1: { yearsafter1: "5" },
-  monthlyincome1: { monthly1: "4500" },
-  yearsafterretirement2: { yearsafter2: "10" },
-  monthlyincome2: { monthly2: "4000" },
+  incomeNeeds: {
+    monthlyincomeinitial: { initial: "5000" },
+    yearsafterretirement1: { yearsafter1: "5" },
+    monthlyincome1: { monthly1: "4500" },
+    yearsafterretirement2: { yearsafter2: "10" },
+    monthlyincome2: { monthly2: "4000" }
+  },
   assumptions: { 
     mortalityAge: "90", 
     c1MortalityAge: "90", 
@@ -154,6 +156,13 @@ function loadClientData() {
       clientData.assumptions.c1MortalityAge = clientData.assumptions.c1MortalityAge || clientData.assumptions.mortalityAge || "90";
       clientData.assumptions.c2MortalityAge = clientData.assumptions.c2MortalityAge || clientData.assumptions.mortalityAge || "90";
       clientData.scenarios = clientData.scenarios || { base: null, whatIf: [] };
+      clientData.incomeNeeds = clientData.incomeNeeds || {
+        monthlyincomeinitial: { initial: "5000" },
+        yearsafterretirement1: { yearsafter1: "5" },
+        monthlyincome1: { monthly1: "4500" },
+        yearsafterretirement2: { yearsafter2: "10" },
+        monthlyincome2: { monthly2: "4000" }
+      };
       console.log('Loaded clientData from localStorage:', clientData);
     }
   } catch (error) {
@@ -322,11 +331,11 @@ function populateInputFields() {
     setIfExists('c2-dob', clientData.client2.personal.dob, 'Client 2 DOB');
     setIfExists('c1-retirement-age', clientData.client1.personal.retirementAge, 'Client 1 Retirement Age');
     setIfExists('c2-retirement-age', clientData.client2.personal.retirementAge, 'Client 2 Retirement Age');
-    setIfExists('monthly-income-initial', clientData.incomeNeeds.initial, 'Monthly Income Initial');
-    setIfExists('years-after-retirement-1', clientData.incomeNeeds.yearsafter1, 'Years After Retirement 1');
-    setIfExists('monthly-income-1', clientData.incomeNeeds.monthly1, 'Monthly Income 1');
-    setIfExists('years-after-retirement-2', clientData.incomeNeeds.yearsafter2, 'Years After Retirement 2');
-    setIfExists('monthly-income-2', clientData.incomeNeeds.monthly2, 'Monthly Income 2');
+    setIfExists('monthly-income-initial', clientData.incomeNeeds.monthlyincomeinitial.initial, 'Monthly Income Initial');
+    setIfExists('years-after-retirement-1', clientData.incomeNeeds.yearsafterretirement1.yearsafter1, 'Years After Retirement 1');
+    setIfExists('monthly-income-1', clientData.incomeNeeds.monthlyincome1.monthly1, 'Monthly Income 1');
+    setIfExists('years-after-retirement-2', clientData.incomeNeeds.yearsafterretirement2.yearsafter2, 'Years After Retirement 2');
+    setIfExists('monthly-income-2', clientData.incomeNeeds.monthlyincome2.monthly2, 'Monthly Income 2');
     setIfExists('mortality-age', clientData.assumptions.mortalityAge, 'Mortality Age');
     setIfExists('c1-mortality-age', clientData.assumptions.c1MortalityAge, 'Client 1 Mortality Age');
     setIfExists('c2-mortality-age', clientData.assumptions.c2MortalityAge, 'Client 2 Mortality Age');
@@ -828,7 +837,7 @@ function setupWhatIfControls() {
         { id: 'monthly-contribution', value: clientData.client1.accounts.reduce((sum, acc) => sum + (parseFloat(acc.contribution) || 0), 0) / 12 + (clientData.isMarried ? clientData.client2.accounts.reduce((sum, acc) => sum + (parseFloat(acc.contribution) || 0), 0) / 12 : 0) },
         { id: 'ror', value: clientData.client1.accounts[0]?.ror || 6 },
         { id: 'ror-retirement', value: parseFloat(clientData.assumptions.rorRetirement) || 4 },
-        { id: 'monthly-income', value: parseFloat(clientData.incomeNeeds.monthly) || 5000 },
+        { id: 'monthly-income', value: parseFloat(clientData.incomeNeeds.monthlyincomeinitial.initial) || 5000 },
         { id: 'inflation', value: parseFloat(clientData.assumptions.inflation) || 2 },
         { id: 'c1-mortality-age', value: parseFloat(clientData.assumptions.c1MortalityAge) || 90 },
         { id: 'c2-mortality-age', value: clientData.isMarried ? (parseFloat(clientData.assumptions.c2MortalityAge) || 90) : null }
@@ -975,7 +984,7 @@ function setupWhatIfControls() {
         });
       }
       modifiedData.assumptions.rorRetirement = document.getElementById('ror-retirement-slider').value;
-      modifiedData.incomeNeeds.monthly = document.getElementById('monthly-income-slider').value;
+      modifiedData.incomeNeeds.monthlyincomeinitial.initial = document.getElementById('monthly-income-slider').value;
       modifiedData.assumptions.inflation = document.getElementById('inflation-slider').value;
       modifiedData.assumptions.c1MortalityAge = document.getElementById('c1-mortality-age-slider').value;
       if (clientData.isMarried) {
@@ -1036,24 +1045,24 @@ function updateClientData(e) {
           [field]: value
         };
       }
-} else {
-  if (input.id === 'monthly-income-initial') clientData.incomeNeeds.initial = value;
-  else if (input.id === 'years-after-retirement-1') clientData.incomeNeeds.yearsafter1 = value;
-  else if (input.id === 'monthly-income-1') clientData.incomeNeeds.monthly1 = value;
-  else if (input.id === 'years-after-retirement-2') clientData.incomeNeeds.yearsafter2 = value;
-  else if (input.id === 'monthly-income-2') clientData.incomeNeeds.monthly2 = value;
-  else if (input.id === 'mortality-age') clientData.assumptions.mortalityAge = value;
-  else if (input.id === 'inflation') clientData.assumptions.inflation = value;
-  else if (input.id === 'ror-retirement') clientData.assumptions.rorRetirement = value;
-  else if (input.id === 'household-expenses') clientData.savingsExpenses.householdExpenses = value;
-  else if (input.id === 'taxes') clientData.savingsExpenses.taxes = value;
-  else if (input.id === 'other-expenses') clientData.savingsExpenses.otherExpenses = value;
-  else if (input.id === 'monthly-savings') clientData.savingsExpenses.monthlySavings = value;
-  else if (input.id === 'analysis-date') clientData.assumptions.analysisDate = value;
-  else if (input.id === 'cash') clientData.other.cash = value;
-  else if (input.id === 'residence-mortgage') clientData.other.residenceMortgage = value;
-  else if (input.id === 'other-debt') clientData.other.otherDebt = value;
-}
+    } else {
+      if (input.id === 'monthly-income-initial') clientData.incomeNeeds.monthlyincomeinitial.initial = value;
+      else if (input.id === 'years-after-retirement-1') clientData.incomeNeeds.yearsafterretirement1.yearsafter1 = value;
+      else if (input.id === 'monthly-income-1') clientData.incomeNeeds.monthlyincome1.monthly1 = value;
+      else if (input.id === 'years-after-retirement-2') clientData.incomeNeeds.yearsafterretirement2.yearsafter2 = value;
+      else if (input.id === 'monthly-income-2') clientData.incomeNeeds.monthlyincome2.monthly2 = value;
+      else if (input.id === 'mortality-age') clientData.assumptions.mortalityAge = value;
+      else if (input.id === 'inflation') clientData.assumptions.inflation = value;
+      else if (input.id === 'ror-retirement') clientData.assumptions.rorRetirement = value;
+      else if (input.id === 'household-expenses') clientData.savingsExpenses.householdExpenses = value;
+      else if (input.id === 'taxes') clientData.savingsExpenses.taxes = value;
+      else if (input.id === 'other-expenses') clientData.savingsExpenses.otherExpenses = value;
+      else if (input.id === 'monthly-savings') clientData.savingsExpenses.monthlySavings = value;
+      else if (input.id === 'analysis-date') clientData.assumptions.analysisDate = value;
+      else if (input.id === 'cash') clientData.other.cash = value;
+      else if (input.id === 'residence-mortgage') clientData.other.residenceMortgage = value;
+      else if (input.id === 'other-debt') clientData.other.otherDebt = value;
+    }
 
     if (input.id === 'c1-name' || input.id === 'c2-name') updateClientFileName();
   } catch (error) {
@@ -1217,6 +1226,11 @@ function validateClientData() {
   try {
     const errors = [];
 
+    if (!clientData || !clientData.incomeNeeds) {
+      errors.push("Income needs data is missing or incomplete.");
+      return errors.join('<br>');
+    }
+
     if (!clientData.client1.personal.name) errors.push("Client 1 name is required.");
     if (!clientData.client1.personal.dob || new Date(clientData.client1.personal.dob) > new Date()) {
       errors.push("Client 1 date of birth is invalid.");
@@ -1235,60 +1249,60 @@ function validateClientData() {
       }
     }
 
-const incomeNeeds = clientData.incomeNeeds;
+    const incomeNeeds = clientData.incomeNeeds;
 
-// Helper function to convert and validate a value
-const isPositiveNumber = (value) => {
-  const num = parseFloat(value);
-  return !isNaN(num) && num > 0;
-};
+    // Helper function to convert and validate a value
+    const isPositiveNumber = (value) => {
+      const num = parseFloat(value);
+      return !isNaN(num) && num > 0;
+    };
 
-// Validate initial monthly income
-if (!incomeNeeds.monthlyincomeinitial?.initial || !isPositiveNumber(incomeNeeds.monthlyincomeinitial.initial)) {
-  errors.push("Initial monthly income must be a positive number.");
-}
+    // Validate initial monthly income
+    if (!incomeNeeds.monthlyincomeinitial?.initial || !isPositiveNumber(incomeNeeds.monthlyincomeinitial.initial)) {
+      errors.push("Initial monthly income must be a positive number.");
+    }
 
-// Validate years after retirement (first period)
-if (!incomeNeeds.yearsafterretirement1?.yearsafter1 || !isPositiveNumber(incomeNeeds.yearsafterretirement1.yearsafter1)) {
-  errors.push("Years after retirement (first period) must be a positive number.");
-}
+    // Validate years after retirement (first period)
+    if (!incomeNeeds.yearsafterretirement1?.yearsafter1 || !isPositiveNumber(incomeNeeds.yearsafterretirement1.yearsafter1)) {
+      errors.push("Years after retirement (first period) must be a positive number.");
+    }
 
-// Validate monthly income (first period)
-if (!incomeNeeds.monthlyincome1?.monthly1 || !isPositiveNumber(incomeNeeds.monthlyincome1.monthly1)) {
-  errors.push("Monthly income for first period must be a positive number.");
-}
+    // Validate monthly income (first period)
+    if (!incomeNeeds.monthlyincome1?.monthly1 || !isPositiveNumber(incomeNeeds.monthlyincome1.monthly1)) {
+      errors.push("Monthly income for first period must be a positive number.");
+    }
 
-// Validate years after retirement (second period)
-if (!incomeNeeds.yearsafterretirement2?.yearsafter2 || !isPositiveNumber(incomeNeeds.yearsafterretirement2.yearsafter2)) {
-  errors.push("Years after retirement (second period) must be a positive number.");
-}
+    // Validate years after retirement (second period)
+    if (!incomeNeeds.yearsafterretirement2?.yearsafter2 || !isPositiveNumber(incomeNeeds.yearsafterretirement2.yearsafter2)) {
+      errors.push("Years after retirement (second period) must be a positive number.");
+    }
 
-// Validate monthly income (second period)
-if (!incomeNeeds.monthlyincome2?.monthly2 || !isPositiveNumber(incomeNeeds.monthlyincome2.monthly2)) {
-  errors.push("Monthly income for second period must be a positive number.");
-}
+    // Validate monthly income (second period)
+    if (!incomeNeeds.monthlyincome2?.monthly2 || !isPositiveNumber(incomeNeeds.monthlyincome2.monthly2)) {
+      errors.push("Monthly income for second period must be a positive number.");
+    }
 
-// Validate that years after retirement (second period) is greater than first period
-if (
-  incomeNeeds.yearsafterretirement1?.yearsafter1 &&
-  incomeNeeds.yearsafterretirement2?.yearsafter2 &&
-  isPositiveNumber(incomeNeeds.yearsafterretirement1.yearsafter1) &&
-  isPositiveNumber(incomeNeeds.yearsafterretirement2.yearsafter2) &&
-  parseFloat(incomeNeeds.yearsafterretirement2.yearsafter2) <= parseFloat(incomeNeeds.yearsafterretirement1.yearsafter1)
-) {
-  errors.push("Years after retirement (second period) must be greater than the first period.");
-}
-    
+    // Validate that years after retirement (second period) is greater than first period
+    if (
+      incomeNeeds.yearsafterretirement1?.yearsafter1 &&
+      incomeNeeds.yearsafterretirement2?.yearsafter2 &&
+      isPositiveNumber(incomeNeeds.yearsafterretirement1.yearsafter1) &&
+      isPositiveNumber(incomeNeeds.yearsafterretirement2.yearsafter2) &&
+      parseFloat(incomeNeeds.yearsafterretirement2.yearsafter2) <= parseFloat(incomeNeeds.yearsafterretirement1.yearsafter1)
+    ) {
+      errors.push("Years after retirement (second period) must be greater than the first period.");
+    }
+
     if (!clientData.assumptions.c1MortalityAge || clientData.assumptions.c1MortalityAge < 0) {
       errors.push("Client 1 mortality age must be a positive number.");
     }
     if (clientData.isMarried && (!clientData.assumptions.c2MortalityAge || clientData.assumptions.c2MortalityAge < 0)) {
       errors.push("Client 2 mortality age must be a positive number.");
     }
-if (clientData.assumptions.inflation == null || clientData.assumptions.inflation < 0) {
-  errors.push("Inflation rate must be a non-negative number.");
-}
-    if (!clientData.assumptions.rorRetirement == null || clientData.assumptions.rorRetirement < 0) {
+    if (clientData.assumptions.inflation == null || clientData.assumptions.inflation < 0) {
+      errors.push("Inflation rate must be a non-negative number.");
+    }
+    if (clientData.assumptions.rorRetirement == null || clientData.assumptions.rorRetirement < 0) {
       errors.push("Rate of return in retirement must be a non-negative number.");
     }
 
