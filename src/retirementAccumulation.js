@@ -1240,7 +1240,9 @@ export function setupInputListeners(clientData, formatCurrency, getAge, Chart) {
       const activeTab = document.querySelector('.output-tab-content[style*="display: block"]') || 
                         document.querySelector('.output-tab-content.active');
       const currentTab = activeTab ? activeTab.id : 'output-graph';
-
+      if (!activeTab) {
+  console.warn('No active output tab found, defaulting to output-graph');
+}
       // Update the specific tab
       updateSpecificTab(currentTab, clientData, formatCurrency, getAge, Chart);
 
@@ -1510,6 +1512,4 @@ function outputDropdownChangeHandler(clientData, Chart, getAge) {
   // Deprecated: Replaced by event listener in setupOutputControls
   console.warn('outputDropdownChangeHandler is deprecated. Use setupOutputControls.');
 }
-if (!activeTab) {
-  console.warn('No active output tab found, defaulting to output-graph');
-}
+
