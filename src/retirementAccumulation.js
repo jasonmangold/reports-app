@@ -413,8 +413,16 @@ function calculateRetirementIncome(clientData, getAge) {
 /**
  * Updates the retirement income bar graph using Chart.js.
  */
-export function updateRetirementGraph(chartCanvas, clientData, Chart, getAge) {
+export function updateRetirementGraph(chartCanvas, clientData, Chart, getAge, graphType = 'income', previewData = null) {
   try {
+    // Check if output-graph is the active tab
+    const activeTab = document.querySelector('.output-tab-content[style*="display: block"]') ||
+                      document.querySelector('.output-tab-content.active');
+    if (!activeTab || activeTab.id !== 'output-graph') {
+      console.log('Skipping updateRetirementGraph: output-graph is not active, activeTab:', activeTab?.id);
+      return null;
+    }
+
     if (!chartCanvas) {
       console.error('Chart canvas #analysis-chart not found');
       return null;
@@ -426,11 +434,12 @@ export function updateRetirementGraph(chartCanvas, clientData, Chart, getAge) {
 
     const ctx = chartCanvas.getContext('2d');
     if (chartCanvas.chartInstance) {
+      console.log('Destroying existing chartInstance in updateRetirementGraph');
       chartCanvas.chartInstance.destroy();
       chartCanvas.chartInstance = null;
     }
 
-    const incomeData = calculateRetirementIncome(clientData, getAge);
+    const incomeData = previewData || calculateRetirementIncome(clientData, getAge);
     if (!incomeData.labels.length) {
       const chartInstance = new Chart(ctx, {
         type: 'bar',
