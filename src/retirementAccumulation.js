@@ -1368,8 +1368,126 @@ export function setupInputListeners(clientData, formatCurrency, getAge, Chart) {
   }
 }
 
-8 Corporate Park, Suite 300
-Irvine, CA 92606.
+/**
+ * Updates the retirement analysis outputs.
+ */
+export function updateRetirementOutputs(analysisOutputs, clientData, formatCurrency, getAge, selectedReports, Chart) {
+  try {
+    if (!analysisOutputs) {
+      console.error('Analysis outputs #analysis-outputs not found');
+      return;
+    }
+
+    const tabContainer = document.getElementById('output-tabs-container');
+    const c1Age = getAge(clientData.client1.personal.dob);
+    const c2Age = clientData.isMarried ? getAge(clientData.client2.personal.dob) : c1Age;
+    const c1RetirementAge = parseFloat(clientData.client1.personal.retirementAge) || 65;
+    const c2RetirementAge = clientData.isMarried ? parseFloat(clientData.client2.personal.retirementAge) || 65 : c1RetirementAge;
+
+    // Validation
+    if (c1Age >= c1RetirementAge || (clientData.isMarried && c2Age >= c2RetirementAge)) {
+      analysisOutputs.innerHTML = '<p class="output-card">Client(s) already at or past retirement age. Please adjust retirement age or DOB.</p>';
+      if (tabContainer) tabContainer.innerHTML = '';
+      return;
+    }
+
+    // Define report options
+    const reportOptions = [
+      { id: 'output-graph', label: 'Retirement Analysis', reportId: 'report-graph', title: 'Retirement Income Graph' },
+      { id: 'report-social-security-optimizer', label: 'Social Security Optimizer', reportId: 'report-social-security-optimizer', title: 'Social Security optimizer' },
+      { id: 'report-capital-available', label: 'Capital Available at Retirement', reportId: 'report-capital-available', title: 'Capital Available at Retirement' },
+      { id: 'output-alternatives', label: 'Alternatives to Achieving Retirement Goals', reportId: 'report-alternatives-retirement', title: 'Retirement Alternatives' },
+      { id: 'output-timeline', label: 'Retirement Timeline', reportId: 'report-retirement-timeline', title: 'Retirement Income Timeline' },
+      { id: 'report-retirement-fact-finder', label: 'Fact Finder', reportId: 'report-retirement-fact-finder', title: 'Retirement Fact Finder' }
+    ];
+
+    // Get current active tab
+    let activeTab = document.querySelector('.output-tab-content[style*="display: block"]') ||
+                    document.querySelector('.output-tab-content.active');
+    let currentSelection = activeTab ? activeTab.id : 'output-graph';
+
+    // Fallback to output-select if no active tab is found
+    const select = document.getElementById('output-select');
+    if (!activeTab && select && select.value) {
+      currentSelection = select.value;
+      console.log('No active tab found, using output-select value:', currentSelection);
+    }
+
+    // Render initial structure if not present
+    if (!document.getElementById('output-select')) {
+      if (tabContainer) {
+        tabContainer.innerHTML = `
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div class="output-dropdown">
+              <label for="output-select">Select View: </label>
+              <select id="output-select" class="output-select">
+                ${reportOptions.map(option => `
+                  <option value="${option.id}" ${option.id === currentSelection ? 'selected' : ''}>${option.label}</option>
+                `).join('')}
+              </select>
+            </div>
+            <label class="add-to-presentation-checkbox">
+              <input type="checkbox" id="add-to-presentation" data-report="${reportOptions.find(opt => opt.id === currentSelection).reportId}" data-title="${reportOptions.find(opt => opt.id === currentSelection).title}">
+              Add to Presentation
+            </label>
+          </div>
+        `;
+      }
+
+      analysisOutputs.innerHTML = `
+        ${!tabContainer ? `
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div class="output-dropdown">
+              <label for="output-select">Select View: </label>
+              <select id="output-select" class="output-select">
+                ${reportOptions.map(option => `
+                  <option value="${option.id}" ${option.id === currentSelection ? 'selected' : ''}>${option.label}</option>
+                `).join('')}
+              </select>
+            </div>
+            <label class="add-to-presentation-checkbox">
+              <input type="checkbox" id="add-to-presentation" data-report="${reportOptions.find(opt => opt.id === currentSelection).reportId}" data-title="${reportOptions.find(opt => opt.id === currentSelection).title}">
+              Add to Presentation
+            </label>
+          </div>
+        ` : ''}
+        ${reportOptions.map(option => `
+          <div class="output-tab-content ${option.id === currentSelection ? 'active' : ''}" id="${option.id}" style="display: ${option.id === currentSelection ? 'block' : 'none'};">
+            <div class="output-card">
+              <h3>${option.title}</h3>
+              <p>Content will be loaded...</p>
+            </div>
+          </div>
+        `).join('')}
+      `;
+    }
+
+    // Ensure the active tab is visible
+    document.querySelectorAll('.output-tab-content').forEach(content => {
+      const isSelected = content.id === currentSelection;
+      content.style.display = isSelected ? 'block' : 'none';
+      content.classList.toggle('active', isSelected);
+    });
+
+    // Update the output-select value
+    if (select && select.value !== currentSelection) {
+      select.value = currentSelection;
+    }
+
+    // Setup controls
+    setupOutputControls(reportOptions, selectedReports, clientData, formatCurrency, getAge, Chart);
+
+    // Update the current tab
+    updateSpecificTab(currentSelection, clientData, formatCurrency, getAge, Chart);
+
+    // Setup input listeners
+    setupInputListeners(clientData, formatCurrency, getAge, Chart);
+  } catch (error) {
+    console.error('Error in updateRetirementOutputs:', error);
+    analysisOutputs.innerHTML = '<p class="output-card">Error rendering outputs. Please check input data.</p>';
+    if (tabContainer) tabContainer.innerHTML = '';
+  }
+}
 
 
 /**
