@@ -97,7 +97,7 @@ export const retirementAccumulationTabs = [
     content: `
       <label>Client 1 Mortality Age: <input type="number" id="c1-mortality-age" min="1" max="120" placeholder="90"></label>
       <label id="c2-mortality-label" style="display: none;">Client 2 Mortality Age: <input type="number" id="c2-mortality-age" min="1" max="120" placeholder="90"></label>
-      <label>Inflation (%): <input type="number" id="inflation" min="0" max="100" step="0.1" placeholder="2"></label>
+      <label>Inflation (%): <input type="number" id="inflation" min="0" max="100" step="0.5" placeholder="3"></label>
       <label>ROR During Retirement (%): <input type="number" id="ror-retirement" min="0" max="100" step="0.1" placeholder="4"></label>
     `
   }
