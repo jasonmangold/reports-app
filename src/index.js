@@ -1244,9 +1244,9 @@ function validateClientData() {
     if (clientData.isMarried && (!clientData.assumptions.c2MortalityAge || clientData.assumptions.c2MortalityAge < 0)) {
       errors.push("Client 2 mortality age must be a positive number.");
     }
-    if (!clientData.assumptions.inflation || clientData.assumptions.inflation < 0) {
-      errors.push("Inflation rate must be a non-negative number.");
-    }
+if (clientData.assumptions.inflation == null || clientData.assumptions.inflation < 0) {
+  errors.push("Inflation rate must be a non-negative number.");
+}
     if (!clientData.assumptions.rorRetirement || clientData.assumptions.rorRetirement < 0) {
       errors.push("Rate of return in retirement must be a non-negative number.");
     }
