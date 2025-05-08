@@ -444,49 +444,59 @@ export function updateRetirementGraph(chartCanvas, clientData, Chart, getAge) {
       return chartInstance;
     }
 
-    chartInstance = new Chart(ctx, {
-      type: 'bar',
-      data: {
-        labels: incomeData.labels.slice(1), // Skip starting blank row
-        datasets: [
-          {
-            label: 'Social Security',
-            data: incomeData.socialSecurityData.slice(1).map(Math.round),
-            backgroundColor: '#22c55e',
-            stack: 'Stack0'
-          },
-          {
-            label: 'Income',
-            data: incomeData.incomeData.slice(1).map(Math.round),
-            backgroundColor: '#3b82f6',
-            stack: 'Stack0'
-          },
-          {
-            label: 'Withdrawal',
-            data: incomeData.withdrawalData.slice(1).map(Math.round),
-            backgroundColor: '#f97316',
-            stack: 'Stack0'
-          },
-          {
-            label: 'Shortfall',
-            data: incomeData.shortfallData.slice(1).map(Math.round),
-            backgroundColor: '#ef4444',
-            stack: 'Stack0'
-          }
-        ]
+chartInstance = new Chart(ctx, {
+  type: 'bar',
+  data: {
+    labels: incomeData.labels.slice(1), // Skip starting blank row
+    datasets: [
+      {
+        label: 'Social Security',
+        data: incomeData.socialSecurityData.slice(1).map(Math.round),
+        backgroundColor: '#22c55e',
+        stack: 'Stack0'
       },
-      options: {
-        responsive: true,
-        plugins: {
-          legend: { display: true, position: 'top' },
-          title: { display: true, text: 'Retirement Income Sources by Age' }
-        },
-        scales: {
-          x: { title: { display: true, text: clientData.isMarried ? 'Client 1/Client 2 Age' : 'Client 1 Age' }, stacked: true },
-          y: { title: { display: true, text: 'Annual Income ($)' }, stacked: true, beginAtZero: true }
-        }
+      {
+        label: 'Income',
+        data: incomeData.incomeData.slice(1).map(Math.round),
+        backgroundColor: '#3b82f6',
+        stack: 'Stack0'
+      },
+      {
+        label: 'Withdrawal',
+        data: incomeData.withdrawalData.slice(1).map(Math.round),
+        backgroundColor: '#f97316',
+        stack: 'Stack0'
+      },
+      {
+        label: 'Shortfall',
+        data: incomeData.shortfallData.slice(1).map(Math.round),
+        backgroundColor: '#ef4444',
+        stack: 'Stack0'
+      },
+      {
+        label: 'Income Need',
+        type: 'line', // Specify line chart type
+        data: incomeData.needData.slice(1).map(Math.round), // Assumes incomeNeedData is available
+        borderColor: '#000000', // Black line for visibility
+        borderWidth: 2,
+        fill: false, // No fill under the line
+        pointRadius: 0, // Optional: hide points for cleaner look
+        yAxisID: 'y' // Ensure it uses the same y-axis
       }
-    });
+    ]
+  },
+  options: {
+    responsive: true,
+    plugins: {
+      legend: { display: true, position: 'top' },
+      title: { display: true, text: 'Retirement Income Sources by Age' }
+    },
+    scales: {
+      x: { title: { display: true, text: clientData.isMarried ? 'Client 1/Client 2 Age' : 'Client 1 Age' }, stacked: true },
+      y: { title: { display: true, text: 'Annual Income ($)' }, stacked: true, beginAtZero: true }
+    }
+  }
+});
     console.log('Retirement Accumulation bar graph rendered');
     chartCanvas.chartInstance = chartInstance;
     return chartInstance;
