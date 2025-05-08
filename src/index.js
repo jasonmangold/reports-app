@@ -1247,7 +1247,7 @@ function validateClientData() {
 if (clientData.assumptions.inflation == null || clientData.assumptions.inflation < 0) {
   errors.push("Inflation rate must be a non-negative number.");
 }
-    if (!clientData.assumptions.rorRetirement || clientData.assumptions.rorRetirement < 0) {
+    if (!clientData.assumptions.rorRetirement == null || clientData.assumptions.rorRetirement < 0) {
       errors.push("Rate of return in retirement must be a non-negative number.");
     }
 
