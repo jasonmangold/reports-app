@@ -415,10 +415,11 @@ function calculateRetirementIncome(clientData, getAge) {
  */
 export function updateRetirementGraph(chartCanvas, clientData, Chart, getAge, graphType = 'income', previewData = null) {
   try {
-    // Check if output-graph is the selected view
-    const select = document.getElementById('output-select');
-    if (!select || select.value !== 'output-graph') {
-      console.log('Skipping updateRetirementGraph: output-graph is not selected, current selection:', select?.value);
+    // Check if output-graph is the active tab
+    const activeTab = document.querySelector('.output-tab-content[style*="display: block"]') ||
+                      document.querySelector('.output-tab-content.active');
+    if (!activeTab || activeTab.id !== 'output-graph') {
+      console.log('Skipping updateRetirementGraph: output-graph is not active, activeTab:', activeTab?.id);
       return null;
     }
 
@@ -538,8 +539,6 @@ export function updateRetirementGraph(chartCanvas, clientData, Chart, getAge, gr
     return chartInstance;
   }
 }
-
-
 
 /**
  * Updates the alternatives bar graph.
@@ -1220,8 +1219,159 @@ function updateSpecificTab(tabId, clientData, formatCurrency, getAge, Chart) {
   }
 }
 
+/**
+ * Sets up event listeners for input fields to update the current output tab on change.
+ */
+export function setupInputListeners(clientData, formatCurrency, getAge, Chart) {
+  try {
+    // Debounce function
+    function debounce(func, wait) {
+      let timeout;
+      return function executedFunction(...args) {
+        const later = () => {
+          clearTimeout(timeout);
+          func(...args);
+        };
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+      };
+    }
 
+    // Update clientData and refresh current tab
+    const updateOnInputChange = debounce(() => {
+      // Update clientData
+      updateClientData(clientData);
 
+      // Get current active tab
+      let activeTab = document.querySelector('.output-tab-content[style*="display: block"]') ||
+                      document.querySelector('.output-tab-content.active');
+      
+      // Fallback to output-select value if no active tab is found
+      let currentTab = activeTab ? activeTab.id : null;
+      if (!currentTab) {
+        const select = document.getElementById('output-select');
+        currentTab = select && select.value ? select.value : 'output-graph';
+        console.log('No active tab found, using output-select value:', currentTab);
+      }
+
+      // Debug logging
+      console.log('Active tab:', activeTab ? activeTab.id : 'none', 'Selected tab:', currentTab);
+
+      // Update the specific tab
+      updateSpecificTab(currentTab, clientData, formatCurrency, getAge, Chart);
+
+      // Sync the select dropdown without triggering a change event
+      const select = document.getElementById('output-select');
+      if (select && select.value !== currentTab) {
+        const previousOnChange = select.onchange;
+        select.onchange = null;
+        select.value = currentTab;
+        select.onchange = previousOnChange;
+        console.log('Updated output-select to:', currentTab);
+      }
+    }, 300);
+
+    // Function to update clientData from inputs
+    function updateClientData(data) {
+      // Personal
+      data.isMarried = document.getElementById('is-married').checked;
+      data.client1.personal.name = document.getElementById('c1-name').value;
+      data.client1.personal.dob = document.getElementById('c1-dob').value;
+      data.client1.personal.retirementAge = document.getElementById('c1-retirement-age').value;
+      if (data.isMarried) {
+        data.client2.personal = data.client2.personal || {};
+        data.client2.personal.name = document.getElementById('c2-name').value;
+        data.client2.personal.dob = document.getElementById('c2-dob').value;
+        data.client2.personal.retirementAge = document.getElementById('c2-retirement-age').value;
+      } else {
+        data.client2 = { personal: {}, incomeSources: {}, accounts: [] };
+      }
+
+      // Income Needs
+      data.incomeNeeds = {
+        initial: parseFloat(document.getElementById('monthly-income-initial').value) || 5000,
+        yearsafter1: parseInt(document.getElementById('years-after-retirement-1').value) || 5,
+        monthly1: parseFloat(document.getElementById('monthly-income-1').value) || 4500,
+        yearsafter2: parseInt(document.getElementById('years-after-retirement-2').value) || 10,
+        monthly2: parseFloat(document.getElementById('monthly-income-2').value) || 4000
+      };
+
+      // Income Sources
+      data.client1.incomeSources = {
+        employment: parseFloat(document.getElementById('c1-employment').value) || 0,
+        socialSecurity: parseFloat(document.getElementById('c1-social-security').value) || 0,
+        other: parseFloat(document.getElementById('c1-other-income').value) || 0
+      };
+      if (data.isMarried) {
+        data.client2.incomeSources = {
+          employment: parseFloat(document.getElementById('c2-employment').value) || 0,
+          socialSecurity: parseFloat(document.getElementById('c2-social-security').value) || 0,
+          other: parseFloat(document.getElementById('c2-other-income').value) || 0
+        };
+      } else {
+        data.client2.incomeSources = { employment: 0, socialSecurity: 0, other: 0 };
+      }
+
+      // Capital Accounts
+      data.client1.accounts = [];
+      const c1Accounts = document.querySelectorAll('#c1-accounts .account');
+      c1Accounts.forEach((account, index) => {
+        data.client1.accounts.push({
+          name: document.getElementById(`c1-account-${index}-name`).value || `Account ${index + 1}`,
+          balance: parseFloat(document.getElementById(`c1-account-${index}-balance`).value) || 0,
+          contribution: parseFloat(document.getElementById(`c1-account-${index}-contribution`).value) || 0,
+          employerMatch: parseFloat(document.getElementById(`c1-account-${index}-employer-match`).value) || 0,
+          ror: parseFloat(document.getElementById(`c1-account-${index}-ror`).value) || 6
+        });
+      });
+
+      data.client2.accounts = [];
+      if (data.isMarried) {
+        const c2Accounts = document.querySelectorAll('#c2-accounts .account');
+        c2Accounts.forEach((account, index) => {
+          data.client2.accounts.push({
+            name: document.getElementById(`c2-account-${index}-name`).value || `Account ${index + 1}`,
+            balance: parseFloat(document.getElementById(`c2-account-${index}-balance`).value) || 0,
+            contribution: parseFloat(document.getElementById(`c2-account-${index}-contribution`).value) || 0,
+            employerMatch: parseFloat(document.getElementById(`c2-account-${index}-employer-match`).value) || 0,
+            ror: parseFloat(document.getElementById(`c2-account-${index}-ror`).value) || 6
+          });
+        });
+      }
+
+      // Assumptions
+      data.assumptions = {
+        c1MortalityAge: parseFloat(document.getElementById('c1-mortality-age').value) || 90,
+        c2MortalityAge: data.isMarried ? (parseFloat(document.getElementById('c2-mortality-age').value) || 90) : null,
+        inflation: parseFloat(document.getElementById('inflation').value) || 3,
+        rorRetirement: parseFloat(document.getElementById('ror-retirement').value) || 4
+      };
+    }
+
+    // Remove existing listeners to prevent duplicates
+    const inputs = document.querySelectorAll('input');
+    inputs.forEach(input => {
+      input.removeEventListener('input', updateOnInputChange);
+      input.removeEventListener('change', updateOnInputChange);
+      input.addEventListener('input', updateOnInputChange);
+      input.addEventListener('change', updateOnInputChange);
+    });
+
+    const addAccountButtons = document.querySelectorAll('.add-account-btn');
+    addAccountButtons.forEach(button => {
+      button.removeEventListener('click', updateOnInputChange);
+      button.addEventListener('click', updateOnInputChange);
+    });
+
+    const removeAccountButtons = document.querySelectorAll('.remove-account-btn');
+    removeAccountButtons.forEach(button => {
+      button.removeEventListener('click', updateOnInputChange);
+      button.addEventListener('click', updateOnInputChange);
+    });
+  } catch (error) {
+    console.error('Error in setupInputListeners:', error);
+  }
+}
 
 /**
  * Updates the retirement analysis outputs.
@@ -1355,8 +1505,6 @@ export function updateRetirementOutputs(analysisOutputs, clientData, formatCurre
     if (tabContainer) tabContainer.innerHTML = '';
   }
 }
-
-
 /**
  * Sets up event listeners for the output dropdown and checkbox.
  */
@@ -1380,36 +1528,47 @@ function setupOutputControls(reportOptions, selectedReports, clientData, formatC
 
     updateCheckboxState();
 
+    // Remove existing listener to prevent duplicates
     select.removeEventListener('change', outputDropdownChangeHandler);
-    select.addEventListener('change', function() {
+    select.addEventListener('change', outputDropdownChangeHandler = function() {
       const selectedTab = this.value;
       document.querySelectorAll('.output-tab-content').forEach(content => {
         content.style.display = content.id === selectedTab ? 'block' : 'none';
+        content.classList.toggle('active', content.id === selectedTab);
       });
       updateSpecificTab(selectedTab, clientData, formatCurrency, getAge, Chart);
       updateCheckboxState();
     });
 
-    checkbox.addEventListener('change', () => {
+    checkbox.removeEventListener('change', checkboxChangeHandler);
+    checkbox.addEventListener('change', checkboxChangeHandler = () => {
       const event = new CustomEvent('addToPresentationToggle', {
         detail: {
           reportId: checkbox.dataset.report,
-          reportTitle: checkbox.dataset.title
+          title: checkbox.dataset.title,
+          isChecked: checkbox.checked
         },
-        bubbles: true
+        bubbles: true,
+        cancelable: true
       });
       checkbox.dispatchEvent(event);
+
+      // Update selectedReports based on checkbox state
+      const reportIndex = selectedReports.findIndex(r => r.id === checkbox.dataset.report);
+      if (checkbox.checked && reportIndex === -1) {
+        selectedReports.push({
+          id: checkbox.dataset.report,
+          title: checkbox.dataset.title
+        });
+      } else if (!checkbox.checked && reportIndex !== -1) {
+        selectedReports.splice(reportIndex, 1);
+      }
     });
   } catch (error) {
     console.error('Error in setupOutputControls:', error);
   }
 }
 
-/**
- * Handles changes to the output dropdown.
- */
-function outputDropdownChangeHandler(clientData, Chart, getAge) {
-  // Deprecated: Replaced by event listener in setupOutputControls
-  console.warn('outputDropdownChangeHandler is deprecated. Use setupOutputControls.');
-}
-
+// Store handler references to allow removal
+let outputDropdownChangeHandler = () => {};
+let checkboxChangeHandler = () => {};
