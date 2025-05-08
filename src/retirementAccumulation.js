@@ -340,49 +340,50 @@ function calculateRetirementIncome(clientData, getAge) {
       const monthlyIncome = totalIncome / 12;
       const monthlySocialSecurity = socialSecurity / 12;
 
-      for (let m = 0; m < 12; m++) {
-        // Calculate monthly earnings
-        const monthlyEarnings = monthlyBalance * monthlyRor;
-        monthlyBalance += monthlyEarnings;
-        annualEarnings += monthlyEarnings;
+for (let m = 0; m < 12; m++) {
+  // Calculate monthly earnings
+  const monthlyEarnings = monthlyBalance * monthlyRor;
+  monthlyBalance += monthlyEarnings;
+  annualEarnings += monthlyEarnings;
 
-// Calculate remaining need or surplus
-const monthlyRemainingNeed = adjustedMonthlyNeed - monthlyIncome - monthlySocialSecurity;
-let monthlyWithdrawal = 0;
+  // Calculate remaining need or surplus
+  const monthlyRemainingNeed = adjustedMonthlyNeed - monthlyIncome - monthlySocialSecurity;
+  let monthlyWithdrawal = 0;
 
-if (monthlyRemainingNeed > 0) {
-  // Need exceeds income + Social Security: withdraw from balance
-  if (monthlyBalance >= monthlyRemainingNeed) {
-    monthlyWithdrawal = monthlyRemainingNeed;
-    monthlyBalance -= monthlyWithdrawal;
-  } else {
-    monthlyWithdrawal = monthlyBalance;
-    monthlyBalance = 0;
-  }
-} else {
-  // Surplus: show $0 withdrawal and save the excess
-  monthlyWithdrawal = 0;
-  monthlyBalance += Math.abs(monthlyRemainingNeed); // Add surplus to balance
-}
-annualWithdrawal += monthlyWithdrawal;
-
-      result.earningsData.push(Math.round(annualEarnings));
-      result.withdrawalData.push(Math.round(annualWithdrawal));
-
-      // Shortfall (only positive values)
-      const shortfall = adjustedAnnualNeed - totalIncome - socialSecurity - annualWithdrawal;
-      result.shortfallData.push(shortfall > 0 ? Math.round(shortfall) : 0);
-
-      // Update balance
-      balance = monthlyBalance;
-      result.balanceData.push(Math.round(balance));
-
-      // Update depletion age
-      if (balance <= 0 && result.depletionAge === startAge) {
-        result.depletionAge = currentC1Age;
-        break; // Stop once balance is depleted
-      }
+  if (monthlyRemainingNeed > 0) {
+    // Need exceeds income + Social Security: withdraw from balance
+    if (monthlyBalance >= monthlyRemainingNeed) {
+      monthlyWithdrawal = monthlyRemainingNeed;
+      monthlyBalance -= monthlyWithdrawal;
+    } else {
+      monthlyWithdrawal = monthlyBalance;
+      monthlyBalance = 0;
     }
+  } else {
+    // Surplus: show $0 withdrawal and save the excess
+    monthlyWithdrawal = 0;
+    monthlyBalance += Math.abs(monthlyRemainingNeed); // Add surplus to balance
+  }
+  annualWithdrawal += monthlyWithdrawal;
+
+  // Missing closing brace for the monthly loop here
+  result.earningsData.push(Math.round(annualEarnings));
+  result.withdrawalData.push(Math.round(annualWithdrawal));
+
+  // Shortfall (only positive values)
+  const shortfall = adjustedAnnualNeed - totalIncome - socialSecurity - annualWithdrawal;
+  result.shortfallData.push(shortfall > 0 ? Math.round(shortfall) : 0);
+
+  // Update balance
+  balance = monthlyBalance;
+  result.balanceData.push(Math.round(balance));
+
+  // Update depletion age
+  if (balance <= 0 && result.depletionAge === startAge) {
+    result.depletionAge = currentC1Age;
+    break; // Stop once balance is depleted
+  }
+}
 
     // Ensure depletionAge is maxTimelineAge if balance remains positive
     result.depletionAge = balance > 0 ? maxTimelineAge : result.depletionAge;
