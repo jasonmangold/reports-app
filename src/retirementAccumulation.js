@@ -1263,7 +1263,10 @@ export function setupInputListeners(clientData, formatCurrency, getAge, Chart) {
       // Sync the select dropdown without triggering a change event
       const select = document.getElementById('output-select');
       if (select && select.value !== currentTab) {
+        const previousOnChange = select.onchange;
+        select.onchange = null;
         select.value = currentTab;
+        select.onchange = previousOnChange;
         console.log('Updated output-select to:', currentTab);
       }
     }, 300);
@@ -1345,7 +1348,7 @@ export function setupInputListeners(clientData, formatCurrency, getAge, Chart) {
       };
     }
 
-    // Select all input fields
+    // Remove existing listeners to prevent duplicates
     const inputs = document.querySelectorAll('input');
     inputs.forEach(input => {
       input.removeEventListener('input', updateOnInputChange);
@@ -1354,7 +1357,6 @@ export function setupInputListeners(clientData, formatCurrency, getAge, Chart) {
       input.addEventListener('change', updateOnInputChange);
     });
 
-    // Handle add/remove account buttons
     const addAccountButtons = document.querySelectorAll('.add-account-btn');
     addAccountButtons.forEach(button => {
       button.removeEventListener('click', updateOnInputChange);
@@ -1370,6 +1372,8 @@ export function setupInputListeners(clientData, formatCurrency, getAge, Chart) {
     console.error('Error in setupInputListeners:', error);
   }
 }
+
+
 /**
  * Updates the retirement analysis outputs.
  */
@@ -1406,16 +1410,22 @@ export function updateRetirementOutputs(analysisOutputs, clientData, formatCurre
     // Get current active tab
     let activeTab = document.querySelector('.output-tab-content[style*="display: block"]') ||
                     document.querySelector('.output-tab-content.active');
-    let currentSelection = activeTab ? activeTab.id : 'output-graph';
+    let currentSelection = activeTab ? activeTab.id : null;
 
     // Fallback to output-select if no active tab is found
     const select = document.getElementById('output-select');
-    if (!activeTab && select && select.value) {
+    if (!currentSelection && select && select.value) {
       currentSelection = select.value;
       console.log('No active tab found, using output-select value:', currentSelection);
     }
 
-    // Render initial structure if not present
+    // Use 'output-graph' only if no selection is found (initial load)
+    if (!currentSelection) {
+      currentSelection = 'output-graph';
+      console.log('No selection found, defaulting to:', currentSelection);
+    }
+
+    // Initialize output structure only if not already present
     if (!document.getElementById('output-select')) {
       if (tabContainer) {
         tabContainer.innerHTML = `
@@ -1462,18 +1472,21 @@ export function updateRetirementOutputs(analysisOutputs, clientData, formatCurre
           </div>
         `).join('')}
       `;
+    } else {
+      // Update visibility of existing tabs without rebuilding
+      document.querySelectorAll('.output-tab-content').forEach(content => {
+        const isSelected = content.id === currentSelection;
+        content.style.display = isSelected ? 'block' : 'none';
+        content.classList.toggle('active', isSelected);
+      });
     }
 
-    // Ensure the active tab is visible
-    document.querySelectorAll('.output-tab-content').forEach(content => {
-      const isSelected = content.id === currentSelection;
-      content.style.display = isSelected ? 'block' : 'none';
-      content.classList.toggle('active', isSelected);
-    });
-
-    // Update the output-select value
+    // Update the output-select value without triggering change
     if (select && select.value !== currentSelection) {
+      const previousOnChange = select.onchange;
+      select.onchange = null;
       select.value = currentSelection;
+      select.onchange = previousOnChange;
     }
 
     // Setup controls
@@ -1482,8 +1495,11 @@ export function updateRetirementOutputs(analysisOutputs, clientData, formatCurre
     // Update the current tab
     updateSpecificTab(currentSelection, clientData, formatCurrency, getAge, Chart);
 
-    // Setup input listeners
-    setupInputListeners(clientData, formatCurrency, getAge, Chart);
+    // Setup input listeners only if not already set
+    if (!analysisOutputs.dataset.listenersSet) {
+      setupInputListeners(clientData, formatCurrency, getAge, Chart);
+      analysisOutputs.dataset.listenersSet = 'true';
+    }
   } catch (error) {
     console.error('Error in updateRetirementOutputs:', error);
     analysisOutputs.innerHTML = '<p class="output-card">Error rendering outputs. Please check input data.</p>';
