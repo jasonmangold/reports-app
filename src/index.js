@@ -1237,33 +1237,48 @@ function validateClientData() {
 
 const incomeNeeds = clientData.incomeNeeds;
 
-if (!incomeNeeds.monthlyincomeinitial?.initial || incomeNeeds.monthlyincomeinitial.initial <= 0) {
+// Helper function to convert and validate a value
+const isPositiveNumber = (value) => {
+  const num = parseFloat(value);
+  return !isNaN(num) && num > 0;
+};
+
+// Validate initial monthly income
+if (!incomeNeeds.monthlyincomeinitial?.initial || !isPositiveNumber(incomeNeeds.monthlyincomeinitial.initial)) {
   errors.push("Initial monthly income must be a positive number.");
 }
 
-if (!incomeNeeds.yearsafterretirement1?.yearsafter1 || incomeNeeds.yearsafterretirement1.yearsafter1 <= 0) {
+// Validate years after retirement (first period)
+if (!incomeNeeds.yearsafterretirement1?.yearsafter1 || !isPositiveNumber(incomeNeeds.yearsafterretirement1.yearsafter1)) {
   errors.push("Years after retirement (first period) must be a positive number.");
 }
 
-if (!incomeNeeds.monthlyincome1?.monthly1 || incomeNeeds.monthlyincome1.monthly1 <= 0) {
+// Validate monthly income (first period)
+if (!incomeNeeds.monthlyincome1?.monthly1 || !isPositiveNumber(incomeNeeds.monthlyincome1.monthly1)) {
   errors.push("Monthly income for first period must be a positive number.");
 }
 
-if (!incomeNeeds.yearsafterretirement2?.yearsafter2 || incomeNeeds.yearsafterretirement2.yearsafter2 <= 0) {
+// Validate years after retirement (second period)
+if (!incomeNeeds.yearsafterretirement2?.yearsafter2 || !isPositiveNumber(incomeNeeds.yearsafterretirement2.yearsafter2)) {
   errors.push("Years after retirement (second period) must be a positive number.");
 }
 
-if (!incomeNeeds.monthlyincome2?.monthly2 || incomeNeeds.monthlyincome2.monthly2 <= 0) {
+// Validate monthly income (second period)
+if (!incomeNeeds.monthlyincome2?.monthly2 || !isPositiveNumber(incomeNeeds.monthlyincome2.monthly2)) {
   errors.push("Monthly income for second period must be a positive number.");
 }
 
+// Validate that years after retirement (second period) is greater than first period
 if (
   incomeNeeds.yearsafterretirement1?.yearsafter1 &&
   incomeNeeds.yearsafterretirement2?.yearsafter2 &&
+  isPositiveNumber(incomeNeeds.yearsafterretirement1.yearsafter1) &&
+  isPositiveNumber(incomeNeeds.yearsafterretirement2.yearsafter2) &&
   parseFloat(incomeNeeds.yearsafterretirement2.yearsafter2) <= parseFloat(incomeNeeds.yearsafterretirement1.yearsafter1)
 ) {
   errors.push("Years after retirement (second period) must be greater than the first period.");
 }
+    
     if (!clientData.assumptions.c1MortalityAge || clientData.assumptions.c1MortalityAge < 0) {
       errors.push("Client 1 mortality age must be a positive number.");
     }
