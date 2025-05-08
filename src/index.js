@@ -1235,9 +1235,35 @@ function validateClientData() {
       }
     }
 
-    if (!clientData.incomeNeeds.monthly || clientData.incomeNeeds.monthly <= 0) {
-      errors.push("Monthly income needs must be a positive number.");
-    }
+const incomeNeeds = clientData.incomeNeeds;
+
+if (!incomeNeeds.monthlyincomeinitial?.initial || incomeNeeds.monthlyincomeinitial.initial <= 0) {
+  errors.push("Initial monthly income must be a positive number.");
+}
+
+if (!incomeNeeds.yearsafterretirement1?.yearsafter1 || incomeNeeds.yearsafterretirement1.yearsafter1 <= 0) {
+  errors.push("Years after retirement (first period) must be a positive number.");
+}
+
+if (!incomeNeeds.monthlyincome1?.monthly1 || incomeNeeds.monthlyincome1.monthly1 <= 0) {
+  errors.push("Monthly income for first period must be a positive number.");
+}
+
+if (!incomeNeeds.yearsafterretirement2?.yearsafter2 || incomeNeeds.yearsafterretirement2.yearsafter2 <= 0) {
+  errors.push("Years after retirement (second period) must be a positive number.");
+}
+
+if (!incomeNeeds.monthlyincome2?.monthly2 || incomeNeeds.monthlyincome2.monthly2 <= 0) {
+  errors.push("Monthly income for second period must be a positive number.");
+}
+
+if (
+  incomeNeeds.yearsafterretirement1?.yearsafter1 &&
+  incomeNeeds.yearsafterretirement2?.yearsafter2 &&
+  parseFloat(incomeNeeds.yearsafterretirement2.yearsafter2) <= parseFloat(incomeNeeds.yearsafterretirement1.yearsafter1)
+) {
+  errors.push("Years after retirement (second period) must be greater than the first period.");
+}
     if (!clientData.assumptions.c1MortalityAge || clientData.assumptions.c1MortalityAge < 0) {
       errors.push("Client 1 mortality age must be a positive number.");
     }
