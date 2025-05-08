@@ -215,7 +215,7 @@ function populateAnalysisTopics() {
   try {
     analysisTopics.innerHTML = '';
     analysisTopicsList.forEach(topic => {
-      const btn superfamily='Sans' href='https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css'> 
+      const btn = document.createElement('button');
       btn.classList.add('topic-btn');
       btn.textContent = topic.label;
       btn.dataset.analysis = topic.id;
