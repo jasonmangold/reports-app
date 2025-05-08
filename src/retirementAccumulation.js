@@ -236,9 +236,9 @@ function calculateRetirementIncome(clientData, getAge) {
     const c1MortalityAge = isNaN(c1MortalityAgeRaw) || c1MortalityAgeRaw < c1RetirementAge ? 90 : Math.min(c1MortalityAgeRaw, 120);
     const c2MortalityAge = isNaN(c2MortalityAgeRaw) || c2MortalityAgeRaw < c2RetirementAge ? 90 : Math.min(c2MortalityAgeRaw, 120);
 
-    // Adjust maxTimelineAge to stop at mortalityAge - 1
-    const c1MaxAge = c1MortalityAge - 1;
-    const c2MaxAge = c2MortalityAge - 1;
+    // Adjust maxTimelineAge to stop at mortalityAge
+    const c1MaxAge = c1MortalityAge;
+    const c2MaxAge = c2MortalityAge;
     const maxTimelineAge = clientData.isMarried
       ? Math.max(c1MaxAge, c2MaxAge + ageDifference)
       : c1MaxAge;
@@ -278,8 +278,7 @@ function calculateRetirementIncome(clientData, getAge) {
 
         // Future value calculations
         const fvBalance = balance * Math.pow(1 + ror / 12, monthsToClientRetirement);
-        const fvContributions = monthlyContribution && ror ? monthlyContribution * (Math.pow(1 + ror / 12, monthsToClientRetirement) - 1) / (ror / 12) * (1 + ror / 12) : 0;
-        const fvEmployerMatch = monthlyEmployerMatch && ror ? monthlyEmployerMatch * (Math.pow(1 + ror / 12, monthsToClientRetirement) - 1) / (ror / 12) * (1 + ror / 12) : 0;
+        const fvContributions = monthlyContribution && ror ? monthlyContribution * (Math.pow(1 + ror / 12, monthsToClientRetirement) - 1) / (ror / 12) * (1 + ror / 12) : 0  const fvEmployerMatch = monthlyEmployerMatch && ror ? monthlyEmployerMatch * (Math.pow(1 + ror / 12, monthsToClientRetirement) - 1) / (ror / 12) * (1 + ror / 12) : 0;
 
         let accountBalance = fvBalance + fvContributions + fvEmployerMatch;
 
@@ -397,10 +396,9 @@ function calculateRetirementIncome(clientData, getAge) {
       balance = monthlyBalance;
       result.balanceData.push(Math.round(balance));
 
-      // Depletion
+      // Track depletion age
       if (balance <= 0 && result.depletionAge === startAge) {
         result.depletionAge = currentC1Age;
-        break;
       }
     }
 
