@@ -434,7 +434,7 @@ function populateInputFields() {
   }
 }
 
-// === Event Listeners ===
+// === Event Listeners ==
 function setupClientModalListeners() {
   try {
     clientFileToggle.addEventListener('click', (e) => {
@@ -791,14 +791,17 @@ function outputTabClickHandler(e) {
   try {
     e.stopPropagation();
     e.preventDefault();
+    console.log('Switching to output tab:', this.dataset.tab);
     document.querySelectorAll('.output-tab-btn').forEach(btn => btn.classList.remove('active'));
     document.querySelectorAll('.output-tab-content').forEach(content => {
       content.style.display = 'none';
+      content.classList.remove('active');
     });
     this.classList.add('active');
     const tabContent = document.getElementById(this.dataset.tab);
     if (tabContent) {
       tabContent.style.display = 'block';
+      tabContent.classList.add('active');
     } else {
       console.warn(`Output tab content #${this.dataset.tab} not found`);
     }
@@ -1079,8 +1082,11 @@ function updateGraph(previewData = null) {
     // Check if output-graph is the active tab
     const activeTab = document.querySelector('.output-tab-content[style*="display: block"]') ||
                       document.querySelector('.output-tab-content.active');
-    if (!activeTab || activeTab.id !== 'output-graph') {
-      console.log('Skipping graph update: output-graph is not active, activeTab:', activeTab?.id);
+    const activeTabBtn = document.querySelector('.output-tab-btn.active');
+    console.log('Tab check - activeTab:', activeTab?.id, 'activeTabBtn:', activeTabBtn?.dataset.tab);
+    if (!activeTab || activeTab.id !== 'output-graph' || (activeTabBtn && activeTabBtn.dataset.tab !== 'output-graph')) {
+      console.log('Skipping graph update: output-graph is not active, activeTab:', activeTab?.id, 'activeTabBtn:', activeTabBtn?.dataset.tab);
+      if (chartCanvas) chartCanvas.style.display = 'none';
       return;
     }
 
@@ -1135,6 +1141,7 @@ function updateGraph(previewData = null) {
 
     if (!chartInstance) {
       console.warn('No chart instance created');
+      chartCanvas.style.display = 'none';
     } else {
       chartCanvas.style.display = 'block';
     }
@@ -1146,6 +1153,7 @@ function updateGraph(previewData = null) {
 
 function updateOutputs() {
   try {
+    console.log('updateOutputs called, currentAnalysis:', currentAnalysis, 'activeTab:', document.querySelector('.output-tab-content.active')?.id);
     const validationError = validateClientData();
     if (validationError) {
       analysisOutputs.innerHTML = `<p class="output-error">${validationError}</p>`;
