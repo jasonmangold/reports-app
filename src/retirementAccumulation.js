@@ -878,6 +878,7 @@ function calculateRetirementAlternatives(clientData, getAge, incomeData) {
     }
 
     const currentRORs = [];
+    const clients = [clientData.client1, clientData.isMarried ? clientData.client2 : null];
     clients.forEach(client => {
       if (!client) return;
       client.accounts.forEach(account => {
