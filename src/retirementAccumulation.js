@@ -1263,12 +1263,6 @@ export function setupInputListeners(clientData, formatCurrency, getAge, Chart) {
       // Debug logging
       console.log('Active tab:', activeTab ? activeTab.id : 'none', 'Selected tab:', currentTab);
 
-      // Update the specific tab
-      updateSpecificTab(currentTab, clientData, formatCurrency, getAge, Chart);
-
-      // Update last selected tab
-      lastSelectedTab = currentTab;
-
       // Sync the select dropdown without triggering a change event
       const select = document.getElementById('output-select');
       if (select && select.value !== currentTab) {
@@ -1278,6 +1272,12 @@ export function setupInputListeners(clientData, formatCurrency, getAge, Chart) {
         select.onchange = previousOnChange;
         console.log('Updated output-select to:', currentTab);
       }
+
+      // Update the specific tab
+      updateSpecificTab(currentTab, clientData, formatCurrency, getAge, Chart);
+
+      // Update last selected tab
+      lastSelectedTab = currentTab;
     }, 300);
 
     // Function to update clientData from inputs
@@ -1315,7 +1315,7 @@ export function setupInputListeners(clientData, formatCurrency, getAge, Chart) {
         data.client2.incomeSources = {
           employment: parseFloat(document.getElementById('c2-employment').value) || 0,
           socialSecurity: parseFloat(document.getElementById('c2-social-security').value) || 0,
-          other: parseFloat(document.getElementById('c1-other-income').value) || 0
+          other: parseFloat(document.getElementById('c2-other-income').value) || 0
         };
       } else {
         data.client2.incomeSources = { employment: 0, socialSecurity: 0, other: 0 };
@@ -1415,7 +1415,7 @@ export function updateRetirementOutputs(analysisOutputs, clientData, formatCurre
       { id: 'report-retirement-fact-finder', label: 'Fact Finder', reportId: 'report-retirement-fact-finder', title: 'Retirement Fact Finder' }
     ];
 
-    // Get current active tab
+    // Get current active tab or dropdown value
     let activeTab = document.querySelector('.output-tab-content[style*="display: block"]') ||
                     document.querySelector('.output-tab-content.active');
     let currentSelection = activeTab ? activeTab.id : null;
@@ -1489,12 +1489,13 @@ export function updateRetirementOutputs(analysisOutputs, clientData, formatCurre
       });
     }
 
-    // Update the output-select value without triggering change
+    // Ensure dropdown reflects current selection
     if (select && select.value !== currentSelection) {
       const previousOnChange = select.onchange;
       select.onchange = null;
       select.value = currentSelection;
       select.onchange = previousOnChange;
+      console.log('Synced output-select to:', currentSelection);
     }
 
     // Setup controls
