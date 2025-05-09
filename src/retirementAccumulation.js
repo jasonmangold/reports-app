@@ -1397,20 +1397,34 @@ export function updateRetirementOutputs(analysisOutputs, clientData, formatCurre
       return;
     }
 
-    // Define report options
-    const reportOptions = [
-      { id: 'output-graph', label: 'Retirement Analysis', reportId: 'report-graph', title: 'Retirement Income Graph' },
-      { id: 'report-social-security-optimizer', label: 'Social Security Optimizer', reportId: 'report-social-security-optimizer', title: 'Social Security optimizer' },
-      { id: 'report-capital-available', label: 'Capital Available at Retirement', reportId: 'report-capital-available', title: 'Capital Available at Retirement' },
-      { id: 'output-alternatives', label: 'Alternatives to Achieving Retirement Goals', reportId: 'report-alternatives-retirement', title: 'Retirement Alternatives' },
-      { id: 'output-timeline', label: 'Retirement Timeline', reportId: 'report-retirement-timeline', title: 'Retirement Income Timeline' },
-      { id: 'report-retirement-fact-finder', label: 'Fact Finder', reportId: 'report-retirement-fact-finder', title: 'Retirement Fact Finder' }
-    ];
+// Define report options
+const reportOptions = [
+  { id: 'output-graph', label: 'Retirement Analysis', reportId: 'report-graph', title: 'Retirement Income Graph' },
+  { id: 'report-social-security-optimizer', label: 'Social Security Optimizer', reportId: 'report-social-security-optimizer', title: 'Social Security optimizer' },
+  { id: 'report-capital-available', label: 'Capital Available at Retirement', reportId: 'report-capital-available', title: 'Capital Available at Retirement' },
+  { id: 'output-alternatives', label: 'Alternatives to Achieving Retirement Goals', reportId: 'report-alternatives-retirement', title: 'Retirement Alternatives' },
+  { id: 'output-timeline', label: 'Retirement Timeline', reportId: 'report-retirement-timeline', title: 'Retirement Income Timeline' },
+  { id: 'report-retirement-fact-finder', label: 'Fact Finder', reportId: 'report-retirement-fact-finder', title: 'Retirement Fact Finder' }
+];
 
-    // Get current active tab
-    let activeTab = document.querySelector('.output-tab-content[style*="display: block"]') ||
-                    document.querySelector('.output-tab-content.active');
-    let currentSelection = activeTab ? activeTab.id : null;
+// Get the dropdown element (replace 'report-dropdown' with your actual dropdown's ID or selector)
+const dropdown = document.querySelector(output-dropdown); // Adjust this selector to match your dropdown
+
+// Function to get and log the current report title
+function logCurrentReport() {
+  const selectedValue = dropdown ? dropdown.value : null;
+  const reportTitle = reportOptions.find(option => option.id === selectedValue)?.title || 'No report selected';
+  console.log(`Current report: ${reportTitle}`);
+}
+
+// Log the current report when the dropdown changes
+if (dropdown) {
+  dropdown.addEventListener('change', logCurrentReport);
+  // Optionally, log the initial report on page load
+  logCurrentReport();
+} else {
+  console.error('Dropdown not found. Please check the selector.');
+}
 
     // Fallback to output-select if no active tab is found
     const select = document.getElementById('output-select');
