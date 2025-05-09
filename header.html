@@ -44,3 +44,87 @@
     </div>
   </div>
 </header>
+
+<style>
+  /* Header Layout */
+  header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 20px;
+    background-color: #fff;
+    border-bottom: 1px solid #e0e0e0;
+  }
+  .logo { flex-shrink: 0; }
+  .logo-img { height: 40px; }
+  .client-file { flex-grow: 0; margin: 0 20px; }
+  nav { flex-grow: 1; display: flex; justify-content: center; }
+  nav ul {
+    display: flex;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    gap: 20px;
+  }
+  nav ul li a {
+    text-decoration: none;
+    color: #333;
+    font-family: 'Inter', sans-serif;
+    font-size: 16px;
+  }
+  nav ul li a.active {
+    color: #007bff;
+    font-weight: 600;
+  }
+  .icons {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-left: auto;
+    margin-right: 20px;
+  }
+  .icons i {
+    cursor: pointer;
+    font-size: 18px;
+    color: #333;
+    transition: color 0.3s;
+  }
+  .icons i:hover { color: #007bff; }
+  .profile-container {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+  }
+  .profile-pic {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+    cursor: pointer;
+    border: 2px solid #ccc;
+    transition: border-color 0.3s;
+  }
+  .profile-pic:hover { border-color: #007bff; }
+  .dropdown-menu {
+    display: none;
+    position: absolute;
+    top: 50px;
+    right: 0;
+    background-color: #fff;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    z-index: 1000;
+    min-width: 150px;
+  }
+  .dropdown-menu a {
+    display: block;
+    padding: 10px 15px;
+    text-decoration: none;
+    color: #333;
+    font-size: 14px;
+    font-family: 'Inter', sans-serif;
+  }
+  .dropdown-menu a:hover { background-color: #f0f0f0; }
+  .dropdown-menu a i { margin-right: 8px; }
+</style>
