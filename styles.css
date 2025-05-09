@@ -1,108 +1,13 @@
+/* Reset and Base Styles
+   Resets default margins and paddings, and sets box-sizing to border-box for consistent sizing. */
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
 }
 
-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 10px 20px;
-  background-color: #fff;
-  border-bottom: 1px solid #e0e0e0;
-}
-.logo {
-  flex-shrink: 0;
-}
-.logo-img {
-  height: 40px;
-}
-.client-file {
-  flex-grow: 0;
-  margin: 0 20px;
-}
-nav {
-  flex-grow: 1;
-  display: flex;
-  justify-content: center;
-}
-nav ul {
-  display: flex;
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  gap: 20px;
-}
-nav ul li a {
-  text-decoration: none;
-  color: #333;
-  font-family: 'Inter', sans-serif;
-  font-size: 16px;
-}
-nav ul li a.active {
-  color: #007bff;
-  font-weight: 600;
-}
-.icons {
-  display: flex;
-  align-items: center;
-  gap: 15px;
-  margin-left: auto;
-  margin-right: 20px;
-}
-.icons i {
-  cursor: pointer;
-  font-size: 18px;
-  color: #333;
-  transition: color 0.3s;
-}
-.icons i:hover {
-  color: #007bff;
-}
-.profile-container {
-  position: relative;
-  display: inline-flex;
-  align-items: center;
-}
-.profile-pic {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  object-fit: cover;
-  cursor: pointer;
-  border: 2px solid #ccc;
-  transition: border-color 0.3s;
-}
-.profile-pic:hover {
-  border-color: #007bff;
-}
-.dropdown-menu {
-  display: none;
-  position: absolute;
-  top: 50px;
-  right: 0;
-  background-color: #fff;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-  z-index: 1000;
-  min-width: 150px;
-}
-.dropdown-menu a {
-  display: block;
-  padding: 10px 15px;
-  text-decoration: none;
-  color: #333;
-  font-size: 14px;
-  font-family: 'Inter', sans-serif;
-}
-.dropdown-menu a:hover {
-  background-color: #f0f0f0;
-}
-.dropdown-menu a i {
-  margin-right: 8px;
-}
+/* Body Styles
+   Defines the default font, background color, padding, and text color for the entire page. */
 body {
   font-family: 'Inter', sans-serif;
   background-color: #f8fafc;
@@ -110,26 +15,52 @@ body {
   color: #1e293b;
 }
 
+/* Header Styles
+   Styles for the fixed header, including layout, background, and shadow effects. */
 header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 15px 30px;
+  background: linear-gradient(135deg, #ffffff, #f1f5f9);
+  border-bottom: 1px solid #e0e0e0;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
   position: fixed;
   top: 0;
   width: 100%;
-  background: linear-gradient(135deg, #ffffff, #f1f5f9);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-  display: flex;
-  align-items: center;
-  padding: 15px 30px;
   z-index: 1000;
 }
 
-/* Client File Styles */
+/* Logo Styles
+   Styles for the logo text and image, including gradient text effect. */
+.logo {
+  flex-shrink: 0;
+  font-size: 24px;
+  font-weight: 700;
+  background: linear-gradient(90deg, #3b82f6, #60a5fa);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.logo-img {
+  height: 30px;
+  width: auto;
+}
+
+/* Client File Styles
+   Styles for the client file section, including button and name display. */
 .client-file {
-  margin-left: 20px;
+  flex-grow: 0;
+  margin: 0 20px;
   font-size: 16px;
   font-weight: 600;
   color: #1e293b;
   display: flex;
   align-items: center;
+  position: relative;
+  min-width: 200px;
+  max-width: 300px;
+  overflow: visible;
 }
 
 #client-file-name {
@@ -139,27 +70,38 @@ header {
   color: #3b82f6;
 }
 
-/* Dark Mode Adjustments */
-body.dark-mode .client-file {
-  color: #f1f5f9;
+.client-file-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 16px;
+  color: #333;
+  width: 100%;
+  text-align: left;
+  padding: 5px;
 }
 
-body.dark-mode #client-file-name {
-  background: #4b5e7a;
-  color: #60a5fa;
+.client-file-btn:hover {
+  color: #007bff;
 }
 
-.logo {
-  font-size: 24px;
-  font-weight: 700;
-  background: linear-gradient(90deg, #3b82f6, #60a5fa);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+/* Navigation Styles
+   Styles for the navigation bar and its links, including hover and active states. */
+nav {
+  flex-grow: 1;
+  display: flex;
+  justify-content: center;
 }
 
 nav ul {
-  list-style: none;
   display: flex;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  gap: 20px;
   margin-left: 40px;
 }
 
@@ -171,6 +113,8 @@ nav ul li {
 nav ul li a {
   text-decoration: none;
   color: #64748b;
+  font-family: 'Inter', sans-serif;
+  font-size: 16px;
   font-weight: 600;
   transition: color 0.2s;
 }
@@ -180,6 +124,80 @@ nav ul li a:hover {
   color: #3b82f6;
 }
 
+/* Icon and Profile Styles
+   Styles for icons and user profile, including dropdown menu and hover effects. */
+.icons {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  margin-left: auto;
+  margin-right: 20px;
+}
+
+.icons i {
+  cursor: pointer;
+  font-size: 18px;
+  color: #64748b;
+  transition: color 0.2s;
+  margin-left: 20px;
+}
+
+.icons i:hover {
+  color: #3b82f6;
+}
+
+.profile-container {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+
+.profile-pic {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+  cursor: pointer;
+  border: 2px solid #ccc;
+  transition: border-color 0.3s;
+}
+
+.profile-pic:hover {
+  border-color: #007bff;
+}
+
+.dropdown-menu {
+  display: none;
+  position: absolute;
+  top: 50px;
+  right: 0;
+  background-color: #fff;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+  z-index: 1000;
+  min-width: 150px;
+}
+
+.dropdown-menu a {
+  display: block;
+  padding: 10px 15px;
+  text-decoration: none;
+  color: #333;
+  font-size: 14px;
+  font-family: 'Inter', sans-serif;
+}
+
+.dropdown-menu a:hover {
+  background-color: #f0f0f0;
+}
+
+.dropdown-menu a i {
+  margin-right: 8px;
+}
+
+/* Badge and Animation Styles
+   Styles for notification badges and pulse animation. */
 .count-badge {
   position: absolute;
   top: -10px;
@@ -208,18 +226,8 @@ nav ul li a:hover {
   100% { transform: scale(1); }
 }
 
-.icons i {
-  margin-left: 20px;
-  cursor: pointer;
-  font-size: 20px;
-  color: #64748b;
-  transition: color 0.2s;
-}
-
-.icons i:hover {
-  color: #3b82f6;
-}
-
+/* Reports Page Styles
+   Styles for the reports page layout, including sidebar and main content. */
 .reports-page {
   display: flex;
   padding: 20px;
@@ -266,6 +274,8 @@ nav ul li a:hover {
   padding-left: 20px;
 }
 
+/* Filter and Search Styles
+   Styles for tag filters and search bar, including checkbox and input styling. */
 .tag-filters {
   background: #ffffff;
   border-radius: 12px;
@@ -346,6 +356,8 @@ nav ul li a:hover {
   color: #64748b;
 }
 
+/* Breadcrumb Styles
+   Styles for breadcrumb navigation, including hover effects. */
 .breadcrumb {
   font-size: 14px;
   color: #64748b;
@@ -362,6 +374,8 @@ nav ul li a:hover {
   color: #2563eb;
 }
 
+/* Subfolder and Report Styles
+   Styles for subfolder grid and report cards, including hover and layout effects. */
 .subfolder-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
@@ -443,6 +457,8 @@ nav ul li a:hover {
   gap: 10px;
 }
 
+/* Modal Styles
+   Styles for modal windows, including layout, animations, and content styling. */
 .modal {
   display: none;
   position: fixed;
@@ -467,6 +483,64 @@ nav ul li a:hover {
   animation: fadeIn 0.3s;
   overflow-y: auto;
   max-height: 90vh;
+}
+
+.modal-content h3 {
+  margin: 0 0 15px;
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.modal-content input {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 15px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 16px;
+  box-sizing: border-box;
+}
+
+.modal-content ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.modal-content li {
+  padding: 15px;
+  cursor: pointer;
+  border-bottom: 1px solid #eee;
+  font-size: 12px;
+  line-height: 1.5;
+  white-space: normal;
+  word-wrap: break-word;
+  min-height: 40px;
+}
+
+.modal-content li:hover {
+  background-color: #e0e4e9;
+}
+
+.modal-content li.selected {
+  background-color: #d0e1f9;
+  font-weight: 600;
+}
+
+.modal-content button {
+  margin-top: 15px;
+  padding: 10px 20px;
+  background-color: #007bff;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 16px;
+  width: 100%;
+}
+
+.modal-content button:hover {
+  background-color: #0056b3;
 }
 
 @keyframes fadeIn {
@@ -576,7 +650,8 @@ nav ul li a:hover {
   margin: 20px 0;
 }
 
-.modal-body th, .modal-body td {
+.modal-body th,
+.modal-body td {
   border: 1px solid #ddd;
   padding: 8px;
   text-align: left;
@@ -627,74 +702,8 @@ nav ul li a:hover {
   background: #2563eb;
 }
 
-body.dark-mode {
-  background: #1e293b;
-  color: #f1f5f9;
-}
-
-body.dark-mode header,
-body.dark-mode .sidebar,
-body.dark-mode .subfolder,
-body.dark-mode .report-card,
-body.dark-mode .modal-content {
-  background: #334155;
-}
-
-body.dark-mode .search-bar input {
-  background: #475569;
-  color: #f1f5f9;
-}
-
-body.dark-mode .subfolder h3,
-body.dark-mode .report-card h3,
-body.dark-mode .modal-header h2 {
-  color: #f1f5f9;
-}
-
-body.dark-mode .report-card p,
-body.dark-mode .modal-body {
-  color: #94a3b8;
-}
-
-body.dark-mode .modal-header {
-  border-bottom-color: #60a5fa;
-}
-
-body.dark-mode .modal-body th {
-  background-color: #475569;
-  color: #f1f5f9;
-}
-
-body.dark-mode .modal-body .highlight {
-  background-color: #60a5fa;
-  color: #fff;
-}
-
-body.dark-mode .share-icon-btn {
-  color: #60a5fa;
-}
-
-body.dark-mode .share-icon-btn:hover {
-  color: #2563eb;
-}
-
-body.dark-mode .save-pdf-top-btn {
-  background: #60a5fa;
-}
-
-body.dark-mode .save-pdf-top-btn:hover {
-  background: #2563eb;
-}
-
-body.dark-mode .breadcrumb {
-  color: #94a3b8;
-}
-
-body.dark-mode .breadcrumb span {
-  color: #60a5fa;
-}
-
-/* Analysis Page Layout */
+/* Analysis Page Styles
+   Styles for the analysis page layout, including topic buttons and workspace. */
 .analysis-page {
   padding: 0 20px 20px;
   height: calc(100vh - 70px);
@@ -739,6 +748,8 @@ body.dark-mode .breadcrumb span {
   width: 100%;
 }
 
+/* Client Inputs Styles
+   Styles for the client inputs section, including tabs and form elements. */
 .client-inputs {
   flex: 0.35;
   min-width: 300px;
@@ -869,6 +880,8 @@ body.dark-mode .breadcrumb span {
   background: #2563eb;
 }
 
+/* Graph Outputs Styles
+   Styles for the graph outputs section, including tabs and tables. */
 .graph-outputs {
   flex: 0.65;
   min-width: 400px;
@@ -878,6 +891,8 @@ body.dark-mode .breadcrumb span {
   padding: 15px;
   overflow-y: auto;
   position: relative;
+  display: block;
+  min-height: 400px;
 }
 
 .output-tabs {
@@ -917,7 +932,7 @@ body.dark-mode .breadcrumb span {
 }
 
 .timeline-table {
-  width: 200%;
+  width: 100%;
   border-collapse: collapse;
   margin: 10px 0;
 }
@@ -926,8 +941,13 @@ body.dark-mode .breadcrumb span {
 .timeline-table td {
   border: 1px solid #ddd;
   padding: 8px;
-  text-align: left;
+  text-align: right;
   font-size: 14px;
+}
+
+.timeline-table th:first-child,
+.timeline-table td:first-child {
+  text-align: left;
 }
 
 .timeline-table th {
@@ -956,7 +976,8 @@ body.dark-mode .breadcrumb span {
   color: #3b82f6;
 }
 
-/* Dropdown for Analysis tab */
+/* Dropdown Styles
+   Styles for dropdown menus, including hover and active states. */
 .dropdown {
   position: relative;
 }
@@ -989,149 +1010,8 @@ body.dark-mode .breadcrumb span {
   color: #3b82f6;
 }
 
-/* Dark Mode Adjustments */
-body.dark-mode .dropdown-content,
-body.dark-mode .analysis-topics,
-body.dark-mode .topic-btn.active {
-  background: #334155;
-}
-
-body.dark-mode .topic-btn {
-  color: #94a3b8;
-}
-
-body.dark-mode .topic-btn:hover,
-body.dark-mode .topic-btn.active {
-  color: #60a5fa;
-}
-
-body.dark-mode .client-inputs,
-body.dark-mode .graph-outputs {
-  background: #334155;
-}
-
-body.dark-mode .input-tabs {
-  background: #475569;
-}
-
-body.dark-mode .tab-btn {
-  background: #334155;
-  color: #94a3b8;
-  border-color: #64748b;
-}
-
-body.dark-mode .tab-btn.active {
-  background: #60a5fa;
-  color: #ffffff;
-  border-color: #60a5fa;
-}
-
-body.dark-mode .tab-btn:hover {
-  background: #4b5e7a;
-  color: #60a5fa;
-}
-
-body.dark-mode .input-content {
-  background: #334155;
-  border-color: #64748b;
-}
-
-body.dark-mode .client-inputs label {
-  color: #94a3b8;
-}
-
-body.dark-mode .client-inputs input[type="text"],
-body.dark-mode .client-inputs input[type="number"],
-body.dark-mode .client-inputs input[type="date"] {
-  background: #475569;
-  color: #f1f5f9;
-  border-color: #64748b;
-}
-
-body.dark-mode .account,
-body.dark-mode .asset {
-  border-color: #64748b;
-  background: #334155;
-}
-
-body.dark-mode .add-account-btn,
-body.dark-mode .add-asset-btn {
-  background: #60a5fa;
-}
-
-body.dark-mode .add-account-btn:hover,
-body.dark-mode .add-asset-btn:hover {
-  background: #2563eb;
-}
-
-body.dark-mode #analysis-outputs .output-card {
-  background: #334155;
-}
-
-body.dark-mode #analysis-outputs .output-card h3 {
-  color: #60a5fa;
-  border-bottom-color: #60a5fa;
-}
-
-body.dark-mode #analysis-outputs .output-card p {
-  color: #94a3b8;
-}
-
-body.dark-mode #analysis-outputs .output-table th,
-body.dark-mode .timeline-table th {
-  background: #475569;
-  color: #f1f5f9;
-}
-
-body.dark-mode #analysis-outputs .output-table td,
-body.dark-mode .timeline-table td {
-  color: #94a3b8;
-}
-
-body.dark-mode #analysis-outputs .results-highlight {
-  background: #4b5e7a;
-}
-
-body.dark-mode #analysis-outputs .results-highlight p {
-  color: #60a5fa;
-}
-
-body.dark-mode #analysis-outputs .disclaimer {
-  color: #94a3b8;
-}
-
-body.dark-mode .depletion-progress progress::-webkit-progress-bar {
-  background: #475569;
-}
-
-body.dark-mode .depletion-progress progress::-webkit-progress-value {
-  background: #60a5fa;
-}
-
-body.dark-mode .output-tab-btn {
-  background: #4b5e7a;
-  color: #60a5fa;
-}
-
-body.dark-mode .output-tab-btn.active {
-  background: #60a5fa;
-  color: #fff;
-}
-
-body.dark-mode .output-tab-btn:hover {
-  background: #60a5fa;
-  color: #fff;
-}
-
-body.dark-mode .alternatives-list li {
-  background: #4b5e7a;
-}
-
-body.dark-mode .alternatives-list li strong {
-  color: #60a5fa;
-}
-
-/* Analysis Outputs */
+/* Analysis Outputs Styles
+   Styles for analysis output cards, tables, and progress bars. */
 #analysis-outputs {
   margin-top: 20px;
   display: flex;
@@ -1143,7 +1023,8 @@ body.dark-mode .alternatives-list li strong {
   background: #ffffff;
   border-radius: 12px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-  padding: 20px;
+  padding: 16px;
+  border: 1px solid #ccc;
   transition: transform 0.2s, box-shadow 0.2s;
   position: relative;
 }
@@ -1179,6 +1060,7 @@ body.dark-mode .alternatives-list li strong {
   width: 100%;
   border-collapse: collapse;
   margin: 10px 0;
+  margin-top: 8px;
 }
 
 .output-table th,
@@ -1218,7 +1100,6 @@ body.dark-mode .alternatives-list li strong {
   font-style: italic;
 }
 
-/* Progress Bar for Funds Depletion */
 .depletion-progress {
   margin-top: 15px;
 }
@@ -1239,57 +1120,19 @@ body.dark-mode .alternatives-list li strong {
   border-radius: 4px;
 }
 
-/* Responsive Adjustments */
-@media (max-width: 768px) {
-  .analysis-workspace {
-    flex-direction: column;
-  }
-
-  .client-inputs,
-  .graph-outputs {
-    flex: 1;
-    min-width: 100%;
-  }
-
-  #analysis-outputs {
-    margin-top: 15px;
-    gap: 15px;
-  }
-
-  .output-card {
-    padding: 15px;
-  }
-
-  .output-card h3 {
-    font-size: 16px;
-  }
-
-  .output-table th,
-  .output-table td,
-  .timeline-table th,
-  .timeline-table td {
-    font-size: 12px;
-    padding: 6px;
-  }
-
-  .results-highlight {
-    padding: 10px;
-  }
-
-  .depletion-progress progress {
-    height: 15px;
-  }
-}
-
-.graph-outputs {
-  display: block;
-  min-height: 400px;
-}
-
+/* Chart and Graph Styles
+   Styles for charts, placeholders, and related elements. */
 #analysis-chart {
   display: block;
   max-width: 100%;
   height: 400px;
+}
+
+canvas#analysis-chart {
+  display: block;
+  width: 600px;
+  height: 400px;
+  max-height: 400px;
 }
 
 .graph-placeholder {
@@ -1299,47 +1142,38 @@ body.dark-mode .alternatives-list li strong {
   padding: 20px;
 }
 
-body.dark-mode .graph-placeholder {
-  color: #94a3b8;
-}
-
 .age-display {
   margin-top: 5px;
   font-size: 0.9em;
   color: #555;
 }
 
-.timeline-table {
-  width: 100%;
-  border-collapse: collapse;
+.output-dropdown {
+  margin-bottom: 16px;
 }
 
-.timeline-table th, .timeline-table td {
-  border: 1px solid #ddd;
+.output-select {
   padding: 8px;
-  text-align: right;
+  font-size: 16px;
+  width: 100%;
+  max-width: 300px;
 }
 
-.timeline-table th:first-child, .timeline-table td:first-child {
-  text-align: left;
+.output-tab-content {
+  display: none;
 }
 
-.output-dropdown { margin-bottom: 16px; }
-.output-select { padding: 8px; font-size: 16px; width: 100%; max-width: 300px; }
-.output-tab-content { display: none; }
-.output-tab-content:first-child { display: block; }
-.output-error { color: red; font-style: italic; }
-.output-card { padding: 16px; border: 1px solid #ccc; border-radius: 4px; }
-.output-table { width: 100%; border-collapse: collapse; margin-top: 8px; }
-.output-table th, .output-table td { border: 1px solid #ddd; padding: 8px; text-align: left; }
-canvas#analysis-chart { display: block; width: 600px; height: 400px; max-height: 400px; }
-
-.logo-img {
-  height: 30px;
-  width: auto;
+.output-tab-content:first-child {
+  display: block;
 }
 
-/* Presentation Page Layout */
+.output-error {
+  color: red;
+  font-style: italic;
+}
+
+/* Presentation Page Styles
+   Styles for the presentation page, including report list and preview modal. */
 .presentation-page {
   padding: 20px;
   max-width: 1200px;
@@ -1423,6 +1257,9 @@ canvas#analysis-chart { display: block; width: 600px; height: 400px; max-height:
 
 .report-preview {
   margin-bottom: 20px;
+  background: #fff;
+  display: block;
+  visibility: visible;
 }
 
 .report-preview h3 {
@@ -1434,50 +1271,12 @@ canvas#analysis-chart { display: block; width: 600px; height: 400px; max-height:
   padding-bottom: 5px;
 }
 
-/* Dark Mode Adjustments */
-body.dark-mode .presentation-page h2 {
-  color: #f1f5f9;
-}
-
-body.dark-mode .report-list {
-  background: #334155;
-}
-
-body.dark-mode .report-item {
-  background: #475569;
-}
-
-body.dark-mode .report-item:hover {
-  background: #4b5e7a;
-}
-
-body.dark-mode .report-title {
-  color: #f1f5f9;
-}
-
-body.dark-mode .remove-report-btn {
-  background: #f87171;
-}
-
-body.dark-mode .remove-report-btn:hover {
-  background: #ef4444;
-}
-
-body.dark-mode #preview-presentation-btn {
-  background: #60a5fa;
-}
-
-body.dark-mode #preview-presentation-btn:disabled {
-  background: #64748b;
-}
-
-body.dark-mode #preview-presentation-btn:hover:not(:disabled) {
-  background: #2563eb;
-}
-
-body.dark-mode .report-preview h3 {
-  color: #60a5fa;
-  border-bottom-color: #60a5fa;
+.report-preview img,
+.report-preview canvas {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  visibility: visible;
 }
 
 #pdf-preview-modal {
@@ -1506,39 +1305,19 @@ body.dark-mode .report-preview h3 {
   opacity: 1;
 }
 
-.report-preview {
-  margin-bottom: 20px;
-  background: #fff;
-  display: block;
-  visibility: visible;
-}
-
-.report-preview img,
-.report-preview canvas {
-  max-width: 100%;
-  height: auto;
-  display: block;
-  visibility: visible;
-}
-
-/* Ensure text and tables are visible */
-.output-card, .output-table, h3, p {
-  display: block;
-  visibility: visible;
-  color: #000;
-}
-/* New styles for Client Profile */
+/* Client Profile Styles
+   Styles for client profile view, including sub-tabs and layout adjustments. */
 .analysis-workspace.client-profile-active .graph-outputs {
   display: none;
 }
 
 .analysis-workspace.client-profile-active .client-inputs {
-  flex: 1; /* Allow it to grow and fill the container */
-  max-width: 100%; /* Ensure no max-width constraint */
-  width: 100%; /* Set width to 100% */
-  min-width: 0; /* Override min-width to allow full flexibility */
+  flex: 1;
+  max-width: 100%;
+  width: 100%;
+  min-width: 0;
 }
-/* Sub-tabs for Client Profile */
+
 .sub-tabs {
   display: flex;
   flex-wrap: wrap;
@@ -1576,130 +1355,83 @@ body.dark-mode .report-preview h3 {
   display: block;
 }
 
-/* Dark mode adjustments */
-body.dark-mode .sub-tab-btn {
-  color: #ddd;
+/* Income Needs Styles
+   Styles for income needs container and its labels. */
+.income-needs-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
 }
 
-body.dark-mode .sub-tab-btn:hover {
-  background: #333;
-}
-.client-file {
-  position: relative;
-  min-width: 200px; /* Ensure the parent has enough width to anchor the modal */
-  max-width: 300px; /* Prevent the parent from being too wide */
-  overflow: visible; /* Ensure the modal can overflow the parent */
-}
-
-.client-file-btn {
-  background: none;
-  border: none;
-  cursor: pointer;
+.income-needs-container label {
   display: flex;
   align-items: center;
-  gap: 5px;
-  font-size: 16px;
-  color: #333;
-  width: 100%;
-  text-align: left;
-  padding: 5px;
+  gap: 0.5rem;
 }
 
-.client-file-btn:hover {
-  color: #007bff;
+/* General Content Styles
+   Ensures visibility and color consistency for output elements. */
+.output-card,
+.output-table,
+h3,
+p {
+  display: block;
+  visibility: visible;
+  color: #000;
 }
 
-.modal {
-  position: absolute;
-  top: 40px; /* Align below the button */
-  left: 0;
-  background-color: #fff;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-  z-index: 1000;
-  width: 500px !important; /* Increased width for better readability */
-  min-width: 500px !important; /* Ensure it doesn't shrink */
-  max-height: 600px !important; /* Increased height for more content */
-  min-height: 300px !important; /* Ensure enough space for content */
-  overflow-y: auto;
-}
-
-.modal-content {
-  padding: 20px;
-}
-
-.modal-content h3 {
-  margin: 0 0 15px;
-  font-size: 20px;
-  font-weight: 600;
-}
-
-.modal-content input {
-  width: 100%;
-  padding: 10px;
-  margin-bottom: 15px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  font-size: 16px;
-  box-sizing: border-box;
-}
-
-.modal-content ul {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
-
-.modal-content li {
-  padding: 15px; /* More padding for better spacing */
-  cursor: pointer;
-  border-bottom: 1px solid #eee;
-  font-size: 12px; /* Larger font size for readability */
-  line-height: 1.5;
-  /* Allow text wrapping for long names */
-  white-space: normal;
-  word-wrap: break-word;
-  min-height: 40px; /* Ensure enough height for wrapped text */
-}
-
-.modal-content li:hover {
-  background-color: #e0e4e9;
-}
-
-.modal-content li.selected {
-  background-color: #d0e1f9;
-  font-weight: 600;
-}
-
-.modal-content button {
-  margin-top: 15px;
-  padding: 10px 20px;
-  background-color: #007bff;
-  color: #fff;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 16px;
-  width: 100%; /* Full width for better clickability */
-}
-
-.modal-content button:hover {
-  background-color: #0056b3;
-}
-
-/* Responsive adjustments */
+/* Responsive Styles
+   Adjustments for smaller screens to ensure responsive layout and usability. */
 @media (max-width: 768px) {
+  .analysis-workspace {
+    flex-direction: column;
+  }
+
+  .client-inputs,
+  .graph-outputs {
+    flex: 1;
+    min-width: 100%;
+  }
+
+  #analysis-outputs {
+    margin-top: 15px;
+    gap: 15px;
+  }
+
+  .output-card {
+    padding: 15px;
+  }
+
+  .output-card h3 {
+    font-size: 16px;
+  }
+
+  .output-table th,
+  .output-table td,
+  .timeline-table th,
+  .timeline-table td {
+    font-size: 12px;
+    padding: 6px;
+  }
+
+  .results-highlight {
+    padding: 10px;
+  }
+
+  .depletion-progress progress {
+    height: 15px;
+  }
+
   .client-file {
     min-width: 150px;
     max-width: 200px;
   }
 
   .modal {
-    width: 90vw !important; /* Use viewport width for smaller screens */
+    width: 90vw !important;
     min-width: 90vw !important;
     left: 50%;
-    transform: translateX(-50%); /* Center the modal */
+    transform: translateX(-50%);
     max-height: 50vh !important;
     min-height: 200px !important;
   }
@@ -1727,15 +1459,4 @@ body.dark-mode .sub-tab-btn:hover {
     font-size: 14px;
     padding: 8px 16px;
   }
-}
-.income-needs-container {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
-
-.income-needs-container label {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
 }
