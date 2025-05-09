@@ -18,7 +18,7 @@ body {
 /* Header Styles
    Styles for the fixed header, including layout, background, and shadow effects. */
 header {
-  display: flex;
+  display: flex !important;
   align-items: center;
   justify-content: space-between;
   padding: 15px 30px;
@@ -33,7 +33,7 @@ header {
 
 /* Logo Styles
    Styles for the logo text and image, including gradient text effect. */
-.logo {
+header .logo {
   flex-shrink: 0;
   font-size: 24px;
   font-weight: 700;
@@ -42,14 +42,15 @@ header {
   -webkit-text-fill-color: transparent;
 }
 
-.logo-img {
+header .logo-img {
   height: 40px;
   width: auto;
+  display: block;
 }
 
 /* Client File Styles
    Styles for the client file section, including button and name display. */
-.client-file {
+header .client-file {
   flex-grow: 0;
   margin: 0 20px;
   font-size: 16px;
@@ -63,14 +64,14 @@ header {
   overflow: visible;
 }
 
-#client-file-name {
+header #client-file-name {
   padding: 4px 8px;
   border-radius: 4px;
   background: #eff6ff;
   color: #3b82f6;
 }
 
-.client-file-btn {
+header .client-file-btn {
   background: none;
   border: none;
   cursor: pointer;
@@ -84,19 +85,19 @@ header {
   padding: 5px;
 }
 
-.client-file-btn:hover {
+header .client-file-btn:hover {
   color: #007bff;
 }
 
 /* Navigation Styles
    Styles for the navigation bar and its links, including hover and active states. */
-nav {
+header nav {
   flex-grow: 1;
   display: flex;
   justify-content: center;
 }
 
-nav ul {
+header nav ul {
   display: flex;
   list-style: none;
   margin: 0;
@@ -105,12 +106,12 @@ nav ul {
   margin-left: 40px;
 }
 
-nav ul li {
+header nav ul li {
   margin: 0 20px;
   position: relative;
 }
 
-nav ul li a {
+header nav ul li a {
   text-decoration: none;
   color: #64748b;
   font-family: 'Inter', sans-serif;
@@ -119,14 +120,14 @@ nav ul li a {
   transition: color 0.2s;
 }
 
-nav ul li a.active,
-nav ul li a:hover {
+header nav ul li a.active,
+header nav ul li a:hover {
   color: #3b82f6;
 }
 
 /* Icon and Profile Styles
    Styles for icons and user profile, including dropdown menu and hover effects. */
-.icons {
+header .icons {
   display: flex;
   align-items: center;
   gap: 15px;
@@ -134,7 +135,7 @@ nav ul li a:hover {
   margin-right: 20px;
 }
 
-.icons i {
+header .icons i {
   cursor: pointer;
   font-size: 18px;
   color: #64748b;
@@ -142,31 +143,31 @@ nav ul li a:hover {
   margin-left: 20px;
 }
 
-.icons i:hover {
+header .icons i:hover {
   color: #3b82f6;
 }
 
-.profile-container {
+header .profile-container {
   position: relative;
   display: inline-flex;
   align-items: center;
 }
 
-.profile-pic {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
+header .profile-pic {
+  width: 40px !important;
+  height: 40px !important;
+  border-radius: 50% !important;
   object-fit: cover;
   cursor: pointer;
   border: 2px solid #ccc;
   transition: border-color 0.3s;
 }
 
-.profile-pic:hover {
+header .profile-pic:hover {
   border-color: #007bff;
 }
 
-.dropdown-menu {
+header .dropdown-menu {
   display: none;
   position: absolute;
   top: 50px;
@@ -179,7 +180,7 @@ nav ul li a:hover {
   min-width: 150px;
 }
 
-.dropdown-menu a {
+header .dropdown-menu a {
   display: block;
   padding: 10px 15px;
   text-decoration: none;
@@ -188,17 +189,17 @@ nav ul li a:hover {
   font-family: 'Inter', sans-serif;
 }
 
-.dropdown-menu a:hover {
+header .dropdown-menu a:hover {
   background-color: #f0f0f0;
 }
 
-.dropdown-menu a i {
+header .dropdown-menu a i {
   margin-right: 8px;
 }
 
 /* Badge and Animation Styles
    Styles for notification badges and pulse animation. */
-.count-badge {
+header .count-badge {
   position: absolute;
   top: -10px;
   right: -10px;
@@ -215,7 +216,7 @@ nav ul li a:hover {
   transition: opacity 0.3s, transform 0.3s;
 }
 
-.count-badge.active {
+header .count-badge.active {
   opacity: 1;
   animation: pulse 0.5s ease-in-out;
 }
