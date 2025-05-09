@@ -33,6 +33,7 @@ const reports = [
         <li><strong>Lifestyle:</strong> Some individuals, accustomed to a busy work life, find it difficult to enjoy the freedom offered by retirement. Planning ahead can make this transition easier.</li>
       </ul>
       <h3>Seek Professional Guidance</h3>
+      <p>Developingcpy
       <p>Developing a successful retirement plan involves carefully considering a wide range of issues and potential problems. Finding solutions to these questions often requires both personal education and the guidance of knowledgeable individuals, from many professional disciplines. The key is to begin planning as early as possible.</p>
       <p><em>Presented by Jason Mangold</em></p>
     `,
@@ -122,8 +123,6 @@ const subfolderContainer = document.getElementById('subfolder-container');
 const breadcrumb = document.getElementById('breadcrumb');
 const categoryFilter = document.getElementById('category-filter');
 const searchInput = document.getElementById('search-input');
-const gridViewBtn = document.getElementById('grid-view-btn');
-const listViewBtn = document.getElementById('list-view-btn');
 const modal = document.getElementById('report-modal');
 const modalTitle = document.getElementById('modal-title');
 const modalContent = document.getElementById('modal-content');
@@ -136,7 +135,6 @@ const presentationCount = document.getElementById('presentation-count');
 
 let selectedCategory = 'all';
 let selectedSubcategory = null;
-let viewMode = 'grid';
 let lastSearchTerm = '';
 let presentationReports = [];
 
@@ -144,10 +142,9 @@ function updatePresentationCount() {
   const previousCount = parseInt(presentationCount.textContent) || 0;
   presentationCount.textContent = presentationReports.length;
   
-  // Only trigger animation if count increases from 0 to 1 or higher
   if (presentationReports.length > 0 && previousCount === 0) {
-    presentationCount.classList.remove('active'); // Reset animation
-    void presentationCount.offsetWidth; // Trigger reflow to restart animation
+    presentationCount.classList.remove('active');
+    void presentationCount.offsetWidth;
     presentationCount.classList.add('active');
   } else if (presentationReports.length === 0) {
     presentationCount.classList.remove('active');
@@ -189,12 +186,12 @@ function renderSubfolders(category) {
       `;
       subfolderContainer.appendChild(div);
     });
-    subfolderContainer.style.display = 'grid';
+    subfolderContainer.style.display = 'flex';
     reportGrid.style.display = 'none';
     updateBreadcrumb();
   } else {
     subfolderContainer.style.display = 'none';
-    reportGrid.style.display = 'grid';
+    reportGrid.style.display = 'block';
     updateBreadcrumb();
     renderReports();
   }
@@ -219,15 +216,13 @@ function renderReports() {
     
     if (matchesCategory && matchesSubcategory && matchesSearch && matchesOnePager && matchesTopic) {
       const card = document.createElement('div');
-      card.classList.add('report-card');
-      card.classList.add(`${viewMode}-view`);
+      card.classList.add('report-card', 'list-view');
       card.setAttribute('data-title', report.title);
       card.setAttribute('data-content', report.content);
       const isSelected = presentationReports.includes(report.title);
       card.innerHTML = `
         <div class="report-card-content">
           <h3>${report.title}</h3>
-          ${viewMode === 'grid' ? `<p>${plainContent.substring(0, 100)}...</p>` : ''}
           <div class="card-actions">
             <input type="checkbox" class="presentation-checkbox" ${isSelected ? 'checked' : ''}>
           </div>
@@ -237,11 +232,8 @@ function renderReports() {
     }
   });
 
-  reportGrid.classList.remove('grid-view', 'list-view');
-  reportGrid.classList.add(`${viewMode}-view`);
   updateBreadcrumb();
 
-  // Add event listeners to checkboxes within renderReports
   document.querySelectorAll('.presentation-checkbox').forEach(checkbox => {
     checkbox.addEventListener('change', (e) => {
       const card = e.target.closest('.report-card');
@@ -282,34 +274,20 @@ subfolderContainer.addEventListener('click', (e) => {
   if (subfolder) {
     selectedSubcategory = subfolder.getAttribute('data-subcategory');
     subfolderContainer.style.display = 'none';
-    reportGrid.style.display = 'grid';
+    reportGrid.style.display = 'block';
     renderReports();
   }
 });
 
 searchInput.addEventListener('input', () => {
   if (selectedCategory === 'Retirement Planning' && !selectedSubcategory) {
-    subfolderContainer.style.display = 'grid';
+    subfolderContainer.style.display = 'flex';
     reportGrid.style.display = 'none';
   } else {
     subfolderContainer.style.display = 'none';
-    reportGrid.style.display = 'grid';
+    reportGrid.style.display = 'block';
     renderReports();
   }
-});
-
-gridViewBtn.addEventListener('click', () => {
-  viewMode = 'grid';
-  gridViewBtn.classList.add('active');
-  listViewBtn.classList.remove('active');
-  renderReports();
-});
-
-listViewBtn.addEventListener('click', () => {
-  viewMode = 'list';
-  listViewBtn.classList.add('active');
-  gridViewBtn.classList.remove('active');
-  renderReports();
 });
 
 reportGrid.addEventListener('click', (e) => {
@@ -385,16 +363,16 @@ document.querySelectorAll('#tag-filters input[type="checkbox"]').forEach(checkbo
     renderReports();
   });
 });
-// Initialize client file name on page load
+
 document.addEventListener('DOMContentLoaded', () => {
-    const clientFileNameElement = document.getElementById('client-file-name');
-    if (clientFileNameElement) {
-        const storedClientName = localStorage.getItem('clientFileName') || 'No Client Selected';
-        clientFileNameElement.textContent = storedClientName;
-    } else {
-        console.warn('Client file name element (#client-file-name) not found in Education tab');
-    }
+  const clientFileNameElement = document.getElementById('client-file-name');
+  if (clientFileNameElement) {
+    const storedClientName = localStorage.getItem('clientFileName') || 'No Client Selected';
+    clientFileNameElement.textContent = storedClientName;
+  } else {
+    console.warn('Client file name element (#client-file-name) not found in Education tab');
+  }
 });
-// Initial render
+
 renderReports();
 updatePresentationCount();
