@@ -1273,6 +1273,9 @@ export function setupInputListeners(clientData, formatCurrency, getAge, Chart) {
         console.log('Updated output-select to:', currentTab);
       }
 
+      // Store current tab for updateRetirementOutputs
+      window.currentActiveTab = currentTab;
+
       // Update the specific tab
       updateSpecificTab(currentTab, clientData, formatCurrency, getAge, Chart);
 
@@ -1416,99 +1419,108 @@ export function updateRetirementOutputs(analysisOutputs, clientData, formatCurre
     ];
 
     // Get current active tab or dropdown value
-    let activeTab = document.querySelector('.output-tab-content[style*="display: block"]') ||
-                    document.querySelector('.output-tab-content.active');
-    let currentSelection = activeTab ? activeTab.id : null;
+    let currentSelection;
+    requestAnimationFrame(() => {
+      let activeTab = document.querySelector('.output-tab-content[style*="display: block"]') ||
+                      document.querySelector('.output-tab-content.active');
+      currentSelection = activeTab ? activeTab.id : null;
 
-    // Fallback to output-select if no active tab is found
-    const select = document.getElementById('output-select');
-    if (!currentSelection && select && select.value) {
-      currentSelection = select.value;
-      console.log('No active tab found, using output-select value:', currentSelection);
-    }
-
-    // Use 'output-graph' only if no selection is found (initial load)
-    if (!currentSelection) {
-      currentSelection = 'output-graph';
-      console.log('No selection found, defaulting to:', currentSelection);
-    }
-
-    // Initialize output structure only if not already present
-    if (!document.getElementById('output-select')) {
-      if (tabContainer) {
-        tabContainer.innerHTML = `
-          <div style="display: flex; justify-content: space-between; align-items: center;">
-            <div class="output-dropdown">
-              <label for="output-select">Select View: </label>
-              <select id="output-select" class="output-select">
-                ${reportOptions.map(option => `
-                  <option value="${option.id}" ${option.id === currentSelection ? 'selected' : ''}>${option.label}</option>
-                `).join('')}
-              </select>
-            </div>
-            <label class="add-to-presentation-checkbox">
-              <input type="checkbox" id="add-to-presentation" data-report="${reportOptions.find(opt => opt.id === currentSelection).reportId}" data-title="${reportOptions.find(opt => opt.id === currentSelection).title}">
-              Add to Presentation
-            </label>
-          </div>
-        `;
+      // Fallback to output-select or window.currentActiveTab
+      const select = document.getElementById('output-select');
+      if (!currentSelection && select && select.value) {
+        currentSelection = select.value;
+        console.log('No active tab found, using output-select value:', currentSelection);
       }
 
-      analysisOutputs.innerHTML = `
-        ${!tabContainer ? `
-          <div style="display: flex; justify-content: space-between; align-items: center;">
-            <div class="output-dropdown">
-              <label for="output-select">Select View: </label>
-              <select id="output-select" class="output-select">
-                ${reportOptions.map(option => `
-                  <option value="${option.id}" ${option.id === currentSelection ? 'selected' : ''}>${option.label}</option>
-                `).join('')}
-              </select>
+      // Fallback to window.currentActiveTab (set by setupInputListeners)
+      if (!currentSelection && window.currentActiveTab) {
+        currentSelection = window.currentActiveTab;
+        console.log('No active tab or select value, using window.currentActiveTab:', currentSelection);
+      }
+
+      // Use 'output-graph' only if no selection is found (initial load)
+      if (!currentSelection) {
+        currentSelection = 'output-graph';
+        console.log('No selection found, defaulting to:', currentSelection);
+      }
+
+      // Ensure dropdown reflects current selection
+      if (select && select.value !== currentSelection) {
+        const previousOnChange = select.onchange;
+        select.onchange = null;
+        select.value = currentSelection;
+        select.onchange = previousOnChange;
+        console.log('Synced output-select to:', currentSelection);
+      }
+
+      // Initialize output structure only if not already present
+      if (!document.getElementById('output-select')) {
+        if (tabContainer) {
+          tabContainer.innerHTML = `
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <div class="output-dropdown">
+                <label for="output-select">Select View: </label>
+                <select id="output-select" class="output-select">
+                  ${reportOptions.map(option => `
+                    <option value="${option.id}" ${option.id === currentSelection ? 'selected' : ''}>${option.label}</option>
+                  `).join('')}
+                </select>
+              </div>
+              <label class="add-to-presentation-checkbox">
+                <input type="checkbox" id="add-to-presentation" data-report="${reportOptions.find(opt => opt.id === currentSelection).reportId}" data-title="${reportOptions.find(opt => opt.id === currentSelection).title}">
+                Add to Presentation
+              </label>
             </div>
-            <label class="add-to-presentation-checkbox">
-              <input type="checkbox" id="add-to-presentation" data-report="${reportOptions.find(opt => opt.id === currentSelection).reportId}" data-title="${reportOptions.find(opt => opt.id === currentSelection).title}">
-              Add to Presentation
-            </label>
-          </div>
-        ` : ''}
-        ${reportOptions.map(option => `
-          <div class="output-tab-content ${option.id === currentSelection ? 'active' : ''}" id="${option.id}" style="display: ${option.id === currentSelection ? 'block' : 'none'};">
-            <div class="output-card">
-              <h3>${option.title}</h3>
-              <p>Content will be loaded...</p>
+          `;
+        }
+
+        analysisOutputs.innerHTML = `
+          ${!tabContainer ? `
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <div class="output-dropdown">
+                <label for="output-select">Select View: </label>
+                <select id="output-select" class="output-select">
+                  ${reportOptions.map(option => `
+                    <option value="${option.id}" ${option.id === currentSelection ? 'selected' : ''}>${option.label}</option>
+                  `).join('')}
+                </select>
+              </div>
+              <label class="add-to-presentation-checkbox">
+                <input type="checkbox" id="add-to-presentation" data-report="${reportOptions.find(opt => opt.id === currentSelection).reportId}" data-title="${reportOptions.find(opt => opt.id === currentSelection).title}">
+                Add to Presentation
+              </label>
             </div>
-          </div>
-        `).join('')}
-      `;
-    } else {
-      // Update visibility of existing tabs without rebuilding
-      document.querySelectorAll('.output-tab-content').forEach(content => {
-        const isSelected = content.id === currentSelection;
-        content.style.display = isSelected ? 'block' : 'none';
-        content.classList.toggle('active', isSelected);
-      });
-    }
+          ` : ''}
+          ${reportOptions.map(option => `
+            <div class="output-tab-content ${option.id === currentSelection ? 'active' : ''}" id="${option.id}" style="display: ${option.id === currentSelection ? 'block' : 'none'};">
+              <div class="output-card">
+                <h3>${option.title}</h3>
+                <p>Content will be loaded...</p>
+              </div>
+            </div>
+          `).join('')}
+        `;
+      } else {
+        // Update visibility of existing tabs without rebuilding
+        document.querySelectorAll('.output-tab-content').forEach(content => {
+          const isSelected = content.id === currentSelection;
+          content.style.display = isSelected ? 'block' : 'none';
+          content.classList.toggle('active', isSelected);
+        });
+      }
 
-    // Ensure dropdown reflects current selection
-    if (select && select.value !== currentSelection) {
-      const previousOnChange = select.onchange;
-      select.onchange = null;
-      select.value = currentSelection;
-      select.onchange = previousOnChange;
-      console.log('Synced output-select to:', currentSelection);
-    }
+      // Setup controls
+      setupOutputControls(reportOptions, selectedReports, clientData, formatCurrency, getAge, Chart);
 
-    // Setup controls
-    setupOutputControls(reportOptions, selectedReports, clientData, formatCurrency, getAge, Chart);
+      // Update the current tab
+      updateSpecificTab(currentSelection, clientData, formatCurrency, getAge, Chart);
 
-    // Update the current tab
-    updateSpecificTab(currentSelection, clientData, formatCurrency, getAge, Chart);
-
-    // Setup input listeners only if not already set
-    if (!analysisOutputs.dataset.listenersSet) {
-      setupInputListeners(clientData, formatCurrency, getAge, Chart);
-      analysisOutputs.dataset.listenersSet = 'true';
-    }
+      // Setup input listeners only if not already set
+      if (!analysisOutputs.dataset.listenersSet) {
+        setupInputListeners(clientData, formatCurrency, getAge, Chart);
+        analysisOutputs.dataset.listenersSet = 'true';
+      }
+    });
   } catch (error) {
     console.error('Error in updateRetirementOutputs:', error);
     analysisOutputs.innerHTML = '<p class="output-card">Error rendering outputs. Please check input data.</p>';
