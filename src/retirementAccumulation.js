@@ -1225,6 +1225,9 @@ function updateSpecificTab(tabId, clientData, formatCurrency, getAge, Chart) {
  */
 export function setupInputListeners(clientData, formatCurrency, getAge, Chart) {
   try {
+    // Store the last selected tab to maintain state
+    let lastSelectedTab = 'output-graph'; // Default to graph for initial load
+
     // Debounce function
     function debounce(func, wait) {
       let timeout;
@@ -1247,12 +1250,14 @@ export function setupInputListeners(clientData, formatCurrency, getAge, Chart) {
       let activeTab = document.querySelector('.output-tab-content[style*="display: block"]') ||
                       document.querySelector('.output-tab-content.active');
       
-      // Fallback to output-select value if no active tab is found
-      let currentTab = activeTab ? activeTab.id : null;
-      if (!currentTab) {
+      // Determine the current tab: prioritize active tab, then dropdown, then last selected
+      let currentTab;
+      if (activeTab) {
+        currentTab = activeTab.id;
+      } else {
         const select = document.getElementById('output-select');
-        currentTab = select && select.value ? select.value : 'output-graph';
-        console.log('No active tab found, using output-select value:', currentTab);
+        currentTab = select && select.value ? select.value : lastSelectedTab;
+        console.log('No active tab found, using output-select value or last selected:', currentTab);
       }
 
       // Debug logging
@@ -1260,6 +1265,9 @@ export function setupInputListeners(clientData, formatCurrency, getAge, Chart) {
 
       // Update the specific tab
       updateSpecificTab(currentTab, clientData, formatCurrency, getAge, Chart);
+
+      // Update last selected tab
+      lastSelectedTab = currentTab;
 
       // Sync the select dropdown without triggering a change event
       const select = document.getElementById('output-select');
@@ -1307,7 +1315,7 @@ export function setupInputListeners(clientData, formatCurrency, getAge, Chart) {
         data.client2.incomeSources = {
           employment: parseFloat(document.getElementById('c2-employment').value) || 0,
           socialSecurity: parseFloat(document.getElementById('c2-social-security').value) || 0,
-          other: parseFloat(document.getElementById('c2-other-income').value) || 0
+          other: parseFloat(document.getElementById('c1-other-income').value) || 0
         };
       } else {
         data.client2.incomeSources = { employment: 0, socialSecurity: 0, other: 0 };
