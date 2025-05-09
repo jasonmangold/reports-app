@@ -1408,7 +1408,7 @@ const reportOptions = [
 ];
 
 // Get the dropdown element (replace 'report-dropdown' with your actual dropdown's ID or selector)
-const dropdown = document.querySelector(output-dropdown); // Adjust this selector to match your dropdown
+const dropdown = document.querySelector('#output-select'); // Adjust this selector to match your dropdown
 
 // Function to get and log the current report title
 function logCurrentReport() {
