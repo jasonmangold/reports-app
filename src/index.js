@@ -249,7 +249,7 @@ function populateAnalysisTopics() {
         }
       });
     });
-  } catch (error) {
+   catch (error) {
     console.error('Error in populateAnalysisTopics:', error);
   }
 }
