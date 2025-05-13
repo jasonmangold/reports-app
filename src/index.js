@@ -214,6 +214,7 @@ function populateClientList() {
 const sidebarTopics = document.getElementById('sidebar-topics');
 
 function populateAnalysisTopics() {
+  console.log('populateAnalysisTopics called');
   try {
     sidebarTopics.innerHTML = `
       <ul class="sidebar-topic-list">
@@ -227,6 +228,11 @@ function populateAnalysisTopics() {
         `).join('')}
       </ul>
     `;
+    // Rest of the function
+  } catch (error) {
+    console.error('Error in populateAnalysisTopics:', error);
+  }
+}
 
     document.querySelectorAll('.sidebar-topic-btn').forEach(btn => {
       btn.addEventListener('click', (e) => {
