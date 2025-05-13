@@ -210,33 +210,32 @@ function populateClientList() {
   }
 }
 
+// Assume a new <nav id="sidebar-topics"> in your HTML
+const sidebarTopics = document.getElementById('sidebar-topics');
+
 function populateAnalysisTopics() {
   try {
-    analysisTopics.innerHTML = '';
-    analysisTopicsList.forEach(topic => {
-      const btn = document.createElement('button');
-      btn.classList.add('topic-btn');
-      btn.textContent = topic.label;
-      btn.dataset.analysis = topic.id;
-      if (topic.id === currentAnalysis) btn.classList.add('active');
-      analysisTopics.appendChild(btn);
-    });
+    sidebarTopics.innerHTML = `
+      <ul class="sidebar-topic-list">
+        ${analysisTopicsList.map(topic => `
+          <li>
+            <button class="sidebar-topic-btn" data-analysis="${topic.id}" 
+              ${topic.id === currentAnalysis ? 'class="active"' : ''}>
+              ${topic.label}
+            </button>
+          </li>
+        `).join('')}
+      </ul>
+    `;
 
-    document.querySelectorAll('.analysis-topics .topic-btn').forEach(btn => {
+    document.querySelectorAll('.sidebar-topic-btn').forEach(btn => {
       btn.addEventListener('click', (e) => {
-        e.stopPropagation();
         e.preventDefault();
-        console.log('Topic button clicked:', btn.dataset.analysis);
-        document.querySelectorAll('.topic-btn').forEach(b => b.classList.remove('active'));
+        console.log('Sidebar topic clicked:', btn.dataset.analysis);
+        document.querySelectorAll('.sidebar-topic-btn').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
         currentAnalysis = btn.dataset.analysis;
-        if (currentAnalysis === 'client-profile') {
-          analysisWorkspace.classList.add('client-profile-active');
-          console.log('Added client-profile-active to analysisWorkspace');
-        } else {
-          analysisWorkspace.classList.remove('client-profile-active');
-          console.log('Removed client-profile-active to analysisWorkspace');
-        }
+        analysisWorkspace.classList.toggle('client-profile-active', currentAnalysis === 'client-profile');
         updateTabs(currentAnalysis);
         updateOutputs();
         if (currentAnalysis !== 'client-profile') {
