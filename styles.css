@@ -1461,3 +1461,32 @@ p {
     padding: 8px 16px;
   }
 }
+.sidebar {
+  width: 200px;
+  background-color: #f4f4f4;
+  padding: 10px;
+  height: 100vh;
+  position: fixed;
+  top: 0;
+  left: 0;
+}
+.sidebar-topic-list {
+  list-style: none;
+  padding: 0;
+}
+.sidebar-topic-btn {
+  display: block;
+  width: 100%;
+  padding: 10px;
+  border: none;
+  background: none;
+  text-align: left;
+  cursor: pointer;
+}
+.sidebar-topic-btn.active {
+  background-color: #007bff;
+  color: white;
+}
+.sidebar-topic-btn:hover {
+  background-color: #e0e0e0;
+}
