@@ -117,6 +117,16 @@
       margin-bottom: 15px;
     }
 
+    #category-filter {
+      list-style: none;
+      padding: 0;
+    }
+
+    #category-filter li {
+      list-style: none;
+      margin-bottom: 12px;
+    }
+
     .category-group {
       margin-bottom: 12px;
     }
@@ -151,6 +161,7 @@
       display: none;
       padding-left: 20px;
       margin-top: 8px;
+      list-style: none;
     }
 
     .category-group[aria-expanded="true"] .sub-categories {
@@ -159,6 +170,7 @@
 
     .sub-categories li {
       margin-bottom: 8px;
+      list-style: none;
     }
 
     .sub-categories a {
@@ -622,6 +634,7 @@
     }
 
     body.dark-mode header,
+    body.dark-mode .sidebar,
     body.dark-mode .subfolder,
     body.dark-mode .report-card,
     body.dark-mode .modal-content {
@@ -682,7 +695,6 @@
       color: #60a5fa;
     }
 
-    /* Remaining original styles unchanged */
     .analysis-page {
       padding: 0 20px 20px;
       height: calc(100vh - 70px);
@@ -1027,8 +1039,8 @@
     }
 
     body.dark-mode .client-inputs input[type="text"],
-    .client-inputs input[type="number"],
-    .client-inputs input[type="date"] {
+    body.dark-mode .client-inputs input[type="number"],
+    body.dark-mode .client-inputs input[type="date"] {
       background: #475569;
       color: #f1f5f9;
       border-color: #64748b;
@@ -1704,7 +1716,7 @@
 <body>
   <div id="header-placeholder"></div>
   <div class="reports-page">
-    <div class="sidebar" style="position: sticky; top: 80px;">
+    <div class="sidebar">
       <h3>Categories</h3>
       <ul id="category-filter" role="navigation" aria-label="Report categories">
         <li>
@@ -1714,61 +1726,147 @@
         </li>
         <li class="category-group" aria-expanded="false">
           <a href="#" class="group-toggle" role="button" aria-controls="personal-finance-group">
-            <i class="fas fa-dollar-sign"></i> Personal Finance & Cash Flow
+            <i class="fas fa-dollar-sign"></i> Personal Finance
             <i class="fas fa-chevron-down toggle-icon"></i>
           </a>
           <ul class="sub-categories" id="personal-finance-group">
-            <li>
-              <a href="#" data-category="Personal Finance">
-                Personal Finance <span class="report-count"></span>
-              </a>
-            </li>
-            <li>
-              <a href="#" data-category="Personal Cash Flow">
-                Personal Cash Flow <span class="report-count"></span>
-              </a>
-            </li>
+            <li><a href="#" data-category="Goal Setting">Goal Setting <span class="report-count"></span></a></li>
+            <li><a href="#" data-category="Personal Cash Flow">Personal Cash Flow <span class="report-count"></span></a></li>
+            <li><a href="#" data-category="Budgeting and Debt Management">Budgeting and Debt Management <span class="report-count"></span></a></li>
+          </ul>
+        </li>
+        <li class="category-group" aria-expanded="false">
+          <a href="#" class="group-toggle" role="button" aria-controls="income-taxes-group">
+            <i class="fas fa-file-invoice-dollar"></i> Income Taxes
+            <i class="fas fa-chevron-down toggle-icon"></i>
+          </a>
+          <ul class="sub-categories" id="income-taxes-group">
+            <li><a href="#" data-category="Basic Income Tax">Basic Income Tax <span class="report-count"></span></a></li>
+            <li><a href="#" data-category="Advanced Income Tax">Advanced Income Tax <span class="report-count"></span></a></li>
+            <li><a href="#" data-category="Tax Planning Strategies">Tax Planning Strategies <span class="report-count"></span></a></li>
+          </ul>
+        </li>
+        <li class="category-group" aria-expanded="false">
+          <a href="#" class="group-toggle" role="button" aria-controls="investments-group">
+            <i class="fas fa-chart-line"></i> Investments
+            <i class="fas fa-chevron-down toggle-icon"></i>
+          </a>
+          <ul class="sub-categories" id="investments-group">
+            <li><a href="#" data-category="Investment Planning">Investment Planning <span class="report-count"></span></a></li>
+            <li><a href="#" data-category="Mutual Funds">Mutual Funds <span class="report-count"></span></a></li>
+            <li><a href="#" data-category="Cash, Stocks, and Bonds">Cash, Stocks, and Bonds <span class="report-count"></span></a></li>
+            <li><a href="#" data-category="Other Investment Tools">Other Investment Tools <span class="report-count"></span></a></li>
+          </ul>
+        </li>
+        <li class="category-group" aria-expanded="false">
+          <a href="#" class="group-toggle" role="button" aria-controls="retirement-planning-group">
+            <i class="fas fa-umbrella-beach"></i> Retirement Planning
+            <i class="fas fa-chevron-down toggle-icon"></i>
+          </a>
+          <ul class="sub-categories" id="retirement-planning-group">
+            <li><a href="#" data-category="Retirement Needs Analysis">Retirement Needs Analysis <span class="report-count"></span></a></li>
+            <li><a href="#" data-category="Retirement Income Sources">Retirement Income Sources <span class="report-count"></span></a></li>
+            <li><a href="#" data-category="Social Security">Social Security <span class="report-count"></span></a></li>
+            <li><a href="#" data-category="Individual Retirement Plans">Individual Retirement Plans <span class="report-count"></span></a></li>
+            <li><a href="#" data-category="Employer-Sponsored Plans">Employer-Sponsored Plans <span class="report-count"></span></a></li>
+            <li><a href="#" data-category="Retirement Distributions">Retirement Distributions <span class="report-count"></span></a></li>
+            <li><a href="#" data-category="Moving Money Around">Moving Money Around <span class="report-count"></span></a></li>
+            <li><a href="#" data-category="Health Care Planning in Retirement">Health Care Planning in Retirement <span class="report-count"></span></a></li>
+            <li><a href="#" data-category="Other Retirement Issues">Other Retirement Issues <span class="report-count"></span></a></li>
           </ul>
         </li>
         <li class="category-group" aria-expanded="false">
           <a href="#" class="group-toggle" role="button" aria-controls="insurance-group">
-            <i class="fas fa-shield-alt"></i> Insurance & Protection
+            <i class="fas fa-shield-alt"></i> Insurance
             <i class="fas fa-chevron-down toggle-icon"></i>
           </a>
           <ul class="sub-categories" id="insurance-group">
-            <li>
-              <a href="#" data-category="Protecting Your Finances">
-                Protecting Your Finances <span class="report-count"></span>
-              </a>
-            </li>
-            <li>
-              <a href="#" data-category="Disability">
-                Disability <span class="report-count"></span>
-              </a>
-            </li>
-            <li>
-              <a href="#" data-category="Long-Term Care">
-                Long-Term Care <span class="report-count"></span>
-              </a>
-            </li>
+            <li><a href="#" data-category="Health Insurance">Health Insurance <span class="report-count"></span></a></li>
+            <li><a href="#" data-category="Life Insurance">Life Insurance <span class="report-count"></span></a></li>
+            <li><a href="#" data-category="Property and Casualty Insurance">Property and Casualty Insurance <span class="report-count"></span></a></li>
+            <li><a href="#" data-category="Long-Term Care Insurance">Long-Term Care Insurance <span class="report-count"></span></a></li>
+            <li><a href="#" data-category="Disability Insurance">Disability Insurance <span class="report-count"></span></a></li>
+            <li><a href="#" data-category="Employee Benefits">Employee Benefits <span class="report-count"></span></a></li>
           </ul>
         </li>
         <li class="category-group" aria-expanded="false">
-          <a href="#" class="group-toggle" role="button" aria-controls="planning-group">
-            <i class="fas fa-chart-line"></i> Planning & Investments
+          <a href="#" class="group-toggle" role="button" aria-controls="home-ownership-group">
+            <i class="fas fa-home"></i> Home Ownership
             <i class="fas fa-chevron-down toggle-icon"></i>
           </a>
-          <ul class="sub-categories" id="planning-group">
-            <li>
-              <a href="#" data-category="Retirement Planning">
-                Retirement Planning <span class="report-count"></span>
-              </a>
-            </li>
-            <li>
-              <a href="#" data-category="Education Funding">
-                Education Funding <span class="report-count"></span>
-              </a>
-            </li>
+          <ul class="sub-categories" id="home-ownership-group">
+            <li><a href="#" data-category="Buying a Home">Buying a Home <span class="report-count"></span></a></li>
+            <li><a href="#" data-category="Mortgage Management">Mortgage Management <span class="report-count"></span></a></li>
+            <li><a href="#" data-category="Home Maintenance">Home Maintenance <span class="report-count"></span></a></li>
+          </ul>
+        </li>
+        <li class="category-group" aria-expanded="false">
+          <a href="#" class="group-toggle" role="button" aria-controls="education-funding-group">
+            <i class="fas fa-graduation-cap"></i> Education Funding
+            <i class="fas fa-chevron-down toggle-icon"></i>
+          </a>
+          <ul class="sub-categories" id="education-funding-group">
+            <li><a href="#" data-category="Planning for College">Planning for College <span class="report-count"></span></a></li>
+            <li><a href="#" data-category="Saving for College">Saving for College <span class="report-count"></span></a></li>
+          </ul>
+        </li>
+        <li class="category-group" aria-expanded="false">
+          <a href="#" class="group-toggle" role="button" aria-controls="estate-planning-group">
+            <i class="fas fa-gavel"></i> Estate Planning
+            <i class="fas fa-chevron-down toggle-icon"></i>
+          </a>
+          <ul class="sub-categories" id="estate-planning-group">
+            <li><a href="#" data-category="Basic Estate Planning Tools">Basic Estate Planning Tools <span class="report-count"></span></a></li>
+            <li><a href="#" data-category="Estate Planning Concepts">Estate Planning Concepts <span class="report-count"></span></a></li>
+            <li><a href="#" data-category="Estate and Gift Taxes">Estate and Gift Taxes <span class="report-count"></span></a></li>
+            <li><a href="#" data-category="Life Insurance in Estate Planning">Life Insurance in Estate Planning <span class="report-count"></span></a></li>
+            <li><a href="#" data-category="Advanced Estate Planning Tools">Advanced Estate Planning Tools <span class="report-count"></span></a></li>
+            <li><a href="#" data-category="Estate Freezing Techniques">Estate Freezing Techniques <span class="report-count"></span></a></li>
+          </ul>
+        </li>
+        <li class="category-group" aria-expanded="false">
+          <a href="#" class="group-toggle" role="button" aria-controls="business-planning-group">
+            <i class="fas fa-briefcase"></i> Business Planning
+            <i class="fas fa-chevron-down toggle-icon"></i>
+          </a>
+          <ul class="sub-categories" id="business-planning-group">
+            <li><a href="#" data-category="Basic Business Concepts">Basic Business Concepts <span class="report-count"></span></a></li>
+            <li><a href="#" data-category="Business Valuation">Business Valuation <span class="report-count"></span></a></li>
+            <li><a href="#" data-category="Business Continuation">Business Continuation <span class="report-count"></span></a></li>
+            <li><a href="#" data-category="Benefits to Business Owners">Benefits to Business Owners <span class="report-count"></span></a></li>
+          </ul>
+        </li>
+        <li class="category-group" aria-expanded="false">
+          <a href="#" class="group-toggle" role="button" aria-controls="charitable-planning-group">
+            <i class="fas fa-hand-holding-heart"></i> Charitable Planning
+            <i class="fas fa-chevron-down toggle-icon"></i>
+          </a>
+          <ul class="sub-categories" id="charitable-planning-group">
+            <li><a href="#" data-category="Gifting Techniques">Gifting Techniques <span class="report-count"></span></a></li>
+            <li><a href="#" data-category="Taxation of Charitable Gifts">Taxation of Charitable Gifts <span class="report-count"></span></a></li>
+            <li><a href="#" data-category="Other Charitable Strategies">Other Charitable Strategies <span class="report-count"></span></a></li>
+          </ul>
+        </li>
+        <li class="category-group" aria-expanded="false">
+          <a href="#" class="group-toggle" role="button" aria-controls="social-security-group">
+            <i class="fas fa-landmark"></i> Social Security and Government Programs
+            <i class="fas fa-chevron-down toggle-icon"></i>
+          </a>
+          <ul class="sub-categories" id="social-security-group">
+            <li><a href="#" data-category="Social Security Benefits">Social Security Benefits <span class="report-count"></span></a></li>
+            <li><a href="#" data-category="Other Government Programs">Other Government Programs <span class="report-count"></span></a></li>
+          </ul>
+        </li>
+        <li class="category-group" aria-expanded="false">
+          <a href="#" class="group-toggle" role="button" aria-controls="advisys-support-group">
+            <i class="fas fa-tools"></i> Advisys Support
+            <i class="fas fa-chevron-down toggle-icon"></i>
+          </a>
+          <ul class="sub-categories" id="advisys-support-group">
+            <li><a href="#" data-category="Planning Tools">Planning Tools <span class="report-count"></span></a></li>
+            <li><a href="#" data-category="Reference Materials">Reference Materials <span class="report-count"></span></a></li>
+            <li><a href="#" data-category="Client Interaction Forms">Client Interaction Forms <span class="report-count"></span></a></li>
+            <li><a href="#" data-category="Worksheets">Worksheets <span class="report-count"></span></a></li>
           </ul>
         </li>
       </ul>
@@ -1798,29 +1896,54 @@
       <div id="subfolder-container" class="subfolder-grid" style="display: none;"></div>
       <div id="report-grid" class="report-grid grid-view"></div>
     </div>
-    </div>
-  <div id="report-modal" class="modal">
+  </div>
+  <div class="modal" id="report-modal">
     <div class="modal-content">
       <div class="modal-header">
         <div class="modal-title-row">
           <h2 id="modal-title"></h2>
           <div class="modal-actions">
-            <button id="modal-share-btn" class="share-icon-btn" title="Share">
-              <i class="fas fa-share-alt"></i>
-            </button>
-            <button id="modal-save-pdf-btn" class="save-pdf-top-btn">Save PDF</button>
+            <button id="modal-share-btn" class="share-icon-btn" title="Share on Social Media"><i class="fas fa-share-alt"></i></button>
+            <button id="modal-save-pdf-btn" class="save-pdf-top-btn" title="Save PDF">Save PDF</button>
           </div>
         </div>
-        <span id="modal-close" class="close">&times;</span>
+        <span class="close" id="modal-close">×</span>
       </div>
       <div class="modal-body" id="modal-content"></div>
       <div class="modal-footer">
-        <button id="save-pdf-btn" class="save-pdf-btn">Save as PDF</button>
+        <button class="save-pdf-btn" id="save-pdf-btn">Save PDF</button>
       </div>
     </div>
   </div>
-</div>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-<script src="scripts.js"></script>
+  <script>
+    fetch('header.html')
+      .then(response => response.text())
+      .then(data => {
+        document.getElementById('header-placeholder').innerHTML = data;
+        const currentPage = window.location.pathname.split('/').pop() || 'index.html';
+        const navLinks = document.querySelectorAll('nav ul li a');
+        navLinks.forEach(link => {
+          const href = link.getAttribute('href');
+          if (href === currentPage) {
+            link.classList.add('active');
+          }
+        });
+        const profilePic = document.getElementById('profile-pic');
+        const dropdownMenu = document.getElementById('dropdown-menu');
+        if (profilePic && dropdownMenu) {
+          profilePic.addEventListener('click', () => {
+            dropdownMenu.style.display = dropdownMenu.style.display === 'block' ? 'none' : 'block';
+          });
+          document.addEventListener('click', (e) => {
+            if (!profilePic.contains(e.target) && !dropdownMenu.contains(e.target)) {
+              dropdownMenu.style.display = 'none';
+            }
+          });
+        }
+      })
+      .catch(error => console.error('Error loading header:', error));
+  </script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  <script src="scripts.js"></script>
 </body>
 </html>
