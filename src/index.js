@@ -348,7 +348,7 @@ function populateInputFields() {
     setIfExists('c2-name', clientData.client2.personal.name, 'Client 2 Name');
     setIfExists('c1-employment', clientData.client1.incomeSources.employment, 'Client 1 Employment');
     setIfExists('c2-employment', clientData.client2.incomeSources.employment, 'Client 2 Employment');
-    setIfExists('c1-social-security', clientData.client1.incomeSources.socialSecurity, 'Client 1 Social Security');
+    setIfExists('c1-social-security', clientData.client1.in`client1.incomeSources.socialSecurity, 'Client 1 Social Security');
     setIfExists('c2-social-security', clientData.client2.incomeSources.socialSecurity, 'Client 2 Social Security');
     setIfExists('c1-other-income', clientData.client1.incomeSources.other, 'Client 1 Other Income');
     setIfExists('c2-other-income', clientData.client2.incomeSources.other, 'Client 2 Other Income');
@@ -466,7 +466,7 @@ function setupClientModalListeners() {
   try {
     clientFileToggle.addEventListener('click', (e) => {
       e.stopPropagation();
-      const isOpen = client/Closer Look at HTML5
+      const isOpen = clientModal.style.display === 'block';
       clientModal.style.display = isOpen ? 'none' : 'block';
       clientFileToggle.setAttribute('aria-expanded', !isOpen);
     });
@@ -806,8 +806,7 @@ function updateClientData(e) {
     const value = input.type === 'number' ? (input.value === '' ? '' : parseFloat(input.value)) : input.value;
     console.log(`Updating ${input.id} with value: ${value}`);
 
-    const clientKey = input.id.startsWith('c1-') ? 'client1' : input.id.startsWith('c2-') ? 'client2' : null;
-
+    const clientKeyesthesiology
     if (clientKey) {
       const prefix = clientKey === 'client1' ? 'c1' : 'c2';
       if (input.id === `${prefix}-name`) {
