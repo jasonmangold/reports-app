@@ -62,24 +62,24 @@ const clients = [
 ];
 
 const analysisTopicsList = [
-  { id: 'client-profile', label: 'Client Profile' },
-  { id: 'summary', label: 'Summary' },
-  { id: 'education-funding', label: 'Education Funding' },
-  { id: 'survivor-needs', label: 'Survivor Needs' },
-  { id: 'retirement-accumulation', label: 'Retirement Accumulation' },
-  { id: 'retirement-distribution', label: 'Retirement Distribution' },
-  { id: 'social-security', label: 'Social Security' },
-  { id: 'disability-income-needs', label: 'Disability Income Needs' },
-  { id: 'critical-illness', label: 'Critical Illness' },
-  { id: 'long-term-care-needs', label: 'Long-Term Care Needs' },
-  { id: 'estate-analysis', label: 'Estate Analysis' },
-  { id: 'accumulation-funding', label: 'Accumulation Funding' },
-  { id: 'asset-allocation', label: 'Asset Allocation' },
-  { id: 'charitable-remainder-trust', label: 'Charitable Remainder Trust' },
-  { id: 'personal-finance', label: 'Personal Finance' },
-  { id: 'debt-repayment', label: 'Debt Repayment' },
-  { id: 'business-continuation', label: 'Business Continuation' },
-  { id: 'key-employee', label: 'Key Employee' }
+  { id: 'client-profile', label: 'Client Profile', group: 'Client Info' },
+  { id: 'summary', label: 'Summary', group: 'Client Info' },
+  { id: 'education-funding', label: 'Education Funding', group: 'Investments' },
+  { id: 'survivor-needs', label: 'Survivor Needs', group: 'Insurance' },
+  { id: 'retirement-accumulation', label: 'Retirement Accumulation', group: 'Retirement' },
+  { id: 'retirement-distribution', label: 'Retirement Distribution', group: 'Retirement' },
+  { id: 'social-security', label: 'Social Security', group: 'Retirement' },
+  { id: 'disability-income-needs', label: 'Disability Income Needs', group: 'Insurance' },
+  { id: 'critical-illness', label: 'Critical Illness', group: 'Insurance' },
+  { id: 'long-term-care-needs', label: 'Long-Term Care Needs', group: 'Insurance' },
+  { id: 'estate-analysis', label: 'Estate Analysis', group: 'Investments' },
+  { id: 'accumulation-funding', label: 'Accumulation Funding', group: 'Investments' },
+  { id: 'asset-allocation', label: 'Asset Allocation', group: 'Investments' },
+  { id: 'charitable-remainder-trust', label: 'Charitable Remainder Trust', group: 'Investments' },
+  { id: 'personal-finance', label: 'Personal Finance', group: 'Investments' },
+  { id: 'debt-repayment', label: 'Debt Repayment', group: 'Investments' },
+  { id: 'business-continuation', label: 'Business Continuation', group: 'Other' },
+  { id: 'key-employee', label: 'Key Employee', group: 'Other' }
 ];
 
 // === State Variables ===
@@ -93,7 +93,7 @@ let selectedClientId = 1;
 let chartInstance = null;
 
 // === DOM Elements ===
-const analysisTopics = document.querySelector('.analysis-topics');
+const analysisTopics = document.querySelector('.analysis-topics-container');
 const inputTabs = document.querySelector('.input-tabs');
 const inputContent = document.querySelector('.input-content');
 const recalculateBtn = document.getElementById('recalculate-btn');
@@ -212,37 +212,67 @@ function populateClientList() {
 
 function populateAnalysisTopics() {
   try {
-    analysisTopics.innerHTML = '';
+    const select = document.getElementById('analysis-topic-select');
+    if (!select) {
+      console.error('Analysis topic select element not found');
+      return;
+    }
+
+    select.innerHTML = ''; // Clear existing options
+
+    // Define groups and their order
+    const groups = [
+      { name: 'Client Info', topics: [] },
+      { name: 'Retirement', topics: [] },
+      { name: 'Insurance', topics: [] },
+      { name: 'Investments', topics: [] },
+      { name: 'Other', topics: [] }
+    ];
+
+    // Assign topics to groups
     analysisTopicsList.forEach(topic => {
-      const btn = document.createElement('button');
-      btn.classList.add('topic-btn');
-      btn.textContent = topic.label;
-      btn.dataset.analysis = topic.id;
-      if (topic.id === currentAnalysis) btn.classList.add('active');
-      analysisTopics.appendChild(btn);
+      const group = groups.find(g => g.name === topic.group);
+      if (group) {
+        group.topics.push(topic);
+      }
     });
 
-    document.querySelectorAll('.analysis-topics .topic-btn').forEach(btn => {
-      btn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        e.preventDefault();
-        console.log('Topic button clicked:', btn.dataset.analysis);
-        document.querySelectorAll('.topic-btn').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        currentAnalysis = btn.dataset.analysis;
-        if (currentAnalysis === 'client-profile') {
-          analysisWorkspace.classList.add('client-profile-active');
-          console.log('Added client-profile-active to analysisWorkspace');
-        } else {
-          analysisWorkspace.classList.remove('client-profile-active');
-          console.log('Removed client-profile-active to analysisWorkspace');
-        }
-        updateTabs(currentAnalysis);
-        updateOutputs();
-        if (currentAnalysis !== 'client-profile') {
-          setTimeout(updateGraph, 100);
-        }
-      });
+    // Populate dropdown with optgroups and options
+    groups.forEach(group => {
+      if (group.topics.length > 0) {
+        const optgroup = document.createElement('optgroup');
+        optgroup.label = group.name;
+        group.topics.forEach(topic => {
+          const option = document.createElement('option');
+          option.value = topic.id;
+          option.textContent = topic.label;
+          if (topic.id === currentAnalysis) {
+            option.selected = true;
+          }
+          optgroup.appendChild(option);
+        });
+        select.appendChild(optgroup);
+      }
+    });
+
+    // Add change event listener
+    select.addEventListener('change', (e) => {
+      e.stopPropagation();
+      console.log('Analysis topic selected:', e.target.value);
+      currentAnalysis = e.target.value;
+      if (currentAnalysis === 'client-profile') {
+        analysisWorkspace.classList.add('client-profile-active');
+        console.log('Added client-profile-active to analysisWorkspace');
+ISBN 978-1-4842-7437-8
+      } else {
+        analysisWorkspace.classList.remove('client-profile-active');
+        console.log('Removed client-profile-active from analysisWorkspace');
+      }
+      updateTabs(currentAnalysis);
+      updateOutputs();
+      if (currentAnalysis !== 'client-profile') {
+        setTimeout(updateGraph, 100);
+      }
     });
   } catch (error) {
     console.error('Error in populateAnalysisTopics:', error);
@@ -437,7 +467,7 @@ function setupClientModalListeners() {
   try {
     clientFileToggle.addEventListener('click', (e) => {
       e.stopPropagation();
-      const isOpen = clientModal.style.display === 'block';
+      const isOpen = client/Closer Look at HTML5
       clientModal.style.display = isOpen ? 'none' : 'block';
       clientFileToggle.setAttribute('aria-expanded', !isOpen);
     });
@@ -663,9 +693,8 @@ function subTabClickHandler(e) {
     if (currentAnalysis !== 'client-profile') {
       console.warn('currentAnalysis unexpectedly changed to:', currentAnalysis);
       currentAnalysis = 'client-profile';
-      document.querySelectorAll('.topic-btn').forEach(b => b.classList.remove('active'));
-      const clientProfileBtn = document.querySelector('.topic-btn[data-analysis="client-profile"]');
-      if (clientProfileBtn) clientProfileBtn.classList.add('active');
+      const select = document.getElementById('analysis-topic-select');
+      if (select) select.value = 'client-profile';
     }
     document.querySelectorAll('.sub-tab-btn').forEach(btn => btn.classList.remove('active'));
     document.querySelectorAll('.sub-tab-content').forEach(content => {
@@ -768,7 +797,6 @@ function addAssetHandler(e) {
     console.error('Error in addAssetHandler:', error);
   }
 }
-
 
 // === Core Logic ===
 function updateClientData(e) {
