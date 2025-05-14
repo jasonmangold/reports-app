@@ -1,5 +1,5 @@
 const reports = [
-  // 1. Personal Finance
+  // Personal Finance
   { 
     category: "Personal Finance", 
     subcategory: "Goal Setting", 
@@ -22,7 +22,7 @@ const reports = [
     tags: ["budgeting", "debt", "beginner", "all-ages", "individual", "topic-debt"]
   },
 
-  // 2. Income Taxes
+  // Income Taxes
   { 
     category: "Income Taxes", 
     subcategory: "Basic Income Tax", 
@@ -45,7 +45,7 @@ const reports = [
     tags: ["taxes", "intermediate", "all-ages", "individual"]
   },
 
-  // 3. Investments
+  // Investments
   { 
     category: "Investments", 
     subcategory: "Investment Planning", 
@@ -75,14 +75,14 @@ const reports = [
     tags: ["investments", "advanced", "46-60", "individual"]
   },
 
-  // 4. Retirement Planning
+  // Retirement Planning
   { 
     category: "Retirement Planning", 
     subcategory: "Retirement Needs Analysis", 
     title: "The Need for Retirement Planning", 
     content: `
       <p>Traditionally, retirement in America has been defined in terms of its relationship to participation in the active work force. An individual would work full-time until a certain age, and then leave employment to spend a few years quietly rocking on the front porch. Declining health often made retirement short and unpleasant. Retirement planning, as such, typically focused on saving enough to guarantee minimal survival for a relatively brief period of time.</p>
-      <p>More recently, however, many individuals are beginning to recognize that for a number of reasons, this traditional view of retirement is no longer accurate. Some individuals, for example, are voluntarily choosing to retire early, in their 40s or 50s. Others, because they enjoy working, choose to remain employed well past the traditional retirement age of 65. And, many retirees do more than just rock on the front porch. Retirement is now often defined by activities such as travel, returning to school, volunteer work, or the pursuit of favorite hobbies or sports.</p>
+      <p>More recently, however, many individuals are beginning to recognize that for a number of reasons, this traditional view of retirement is no longer accurate. Some individuals, for example, are voluntarily choosing to retire early, in their 40s or 50s. Others, because they enjoy working, choose to remain employed well past the traditional retirement age of 65. And, many retirees do more than just rock on the front porch. Retirement is now often defined by activities such as travel, returning to school, volunteer work, or the pursuit of favoriteGrowth: true
       <p>This changed the face of retirement, however, with all of its possibilities, does not happen automatically. Many of the issues associated with retirement, such as ill health, and the need to provide income, still exist. With proper planning, however, these needs can be met.</p>
       <h3>Longer Lives</h3>
       <p>The single most important factor in this changed retirement picture is the fact that we now live much longer than before. A child born in 1900, for example, had an average life expectancy of 47.3 years. For a child born in 2020, however, average life expectancy had increased to 77.0 years. The following graph<sup>1</sup> illustrates this change.</p>
@@ -181,7 +181,7 @@ const reports = [
     tags: ["retirement", "lifestyle", "all-ages", "individual", "beginner", "topic-retirement"]
   },
 
-  // 5. Insurance
+  // Insurance
   { 
     category: "Insurance", 
     subcategory: "Health Insurance", 
@@ -225,7 +225,7 @@ const reports = [
     tags: ["insurance", "employee-benefits", "30-45", "46-60", "individual", "intermediate"]
   },
 
-  // 6. Home Ownership
+  // Home Ownership
   { 
     category: "Home Ownership", 
     subcategory: "Buying a Home", 
@@ -248,7 +248,7 @@ const reports = [
     tags: ["home-ownership", "maintenance", "all-ages", "individual", "beginner"]
   },
 
-  // 7. Education Funding
+  // Education Funding
   { 
     category: "Education Funding", 
     subcategory: "Planning for College", 
@@ -264,7 +264,7 @@ const reports = [
     tags: ["education", "beginner", "all-ages", "individual", "topic-college"]
   },
 
-  // 8. Estate Planning
+  // Estate Planning
   { 
     category: "Estate Planning", 
     subcategory: "Basic Estate Planning Tools", 
@@ -308,7 +308,7 @@ const reports = [
     tags: ["estate-planning", "advanced", "over-60", "individual"]
   },
 
-  // 9. Business Planning
+  // Business Planning
   { 
     category: "Business Planning", 
     subcategory: "Basic Business Concepts", 
@@ -338,7 +338,7 @@ const reports = [
     tags: ["business", "intermediate", "30-45", "46-60", "business-owner"]
   },
 
-  // 10. Charitable Planning
+  // Charitable Planning
   { 
     category: "Charitable Planning", 
     subcategory: "Gifting Techniques", 
@@ -361,7 +361,7 @@ const reports = [
     tags: ["charitable", "advanced", "over-60", "individual"]
   },
 
-  // 11. Social Security and Government Programs
+  // Social Security and Government Programs
   { 
     category: "Social Security and Government Programs", 
     subcategory: "Social Security Benefits", 
@@ -377,7 +377,7 @@ const reports = [
     tags: ["government-programs", "beginner", "all-ages", "individual"]
   },
 
-  // 12. Advisys Support
+  // Advisys Support
   { 
     category: "Advisys Support", 
     subcategory: "Planning Tools", 
@@ -575,10 +575,10 @@ function renderReports() {
   reports.forEach(report => {
     const plainContent = report.content.replace(/<[^>]+>/g, '');
     const matchesCategory = selectedCategory === 'all' || report.category === selectedCategory;
-    const matchesSubcategory = !selectedSubcategory || (report.subcategory && report.subcategory === selectedSubcategory);
+    const matchesSubcategory = !selectedSubcategory || report.subcategory === selectedSubcategory;
     const matchesSearch = !searchTerm || report.title.toLowerCase().includes(searchTerm) || plainContent.toLowerCase().includes(searchTerm);
-    const matchesOnePager = !isOnePagerFilter || (report.tags && report.tags.includes('one-pager'));
-    const matchesTopic = selectedTopics.length === 0 || (report.tags && selectedTopics.some(topic => report.tags.includes(topic)));
+    const matchesOnePager = !isOnePagerFilter || report.tags.includes('one-pager');
+    const matchesTopic = selectedTopics.length === 0 || report.tags.some(topic => selectedTopics.includes(topic));
     
     if (matchesCategory && matchesSubcategory && matchesSearch && matchesOnePager && matchesTopic) {
       const card = document.createElement('div');
@@ -601,25 +601,6 @@ function renderReports() {
 
   updateBreadcrumb();
   updateReportCounts();
-
-  document.querySelectorAll('.presentation-checkbox').forEach(checkbox => {
-    checkbox.addEventListener('change', (e) => {
-      const card = e.target.closest('.report-card');
-      const title = card.getAttribute('data-title');
-      if (e.target.checked) {
-        if (!presentationReports.includes(title)) {
-          presentationReports.push(title);
-          updatePresentationCount();
-        }
-      } else {
-        const index = presentationReports.indexOf(title);
-        if (index !== -1) {
-          presentationReports.splice(index, 1);
-          updatePresentationCount();
-        }
-      }
-    });
-  });
 }
 
 function updateReportCounts() {
@@ -628,18 +609,19 @@ function updateReportCounts() {
   const isOnePagerFilter = selectedTags.includes('one-pager');
   const selectedTopics = selectedTags.filter(tag => tag.startsWith('topic-'));
 
-  const reportCounts = reports.reduce((counts, report) => {
+  const reportCounts = {};
+  reports.forEach(report => {
     const plainContent = report.content.replace(/<[^>]+>/g, '');
     const matchesSearch = !searchTerm || report.title.toLowerCase().includes(searchTerm) || plainContent.toLowerCase().includes(searchTerm);
-    const matchesOnePager = !isOnePagerFilter || (report.tags && report.tags.includes('one-pager'));
-    const matchesTopic = selectedTopics.length === 0 || (report.tags && selectedTopics.some(topic => report.tags.includes(topic)));
+    const matchesOnePager = !isOnePagerFilter || report.tags.includes('one-pager');
+    const matchesTopic = selectedTopics.length === 0 || report.tags.some(topic => selectedTopics.includes(topic));
     
     if (matchesSearch && matchesOnePager && matchesTopic) {
-      counts[report.subcategory || report.category] = (counts[report.subcategory || report.category] || 0) + 1;
-      counts['all'] = (counts['all'] || 0) + 1;
+      const key = report.subcategory || report.category;
+      reportCounts[key] = (reportCounts[key] || 0) + 1;
+      reportCounts['all'] = (reportCounts['all'] || 0) + 1;
     }
-    return counts;
-  }, {});
+  });
 
   document.querySelectorAll('.report-count').forEach(countEl => {
     const category = countEl.closest('a').dataset.category;
@@ -670,25 +652,48 @@ document.addEventListener('DOMContentLoaded', () => {
     e.preventDefault();
     const target = e.target.closest('a');
     if (target && target.dataset.category) {
+      const category = target.dataset.category;
+      const mainCategories = Object.keys(subfolders);
+      const isMainCategory = mainCategories.includes(category);
+      const isSubcategory = Object.values(subfolders).flat().some(sub => sub.name === category);
+
       categoryFilter.querySelectorAll('a').forEach(a => {
         a.classList.remove('active');
         a.removeAttribute('aria-current');
       });
       target.classList.add('active');
       target.setAttribute('aria-current', 'true');
-      selectedCategory = target.getAttribute('data-category');
-      selectedSubcategory = null;
-      renderSubfolders(selectedCategory);
+
+      if (isMainCategory) {
+        selectedCategory = category;
+        selectedSubcategory = null;
+        renderSubfolders(category);
+      } else if (isSubcategory) {
+        const mainCategory = Object.keys(subfolders).find(key => 
+          subfolders[key].some(sub => sub.name === category)
+        );
+        if (mainCategory) {
+          selectedCategory = mainCategory;
+          selectedSubcategory = category;
+          subfolderContainer.style.display = 'none';
+          reportGrid.style.display = 'block';
+          renderReports();
+        }
+      }
     }
   });
 
-  searchInput.addEventListener('input', updateReportCounts);
-  document.querySelectorAll('#tag-filters input[type="checkbox"]').forEach(checkbox => {
-    checkbox.addEventListener('change', updateReportCounts);
+  searchInput.addEventListener('input', () => {
+    renderReports();
+    updateReportCounts();
   });
 
-  renderReports();
-  updatePresentationCount();
+  document.querySelectorAll('#tag-filters input[type="checkbox"]').forEach(checkbox => {
+    checkbox.addEventListener('change', () => {
+      renderReports();
+      updateReportCounts();
+    });
+  });
 
   const clientFileNameElement = document.getElementById('client-file-name');
   if (clientFileNameElement) {
@@ -697,6 +702,9 @@ document.addEventListener('DOMContentLoaded', () => {
   } else {
     console.warn('Client file name element (#client-file-name) not found in Education tab');
   }
+
+  renderReports();
+  updatePresentationCount();
 });
 
 subfolderContainer.addEventListener('click', (e) => {
