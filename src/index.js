@@ -806,7 +806,7 @@ function updateClientData(e) {
     const value = input.type === 'number' ? (input.value === '' ? '' : parseFloat(input.value)) : input.value;
     console.log(`Updating ${input.id} with value: ${value}`);
 
-    const clientKeyesthesiology
+    const clientKeyesthesiology;
     if (clientKey) {
       const prefix = clientKey === 'client1' ? 'c1' : 'c2';
       if (input.id === `${prefix}-name`) {
