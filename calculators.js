@@ -63,6 +63,12 @@ document.addEventListener('DOMContentLoaded', () => {
     ]
   };
 
+  // Tab definitions
+  const calculatorTabs = [
+    { id: 'inputs', label: 'Inputs' },
+    { id: 'outputs', label: 'Outputs' }
+  ];
+
   // Populate calculator dropdown
   const select = document.getElementById('calculator-topic-select');
   Object.keys(calculators).forEach(category => {
@@ -84,91 +90,98 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   function loadCalculator(calcId) {
-    const workspace = document.getElementById('calculator-workspace');
+    const tabsContainer = document.getElementById('calculator-tabs');
+    tabsContainer.innerHTML = `
+      <div class="tab-list">
+        ${calculatorTabs.map(tab => `
+          <button class="tab-button ${tab.id === 'inputs' ? 'active' : ''}" data-tab="${tab.id}">${tab.label}</button>
+        `).join('')}
+      </div>
+      ${calculatorTabs.map(tab => `
+        <div class="tab-content ${tab.id === 'inputs' ? 'active' : ''}" id="${tab.id}">
+          <div class="output-card">
+            <h3>${tab.label}</h3>
+            <div id="${tab.id}-content"></div>
+          </div>
+        </div>
+      `).join('')}
+    `;
+
+    // Setup tab switching
+    const tabButtons = document.querySelectorAll('.tab-button');
+    tabButtons.forEach(button => {
+      button.addEventListener('click', () => {
+        const tabId = button.dataset.tab;
+        document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+        button.classList.add('active');
+        document.getElementById(tabId).classList.add('active');
+        updateTabContent(calcId, tabId);
+      });
+    });
+
+    // Load initial content
+    updateTabContent(calcId, 'inputs');
+  }
+
+  function updateTabContent(calcId, tabId) {
+    const contentDiv = document.getElementById(`${tabId}-content`);
     if (calcId === 'mortgage') {
-      workspace.innerHTML = `
-        <div class="client-inputs">
-          <h3>Client Inputs</h3>
+      if (tabId === 'inputs') {
+        contentDiv.innerHTML = `
           <div class="input-container">
             <form id="mortgage-form">
-              <label for="loan-amount">Loan Amount ($):</label>
-              <input type="number" id="loan-amount" name="loan-amount" value="200000" required>
-              <label for="interest-rate">Interest Rate (%):</label>
-              <input type="number" id="interest-rate" name="interest-rate" step="0.01" value="4.5" required>
-              <label for="loan-term">Loan Term (years):</label>
-              <input type="number" id="loan-term" name="loan-term" value="30" required>
+              <label>Loan Amount ($):<input type="number" id="loan-amount" name="loan-amount" value="200000" required></label>
+              <label>Interest Rate (%):<input type="number" id="interest-rate" name="interest-rate" step="0.01" value="4.5" required></label>
+              <label>Loan Term (years):<input type="number" id="loan-term" name="loan-term" value="30" required></label>
+              <button type="button" id="recalculate-btn">Recalculate</button>
             </form>
           </div>
-        </div>
-        <div class="graph-outputs">
-          <h3>Analysis Outputs</h3>
-          <canvas id="mortgage-chart"></canvas>
-          <div id="mortgage-result"></div>
-          <button id="recalculate-btn">Recalculate</button>
-          <button id="export-graph-btn">Export Graph</button>
-        </div>
-      `;
-      calculateMortgage();
-      document.getElementById('recalculate-btn').addEventListener('click', calculateMortgage);
-      document.getElementById('export-graph-btn').addEventListener('click', () => {
-        const canvas = document.getElementById('mortgage-chart');
-        const link = document.createElement('a');
-        link.href = canvas.toDataURL('image/png');
-        link.download = 'mortgage-chart.png';
-        link.click();
-      });
+        `;
+        document.getElementById('recalculate-btn').addEventListener('click', () => {
+          calculateMortgage();
+          document.querySelector('.tab-button[data-tab="outputs"]').click();
+        });
+      } else if (tabId === 'outputs') {
+        calculateMortgage();
+      }
     } else if (calcId === 'future-value') {
-      workspace.innerHTML = `
-        <div class="client-inputs">
-          <h3>Client Inputs</h3>
+      if (tabId === 'inputs') {
+        contentDiv.innerHTML = `
           <div class="input-container">
             <form id="future-value-form">
-              <label for="initial-investment">Initial Investment ($):</label>
-              <input type="number" id="initial-investment" name="initial-investment" value="10000" step="0.01" required>
-              <label for="periodic-contribution">Periodic Contribution ($):</label>
-              <input type="number" id="periodic-contribution" name="periodic-contribution" value="500" step="0.01" required>
-              <label for="contribution-frequency">Contribution Frequency:</label>
-              <select id="contribution-frequency" name="contribution-frequency">
+              <label>Initial Investment ($):<input type="number" id="initial-investment" name="initial-investment" value="10000" step="0.01" required></label>
+              <label>Periodic Contribution ($):<input type="number" id="periodic-contribution" name="periodic-contribution" value="500" step="0.01" required></label>
+              <label>Contribution Frequency:<select id="contribution-frequency" name="contribution-frequency">
                 <option value="12">Monthly</option>
                 <option value="4">Quarterly</option>
                 <option value="1">Annually</option>
-              </select>
-              <label for="interest-rate">Annual Interest Rate (%):</label>
-              <input type="number" id="interest-rate" name="interest-rate" value="5" step="0.01" required>
-              <label for="time-period">Time Period (years):</label>
-              <input type="number" id="time-period" name="time-period" value="10" required>
-              <label for="compounding-frequency">Compounding Frequency:</label>
-              <select id="compounding-frequency" name="compounding-frequency">
+              </select></label>
+              <label>Annual Interest Rate (%):<input type="number" id="interest-rate" name="interest-rate" value="5" step="0.01" required></label>
+              <label>Time Period (years):<input type="number" id="time-period" name="time-period" value="10" required></label>
+              <label>Compounding Frequency:<select id="compounding-frequency" name="compounding-frequency">
                 <option value="12">Monthly</option>
                 <option value="4">Quarterly</option>
                 <option value="1">Annually</option>
-              </select>
+              </select></label>
+              <button type="button" id="recalculate-btn">Recalculate</button>
             </form>
           </div>
-        </div>
-        <div class="graph-outputs">
-          <h3>Analysis Outputs</h3>
-          <canvas id="future-value-chart"></canvas>
-          <div id="future-value-result"></div>
-          <button id="recalculate-btn">Recalculate</button>
-          <button id="export-graph-btn">Export Graph</button>
-        </div>
-      `;
-      calculateFutureValue();
-      document.getElementById('recalculate-btn').addEventListener('click', calculateFutureValue);
-      document.getElementById('export-graph-btn').addEventListener('click', () => {
-        const canvas = document.getElementById('future-value-chart');
-        const link = document.createElement('a');
-        link.href = canvas.toDataURL('image/png');
-        link.download = 'future-value-chart.png';
-        link.click();
-      });
+        `;
+        document.getElementById('recalculate-btn').addEventListener('click', () => {
+          calculateFutureValue();
+          document.querySelector('.tab-button[data-tab="outputs"]').click();
+        });
+      } else if (tabId === 'outputs') {
+        calculateFutureValue();
+      }
     } else {
-      workspace.innerHTML = `<p>Select a calculator to begin.</p>`;
+      contentDiv.innerHTML = `<p>Select a calculator to begin.</p>`;
     }
   }
 
   function calculateMortgage() {
+    const contentDiv = document.getElementById('outputs-content');
     const loanAmount = parseFloat(document.getElementById('loan-amount').value);
     const interestRate = parseFloat(document.getElementById('interest-rate').value) / 100 / 12;
     const loanTerm = parseInt(document.getElementById('loan-term').value) * 12;
@@ -178,10 +191,31 @@ document.addEventListener('DOMContentLoaded', () => {
     const totalPayment = monthlyPayment * loanTerm;
     const totalInterest = totalPayment - loanAmount;
 
-    document.getElementById('mortgage-result').innerHTML = `
-      <p>Monthly Payment: $${monthlyPayment.toFixed(2)}</p>
-      <p>Total Payment: $${totalPayment.toFixed(2)}</p>
-      <p>Total Interest: $${totalInterest.toFixed(2)}</p>
+    contentDiv.innerHTML = `
+      <table class="output-table">
+        <thead>
+          <tr>
+            <th>Metric</th>
+            <th>Value</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Monthly Payment</td>
+            <td>$${monthlyPayment.toFixed(2)}</td>
+          </tr>
+          <tr>
+            <td>Total Payment</td>
+            <td>$${totalPayment.toFixed(2)}</td>
+          </tr>
+          <tr>
+            <td>Total Interest</td>
+            <td>$${totalInterest.toFixed(2)}</td>
+          </tr>
+        </tbody>
+      </table>
+      <canvas id="mortgage-chart"></canvas>
+      <button id="export-graph-btn">Export Graph</button>
     `;
 
     const ctx = document.getElementById('mortgage-chart').getContext('2d');
@@ -192,19 +226,29 @@ document.addEventListener('DOMContentLoaded', () => {
         labels: ['Principal', 'Interest'],
         datasets: [{
           data: [loanAmount, totalInterest],
-          backgroundColor: ['#005ea2', '#ff6f61']
+          backgroundColor: ['#22c55e', '#ef4444']
         }]
       },
       options: {
         responsive: true,
         plugins: {
-          legend: { position: 'top' }
+          legend: { position: 'top' },
+          title: { display: true, text: 'Mortgage Payment Breakdown' }
         }
       }
+    });
+
+    document.getElementById('export-graph-btn').addEventListener('click', () => {
+      const canvas = document.getElementById('mortgage-chart');
+      const link = document.createElement('a');
+      link.href = canvas.toDataURL('image/png');
+      link.download = 'mortgage-chart.png';
+      link.click();
     });
   }
 
   function calculateFutureValue() {
+    const contentDiv = document.getElementById('outputs-content');
     const initialInvestment = parseFloat(document.getElementById('initial-investment').value);
     const periodicContribution = parseFloat(document.getElementById('periodic-contribution').value);
     const contributionFrequency = parseInt(document.getElementById('contribution-frequency').value);
@@ -212,39 +256,52 @@ document.addEventListener('DOMContentLoaded', () => {
     const timePeriod = parseInt(document.getElementById('time-period').value);
     const compoundingFrequency = parseInt(document.getElementById('compounding-frequency').value);
 
-    // Calculate effective interest rate and number of periods
     const ratePerPeriod = interestRate / compoundingFrequency;
     const totalPeriods = timePeriod * compoundingFrequency;
-
-    // Future value of initial investment (compound interest)
     const fvInitial = initialInvestment * Math.pow(1 + ratePerPeriod, totalPeriods);
 
-    // Future value of periodic contributions (annuity formula)
-    const periodsPerContribution = compoundingFrequency / contributionFrequency;
     let fvContributions = 0;
     if (periodicContribution > 0 && contributionFrequency > 0) {
       const contributionRate = interestRate / contributionFrequency;
       const totalContributionPeriods = timePeriod * contributionFrequency;
       fvContributions = periodicContribution * (Math.pow(1 + contributionRate, totalContributionPeriods) - 1) / contributionRate;
-      // Adjust for different compounding and contribution frequencies
       if (contributionFrequency !== compoundingFrequency) {
+        const periodsPerContribution = compoundingFrequency / contributionFrequency;
         fvContributions *= Math.pow(1 + ratePerPeriod, periodsPerContribution);
       }
     }
 
-    // Total future value
     const totalFutureValue = fvInitial + fvContributions;
     const totalPrincipal = initialInvestment + (periodicContribution * timePeriod * contributionFrequency);
     const totalInterest = totalFutureValue - totalPrincipal;
 
-    // Display results
-    document.getElementById('future-value-result').innerHTML = `
-      <p>Future Value: $${totalFutureValue.toFixed(2)}</p>
-      <p>Total Contributions: $${totalPrincipal.toFixed(2)}</p>
-      <p>Total Interest: $${totalInterest.toFixed(2)}</p>
+    contentDiv.innerHTML = `
+      <table class="output-table">
+        <thead>
+          <tr>
+            <th>Metric</th>
+            <th>Value</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Future Value</td>
+            <td>$${totalFutureValue.toFixed(2)}</td>
+          </tr>
+          <tr>
+            <td>Total Contributions</td>
+            <td>$${totalPrincipal.toFixed(2)}</td>
+          </tr>
+          <tr>
+            <td>Total Interest</td>
+            <td>$${totalInterest.toFixed(2)}</td>
+          </tr>
+        </tbody>
+      </table>
+      <canvas id="future-value-chart"></canvas>
+      <button id="export-graph-btn">Export Graph</button>
     `;
 
-    // Create pie chart
     const ctx = document.getElementById('future-value-chart').getContext('2d');
     if (window.fvChart) window.fvChart.destroy();
     window.fvChart = new Chart(ctx, {
@@ -253,15 +310,24 @@ document.addEventListener('DOMContentLoaded', () => {
         labels: ['Principal', 'Interest'],
         datasets: [{
           data: [totalPrincipal, totalInterest],
-          backgroundColor: ['#005ea2', '#ff6f61']
+          backgroundColor: ['#22c55e', '#ef4444']
         }]
       },
       options: {
         responsive: true,
         plugins: {
-          legend: { position: 'top' }
+          legend: { position: 'top' },
+          title: { display: true, text: 'Future Value Breakdown' }
         }
       }
+    });
+
+    document.getElementById('export-graph-btn').addEventListener('click', () => {
+      const canvas = document.getElementById('future-value-chart');
+      const link = document.createElement('a');
+      link.href = canvas.toDataURL('image/png');
+      link.download = 'future-value-chart.png';
+      link.click();
     });
   }
 
