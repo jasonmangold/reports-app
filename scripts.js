@@ -33,7 +33,6 @@ const reports = [
         <li><strong>Lifestyle:</strong> Some individuals, accustomed to a busy work life, find it difficult to enjoy the freedom offered by retirement. Planning ahead can make this transition easier.</li>
       </ul>
       <h3>Seek Professional Guidance</h3>
-      <p>Developingcpy
       <p>Developing a successful retirement plan involves carefully considering a wide range of issues and potential problems. Finding solutions to these questions often requires both personal education and the guidance of knowledgeable individuals, from many professional disciplines. The key is to begin planning as early as possible.</p>
       <p><em>Presented by Jason Mangold</em></p>
     `,
@@ -219,6 +218,7 @@ function renderReports() {
       card.classList.add('report-card', 'list-view');
       card.setAttribute('data-title', report.title);
       card.setAttribute('data-content', report.content);
+      card.setAttribute('data-category', report.category); // Added for category filtering
       const isSelected = presentationReports.includes(report.title);
       card.innerHTML = `
         <div class="report-card-content">
@@ -233,6 +233,7 @@ function renderReports() {
   });
 
   updateBreadcrumb();
+  updateReportCounts(); // Update counts after rendering reports
 
   document.querySelectorAll('.presentation-checkbox').forEach(checkbox => {
     checkbox.addEventListener('change', (e) => {
@@ -254,36 +255,83 @@ function renderReports() {
   });
 }
 
-categoryFilter.addEventListener('click', (e) => {
-  e.preventDefault();
-  const target = e.target;
-  if (target.tagName === 'A') {
-    categoryFilter.querySelectorAll('a').forEach(a => a.classList.remove('active'));
-    target.classList.add('active');
-    selectedCategory = target.getAttribute('data-category');
-    selectedSubcategory = null;
-    renderSubfolders(selectedCategory);
-    if (selectedCategory !== 'Retirement Planning') {
-      renderReports();
+function updateReportCounts() {
+  const searchTerm = searchInput.value.toLowerCase().trim();
+  const selectedTags = Array.from(document.querySelectorAll('#tag-filters input:checked')).map(input => input.value);
+  const isOnePagerFilter = selectedTags.includes('one-pager');
+  const selectedTopics = selectedTags.filter(tag => tag.startsWith('topic-'));
+
+  const reportCounts = reports.reduce((counts, report) => {
+    const plainContent = report.content.replace(/<[^>]+>/g, '');
+    const matchesSearch = !searchTerm || report.title.toLowerCase().includes(searchTerm) || plainContent.toLowerCase().includes(searchTerm);
+    const matchesOnePager = !isOnePagerFilter || (report.tags && report.tags.includes('one-pager'));
+    const matchesTopic = selectedTopics.length === 0 || (report.tags && selectedTopics.some(topic => report.tags.includes(topic)));
+    
+    if (matchesSearch && matchesOnePager && matchesTopic) {
+      counts[report.category] = (counts[report.category] || 0) + 1;
+      counts['all'] = (counts['all'] || 0) + 1;
     }
-  }
+    return counts;
+  }, {});
+
+  document.querySelectorAll('.report-count').forEach(countEl => {
+    const category = countEl.closest('a').dataset.category;
+    countEl.textContent = `(${reportCounts[category] || 0})`;
+  });
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  // Toggle collapsible groups
+  document.querySelectorAll('.group-toggle').forEach(toggle => {
+    toggle.addEventListener('click', (e) => {
+      e.preventDefault();
+      const group = toggle.closest('.category-group');
+      const isExpanded = group.getAttribute('aria-expanded') === 'true';
+      group.setAttribute('aria-expanded', !isExpanded);
+    });
+
+    toggle.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        toggle.click();
+      }
+    });
+  });
+
+  // Initialize counts on load
+  updateReportCounts();
+
+  // Existing category filter logic
+  categoryFilter.addEventListener('click', (e) => {
+    e.preventDefault();
+    const target = e.target.closest('a');
+    if (target && target.dataset.category) {
+      categoryFilter.querySelectorAll('a').forEach(a => {
+        a.classList.remove('active');
+        a.removeAttribute('aria-current');
+      });
+      target.classList.add('active');
+      target.setAttribute('aria-current', 'true');
+      selectedCategory = target.getAttribute('data-category');
+      selectedSubcategory = null;
+      renderSubfolders(selectedCategory);
+      if (selectedCategory !== 'Retirement Planning') {
+        renderReports();
+      }
+    }
+  });
+
+  // Update counts on search or filter changes
+  searchInput.addEventListener('input', updateReportCounts);
+  document.querySelectorAll('#tag-filters input[type="checkbox"]').forEach(checkbox => {
+    checkbox.addEventListener('change', updateReportCounts);
+  });
 });
 
 subfolderContainer.addEventListener('click', (e) => {
   const subfolder = e.target.closest('.subfolder');
   if (subfolder) {
     selectedSubcategory = subfolder.getAttribute('data-subcategory');
-    subfolderContainer.style.display = 'none';
-    reportGrid.style.display = 'block';
-    renderReports();
-  }
-});
-
-searchInput.addEventListener('input', () => {
-  if (selectedCategory === 'Retirement Planning' && !selectedSubcategory) {
-    subfolderContainer.style.display = 'flex';
-    reportGrid.style.display = 'none';
-  } else {
     subfolderContainer.style.display = 'none';
     reportGrid.style.display = 'block';
     renderReports();
@@ -358,12 +406,6 @@ modalSavePdfBtn.addEventListener('click', () => {
     .save();
 });
 
-document.querySelectorAll('#tag-filters input[type="checkbox"]').forEach(checkbox => {
-  checkbox.addEventListener('change', () => {
-    renderReports();
-  });
-});
-
 document.addEventListener('DOMContentLoaded', () => {
   const clientFileNameElement = document.getElementById('client-file-name');
   if (clientFileNameElement) {
@@ -372,7 +414,6 @@ document.addEventListener('DOMContentLoaded', () => {
   } else {
     console.warn('Client file name element (#client-file-name) not found in Education tab');
   }
+  renderReports();
+  updatePresentationCount();
 });
-
-renderReports();
-updatePresentationCount();
