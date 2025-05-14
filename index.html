@@ -667,7 +667,7 @@
     }
 
     body.dark-mode .save-pdf-top-btn {
-      background: #60a Occupation: inherit;
+      background: #60a5fa;
     }
 
     body.dark-mode .save-pdf-top-btn:hover {
@@ -1027,8 +1027,8 @@
     }
 
     body.dark-mode .client-inputs input[type="text"],
-    body.dark-mode .client-inputs input[type="number"],
-    body.dark-mode .client-inputs input[type="date"] {
+    .client-inputs input[type="number"],
+    .client-inputs input[type="date"] {
       background: #475569;
       color: #f1f5f9;
       border-color: #64748b;
@@ -1229,7 +1229,8 @@
       }
 
       .client-inputs,
-      .graph wytęty: flex: 1;
+      .graph-outputs {
+        flex: 1;
         min-width: 100%;
       }
 
@@ -1489,7 +1490,7 @@
       margin-bottom: 20px;
       background: #fff;
       display: block;
-      visibility: visibile;
+      visibility: visible;
     }
 
     .report-preview img,
@@ -1708,7 +1709,7 @@
       <ul id="category-filter" role="navigation" aria-label="Report categories">
         <li>
           <a href="#" data-category="all" class="active" aria-current="true">
-            <i class="fas fa-th"></i> All <span class="report-count">(600)</span>
+            <i class="fas fa-th"></i> All <span class="report-count"></span>
           </a>
         </li>
         <li class="category-group" aria-expanded="false">
@@ -1719,12 +1720,12 @@
           <ul class="sub-categories" id="personal-finance-group">
             <li>
               <a href="#" data-category="Personal Finance">
-                Personal Finance <span class="report-count">(45)</span>
+                Personal Finance <span class="report-count"></span>
               </a>
             </li>
             <li>
               <a href="#" data-category="Personal Cash Flow">
-                Personal Cash Flow <span class="report-count">(30)</span>
+                Personal Cash Flow <span class="report-count"></span>
               </a>
             </li>
           </ul>
@@ -1736,23 +1737,18 @@
           </a>
           <ul class="sub-categories" id="insurance-group">
             <li>
-              <a href="#" data-category="Health and Medical">
-                Health and Medical <span class="report-count">(25)</span>
-              </a>
-            </li>
-            <li>
-              <a href="#" data-category="Employee Benefits">
-                Employee Benefits <span class="report-count">(20)</span>
-              </a>
-            </li>
-            <li>
-              <a href="#" data-category="Long-Term Care">
-                Long-Term Care <span class="report-count">(15)</span>
+              <a href="#" data-category="Protecting Your Finances">
+                Protecting Your Finances <span class="report-count"></span>
               </a>
             </li>
             <li>
               <a href="#" data-category="Disability">
-                Disability <span class="report-count">(10)</span>
+                Disability <span class="report-count"></span>
+              </a>
+            </li>
+            <li>
+              <a href="#" data-category="Long-Term Care">
+                Long-Term Care <span class="report-count"></span>
               </a>
             </li>
           </ul>
@@ -1764,74 +1760,13 @@
           </a>
           <ul class="sub-categories" id="planning-group">
             <li>
-              <a href="#" data-category="Investments">
-                Investments <span class="report-count">(50)</span>
-              </a>
-            </li>
-            <li>
               <a href="#" data-category="Retirement Planning">
-                Retirement Planning <span class="report-count">(60)</span>
+                Retirement Planning <span class="report-count"></span>
               </a>
             </li>
             <li>
               <a href="#" data-category="Education Funding">
-                Education Funding <span class="report-count">(30)</span>
-              </a>
-            </li>
-          </ul>
-        </li>
-        <li class="category-group" aria-expanded="false">
-          <a href="#" class="group-toggle" role="button" aria-controls="taxes-legal-group">
-            <i class="fas fa-balance-scale"></i> Taxes & Legal
-            <i class="fas fa-chevron-down toggle-icon"></i>
-          </a>
-          <ul class="sub-categories" id="taxes-legal-group">
-            <li>
-              <a href="#" data-category="Income Taxes">
-                Income Taxes <span class="report-count">(35)</span>
-              </a>
-            </li>
-            <li>
-              <a href="#" data-category="Estate Planning">
-                Estate Planning <span class="report-count">(40)</span>
-              </a>
-            </li>
-          </ul>
-        </li>
-        <li class="category-group" aria-expanded="false">
-          <a href="#" class="group-toggle" role="button" aria-controls="other-group">
-            <i class="fas fa-ellipsis-h"></i> Other
-            <i class="fas fa-chevron-down toggle-icon"></i>
-          </a>
-          <ul class="sub-categories" id="other-group">
-            <li>
-              <a href="#" data-category="Home Ownership">
-                Home Ownership <span class="report-count">(25)</span>
-              </a>
-            </li>
-            <li>
-              <a href="#" data-category="Protecting Your Finances">
-                Protecting Your Finances <span class="report-count">(20)</span>
-              </a>
-            </li>
-            <li>
-              <a href="#" data-category="Social Security and Other Government Programs">
-                Social Security & Gov. Programs <span class="report-count">(30)</span>
-              </a>
-            </li>
-            <li>
-              <a href="#" data-category="Business Planning">
-                Business Planning <span class="report-count">(15)</span>
-              </a>
-            </li>
-            <li>
-              <a href="#" data-category="Charitable Planning">
-                Charitable-planning <span class="report-count">(10)</span>
-              </a>
-            </li>
-            <li>
-              <a href="#" data-category="Advisor Support">
-                Advisor Support <span class="report-count">(5)</span>
+                Education Funding <span class="report-count"></span>
               </a>
             </li>
           </ul>
@@ -1863,133 +1798,29 @@
       <div id="subfolder-container" class="subfolder-grid" style="display: none;"></div>
       <div id="report-grid" class="report-grid grid-view"></div>
     </div>
-  </div>
-  <div class="modal" id="report-modal">
+    </div>
+  <div id="report-modal" class="modal">
     <div class="modal-content">
       <div class="modal-header">
         <div class="modal-title-row">
           <h2 id="modal-title"></h2>
           <div class="modal-actions">
-            <button id="modal-share-btn" class="share-icon-btn" title="Share on Social Media"><i class="fas fa-share-alt"></i></button>
-            <button id="modal-save-pdf-btn" class="save-pdf-top-btn" title="Save PDF">Save PDF</button>
+            <button id="modal-share-btn" class="share-icon-btn" title="Share">
+              <i class="fas fa-share-alt"></i>
+            </button>
+            <button id="modal-save-pdf-btn" class="save-pdf-top-btn">Save PDF</button>
           </div>
         </div>
-        <span class="close" id="modal-close">×</span>
+        <span id="modal-close" class="close">&times;</span>
       </div>
       <div class="modal-body" id="modal-content"></div>
       <div class="modal-footer">
-        <button class="save-pdf-btn" id="save-pdf-btn">Save PDF</button>
+        <button id="save-pdf-btn" class="save-pdf-btn">Save as PDF</button>
       </div>
     </div>
   </div>
-  <script>
-    // Existing header fetch logic
-    fetch('header.html')
-      .then(response => response.text())
-      .then(data => {
-        document.getElementById('header-placeholder').innerHTML = data;
-        const currentPage = window.location.pathname.split('/').pop() || 'index.html';
-        const navLinks = document.querySelectorAll('nav ul li a');
-        navLinks.forEach(link => {
-          const href = link.getAttribute('href');
-          if (href === currentPage) {
-            link.classList.add('active');
-          }
-        });
-        const profilePic = document.getElementById('profile-pic');
-        const dropdownMenu = document.getElementById('dropdown-menu');
-        if (profilePic && dropdownMenu) {
-          profilePic.addEventListener('click', () => {
-            dropdownMenu.style.display = dropdownMenu.style.display === 'block' ? 'none' : 'block';
-          });
-          document.addEventListener('click', (e) => {
-            if (!profilePic.contains(e.target) && !dropdownMenu.contains(e.target)) {
-              dropdownMenu.style.display = 'none';
-            }
-          });
-        }
-      })
-      .catch(error => console.error('Error loading header:', error));
-
-    // New sidebar interactivity
-    document.addEventListener('DOMContentLoaded', () => {
-      // Toggle collapsible groups
-      document.querySelectorAll('.group-toggle').forEach(toggle => {
-        toggle.addEventListener('click', (e) => {
-          e.preventDefault();
-          const group = toggle.closest('.category-group');
-          const isExpanded = group.getAttribute('aria-expanded') === 'true';
-          group.setAttribute('aria-expanded', !isExpanded);
-        });
-
-        toggle.addEventListener('keydown', (e) => {
-          if (e.key === 'Enter' || e.key === ' ') {
-            e.preventDefault();
-            toggle.click();
-          }
-        });
-      });
-
-      // Handle category selection
-      document.querySelectorAll('#category-filter a[data-category]').forEach(link => {
-        link.addEventListener('click', (e) => {
-          e.preventDefault();
-          document.querySelectorAll('#category-filter a').forEach(a => {
-            a.classList.remove('active');
-            a.removeAttribute('aria-current');
-          });
-          link.classList.add('active');
-          link.setAttribute('aria-current', 'true');
-
-          const category = link.dataset.category;
-          filterReportsByCategory(category);
-        });
-      });
-
-      // Placeholder function to filter reports
-      function filterReportsByCategory(category) {
-        const reportCards = document.querySelectorAll('.report-card');
-        reportCards.forEach(card => {
-          const cardCategory = card.dataset.category;
-          card.style.display = category === 'all' || cardCategory === category ? 'block' : 'none';
-        });
-        updateReportCounts();
-      }
-
-      // Update report counts dynamically
-      function updateReportCounts() {
-        const reportCounts = {
-          'all': 600,
-          'Personal Finance': 45,
-          'Personal Cash Flow': 30,
-          'Health and Medical': 25,
-          'Employee Benefits': 20,
-          'Long-Term Care': 15,
-          'Disability': 10,
-          'Investments': 50,
-          'Retirement Planning': 60,
-          'Education Funding': 30,
-          'Income Taxes': 35,
-          'Estate Planning': 40,
-          'Home Ownership': 25,
-          'Protecting Your Finances': 20,
-          'Social Security and Other Government Programs': 30,
-          'Business Planning': 15,
-          'Charitable Planning': 10,
-          'Advisor Support': 5
-        };
-
-        document.querySelectorAll('.report-count').forEach(countEl => {
-          const category = countEl.closest('a').dataset.category;
-          countEl.textContent = `(${reportCounts[category] || 0})`;
-        });
-      }
-
-      // Initialize counts on load
-      updateReportCounts();
-    });
-  </script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-  <script src="scripts.js"></script>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<script src="scripts.js"></script>
 </body>
 </html>
