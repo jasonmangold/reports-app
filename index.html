@@ -32,7 +32,6 @@
       z-index: 1000;
     }
 
-    /* Client File Styles */
     .client-file {
       margin-left: 20px;
       font-size: 16px;
@@ -49,7 +48,6 @@
       color: #3b82f6;
     }
 
-    /* Dark Mode Adjustments */
     body.dark-mode .client-file {
       color: #f1f5f9;
     }
@@ -101,12 +99,15 @@
     }
 
     .sidebar {
-      width: 280px;
+      width: 300px;
       background: #ffffff;
       border-radius: 12px;
       padding: 20px;
       box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
       height: fit-content;
+      position: sticky;
+      top: 80px;
+      transition: background 0.3s;
     }
 
     .sidebar h3 {
@@ -116,24 +117,136 @@
       margin-bottom: 15px;
     }
 
-    .sidebar ul {
-      list-style: none;
-    }
-
-    .sidebar ul li {
+    .category-group {
       margin-bottom: 12px;
     }
 
-    .sidebar ul li a {
+    .group-toggle {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      text-decoration: none;
+      color: #1e293b;
+      font-size: 14px;
+      font-weight: 600;
+      padding: 8px 12px;
+      border-radius: 4px;
+      transition: background 0.2s, color 0.2s;
+    }
+
+    .group-toggle:hover {
+      background: #eff6ff;
+      color: #3b82f6;
+    }
+
+    .group-toggle i.toggle-icon {
+      transition: transform 0.3s;
+    }
+
+    .category-group[aria-expanded="true"] .toggle-icon {
+      transform: rotate(180deg);
+    }
+
+    .sub-categories {
+      display: none;
+      padding-left: 20px;
+      margin-top: 8px;
+    }
+
+    .category-group[aria-expanded="true"] .sub-categories {
+      display: block;
+    }
+
+    .sub-categories li {
+      margin-bottom: 8px;
+    }
+
+    .sub-categories a {
       text-decoration: none;
       color: #475569;
       font-size: 14px;
-      transition: color 0.2s;
+      display: flex;
+      align-items: center;
+      padding: 6px 12px;
+      border-radius: 4px;
+      transition: background 0.2s, color 0.2s;
     }
 
-    .sidebar ul li a:hover,
-    .sidebar ul li a.active {
+    .sub-categories a:hover,
+    .sub-categories a.active {
+      background: #eff6ff;
       color: #3b82f6;
+    }
+
+    .report-count {
+      font-size: 12px;
+      color: #64748b;
+      margin-left: 8px;
+    }
+
+    .sidebar a i {
+      margin-right: 8px;
+      font-size: 14px;
+      color: #64748b;
+    }
+
+    .sidebar a:hover i,
+    .sidebar a.active i {
+      color: #3b82f6;
+    }
+
+    body.dark-mode .sidebar {
+      background: #334155;
+    }
+
+    body.dark-mode .sidebar h3 {
+      color: #60a5fa;
+    }
+
+    body.dark-mode .group-toggle {
+      color: #f1f5f9;
+    }
+
+    body.dark-mode .group-toggle:hover {
+      background: #4b5e7a;
+      color: #60a5fa;
+    }
+
+    body.dark-mode .sub-categories a {
+      color: #94a3b8;
+    }
+
+    body.dark-mode .sub-categories a:hover,
+    body.dark-mode .sub-categories a.active {
+      background: #4b5e7a;
+      color: #60a5fa;
+    }
+
+    body.dark-mode .report-count {
+      color: #94a3b8;
+    }
+
+    body.dark-mode .sidebar a i {
+      color: #94a3b8;
+    }
+
+    body.dark-mode .sidebar a:hover i,
+    body.dark-mode .sidebar a.active i {
+      color: #60a5fa;
+    }
+
+    .group-toggle:focus,
+    .sub-categories a:focus {
+      outline: 2px solid #3b82f6;
+      outline-offset: 2px;
+    }
+
+    @media (max-width: 768px) {
+      .sidebar {
+        width: 100%;
+        position: relative;
+        top: 0;
+      }
     }
 
     .main-content {
@@ -509,7 +622,6 @@
     }
 
     body.dark-mode header,
-    body.dark-mode .sidebar,
     body.dark-mode .subfolder,
     body.dark-mode .report-card,
     body.dark-mode .modal-content {
@@ -555,7 +667,7 @@
     }
 
     body.dark-mode .save-pdf-top-btn {
-      background: #60a5fa;
+      background: #60a Occupation: inherit;
     }
 
     body.dark-mode .save-pdf-top-btn:hover {
@@ -570,7 +682,7 @@
       color: #60a5fa;
     }
 
-    /* Analysis Page Layout */
+    /* Remaining original styles unchanged */
     .analysis-page {
       padding: 0 20px 20px;
       height: calc(100vh - 70px);
@@ -832,7 +944,6 @@
       color: #3b82f6;
     }
 
-    /* Dropdown for Analysis tab */
     .dropdown {
       position: relative;
     }
@@ -865,7 +976,6 @@
       color: #3b82f6;
     }
 
-    /* Dark Mode Adjustments */
     body.dark-mode .dropdown-content,
     body.dark-mode .analysis-topics,
     body.dark-mode .topic-btn.active {
@@ -1007,7 +1117,6 @@
       color: #60a5fa;
     }
 
-    /* Analysis Outputs */
     #analysis-outputs {
       margin-top: 20px;
       display: flex;
@@ -1094,7 +1203,6 @@
       font-style: italic;
     }
 
-    /* Progress Bar for Funds Depletion */
     .depletion-progress {
       margin-top: 15px;
     }
@@ -1115,15 +1223,13 @@
       border-radius: 4px;
     }
 
-    /* Responsive Adjustments */
     @media (max-width: 768px) {
       .analysis-workspace {
         flex-direction: column;
       }
 
       .client-inputs,
-      .graph-outputs {
-        flex: 1;
+      .graph wytęty: flex: 1;
         min-width: 100%;
       }
 
@@ -1215,7 +1321,6 @@
       width: auto;
     }
 
-    /* Presentation Page Layout */
     .presentation-page {
       padding: 20px;
       max-width: 1200px;
@@ -1310,7 +1415,6 @@
       padding-bottom: 5px;
     }
 
-    /* Dark Mode Adjustments */
     body.dark-mode .presentation-page h2 {
       color: #f1f5f9;
     }
@@ -1385,7 +1489,7 @@
       margin-bottom: 20px;
       background: #fff;
       display: block;
-      visibility: visible;
+      visibility: visibile;
     }
 
     .report-preview img,
@@ -1396,13 +1500,12 @@
       visibility: visible;
     }
 
-    /* Ensure text and tables are visible */
     .output-card, .output-table, h3, p {
       display: block;
       visibility: visible;
       color: #000;
     }
-    /* New styles for Client Profile */
+
     .analysis-workspace.client-profile-active .graph-outputs {
       display: none;
     }
@@ -1413,7 +1516,7 @@
       width: 100%;
       min-width: 0;
     }
-    /* Sub-tabs for Client Profile */
+
     .sub-tabs {
       display: flex;
       flex-wrap: wrap;
@@ -1451,7 +1554,6 @@
       display: block;
     }
 
-    /* Dark mode adjustments */
     body.dark-mode .sub-tab-btn {
       color: #ddd;
     }
@@ -1557,7 +1659,6 @@
       background-color: #0056b3;
     }
 
-    /* Responsive adjustments */
     @media (max-width: 768px) {
       .client-file {
         min-width: 150px;
@@ -1602,27 +1703,139 @@
 <body>
   <div id="header-placeholder"></div>
   <div class="reports-page">
-    <div class="sidebar">
+    <div class="sidebar" style="position: sticky; top: 80px;">
       <h3>Categories</h3>
-      <ul id="category-filter">
-        <li><a href="#" data-category="all" class="active">All</a></li>
-        <li><a href="#" data-category="Personal Finance">Personal Finance</a></li>
-        <li><a href="#" data-category="Personal Cash Flow">Personal Cash Flow</a></li>
-        <li><a href="#" data-category="Health and Medical">Health and Medical</a></li>
-        <li><a href="#" data-category="Employee Benefits">Employee Benefits</a></li>
-        <li><a href="#" data-category="Long-Term Care">Long-Term Care</a></li>
-        <li><a href="#" data-category="Disability">Disability</a></li>
-        <li><a href="#" data-category="Income Taxes">Income Taxes</a></li>
-        <li><a href="#" data-category="Home Ownership">Home Ownership</a></li>
-        <li><a href="#" data-category="Investments">Investments</a></li>
-        <li><a href="#" data-category="Retirement Planning">Retirement Planning</a></li>
-        <li><a href="#" data-category="Education Funding">Education Funding</a></li>
-        <li><a href="#" data-category="Protecting Your Finances">Protecting Your Finances</a></li>
-        <li><a href="#" data-category="Social Security and Other Government Programs">Social Security and Other Government Programs</a></li>
-        <li><a href="#" data-category="Estate Planning">Estate Planning</a></li>
-        <li><a href="#" data-category="Business Planning">Business Planning</a></li>
-        <li><a href="#" data-category="Charitable Planning">Charitable Planning</a></li>
-        <li><a href="#" data-category="Advisor Support">Advisor Support</a></li>
+      <ul id="category-filter" role="navigation" aria-label="Report categories">
+        <li>
+          <a href="#" data-category="all" class="active" aria-current="true">
+            <i class="fas fa-th"></i> All <span class="report-count">(600)</span>
+          </a>
+        </li>
+        <li class="category-group" aria-expanded="false">
+          <a href="#" class="group-toggle" role="button" aria-controls="personal-finance-group">
+            <i class="fas fa-dollar-sign"></i> Personal Finance & Cash Flow
+            <i class="fas fa-chevron-down toggle-icon"></i>
+          </a>
+          <ul class="sub-categories" id="personal-finance-group">
+            <li>
+              <a href="#" data-category="Personal Finance">
+                Personal Finance <span class="report-count">(45)</span>
+              </a>
+            </li>
+            <li>
+              <a href="#" data-category="Personal Cash Flow">
+                Personal Cash Flow <span class="report-count">(30)</span>
+              </a>
+            </li>
+          </ul>
+        </li>
+        <li class="category-group" aria-expanded="false">
+          <a href="#" class="group-toggle" role="button" aria-controls="insurance-group">
+            <i class="fas fa-shield-alt"></i> Insurance & Protection
+            <i class="fas fa-chevron-down toggle-icon"></i>
+          </a>
+          <ul class="sub-categories" id="insurance-group">
+            <li>
+              <a href="#" data-category="Health and Medical">
+                Health and Medical <span class="report-count">(25)</span>
+              </a>
+            </li>
+            <li>
+              <a href="#" data-category="Employee Benefits">
+                Employee Benefits <span class="report-count">(20)</span>
+              </a>
+            </li>
+            <li>
+              <a href="#" data-category="Long-Term Care">
+                Long-Term Care <span class="report-count">(15)</span>
+              </a>
+            </li>
+            <li>
+              <a href="#" data-category="Disability">
+                Disability <span class="report-count">(10)</span>
+              </a>
+            </li>
+          </ul>
+        </li>
+        <li class="category-group" aria-expanded="false">
+          <a href="#" class="group-toggle" role="button" aria-controls="planning-group">
+            <i class="fas fa-chart-line"></i> Planning & Investments
+            <i class="fas fa-chevron-down toggle-icon"></i>
+          </a>
+          <ul class="sub-categories" id="planning-group">
+            <li>
+              <a href="#" data-category="Investments">
+                Investments <span class="report-count">(50)</span>
+              </a>
+            </li>
+            <li>
+              <a href="#" data-category="Retirement Planning">
+                Retirement Planning <span class="report-count">(60)</span>
+              </a>
+            </li>
+            <li>
+              <a href="#" data-category="Education Funding">
+                Education Funding <span class="report-count">(30)</span>
+              </a>
+            </li>
+          </ul>
+        </li>
+        <li class="category-group" aria-expanded="false">
+          <a href="#" class="group-toggle" role="button" aria-controls="taxes-legal-group">
+            <i class="fas fa-balance-scale"></i> Taxes & Legal
+            <i class="fas fa-chevron-down toggle-icon"></i>
+          </a>
+          <ul class="sub-categories" id="taxes-legal-group">
+            <li>
+              <a href="#" data-category="Income Taxes">
+                Income Taxes <span class="report-count">(35)</span>
+              </a>
+            </li>
+            <li>
+              <a href="#" data-category="Estate Planning">
+                Estate Planning <span class="report-count">(40)</span>
+              </a>
+            </li>
+          </ul>
+        </li>
+        <li class="category-group" aria-expanded="false">
+          <a href="#" class="group-toggle" role="button" aria-controls="other-group">
+            <i class="fas fa-ellipsis-h"></i> Other
+            <i class="fas fa-chevron-down toggle-icon"></i>
+          </a>
+          <ul class="sub-categories" id="other-group">
+            <li>
+              <a href="#" data-category="Home Ownership">
+                Home Ownership <span class="report-count">(25)</span>
+              </a>
+            </li>
+            <li>
+              <a href="#" data-category="Protecting Your Finances">
+                Protecting Your Finances <span class="report-count">(20)</span>
+              </a>
+            </li>
+            <li>
+              <a href="#" data-category="Social Security and Other Government Programs">
+                Social Security & Gov. Programs <span class="report-count">(30)</span>
+              </a>
+            </li>
+            <li>
+              <a href="#" data-category="Business Planning">
+                Business Planning <span class="report-count">(15)</span>
+              </a>
+            </li>
+            <li>
+              <a href="#" data-category="Charitable Planning">
+                Charitable-planning <span class="report-count">(10)</span>
+              </a>
+            </li>
+            <li>
+              <a href="#" data-category="Advisor Support">
+                Advisor Support <span class="report-count">(5)</span>
+              </a>
+            </li>
+          </ul>
+        </li>
       </ul>
     </div>
     <div class="main-content">
@@ -1670,11 +1883,11 @@
     </div>
   </div>
   <script>
+    // Existing header fetch logic
     fetch('header.html')
       .then(response => response.text())
       .then(data => {
         document.getElementById('header-placeholder').innerHTML = data;
-        // Add active class to current page link
         const currentPage = window.location.pathname.split('/').pop() || 'index.html';
         const navLinks = document.querySelectorAll('nav ul li a');
         navLinks.forEach(link => {
@@ -1683,7 +1896,6 @@
             link.classList.add('active');
           }
         });
-        // Initialize dropdown menu
         const profilePic = document.getElementById('profile-pic');
         const dropdownMenu = document.getElementById('dropdown-menu');
         if (profilePic && dropdownMenu) {
@@ -1698,6 +1910,84 @@
         }
       })
       .catch(error => console.error('Error loading header:', error));
+
+    // New sidebar interactivity
+    document.addEventListener('DOMContentLoaded', () => {
+      // Toggle collapsible groups
+      document.querySelectorAll('.group-toggle').forEach(toggle => {
+        toggle.addEventListener('click', (e) => {
+          e.preventDefault();
+          const group = toggle.closest('.category-group');
+          const isExpanded = group.getAttribute('aria-expanded') === 'true';
+          group.setAttribute('aria-expanded', !isExpanded);
+        });
+
+        toggle.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            toggle.click();
+          }
+        });
+      });
+
+      // Handle category selection
+      document.querySelectorAll('#category-filter a[data-category]').forEach(link => {
+        link.addEventListener('click', (e) => {
+          e.preventDefault();
+          document.querySelectorAll('#category-filter a').forEach(a => {
+            a.classList.remove('active');
+            a.removeAttribute('aria-current');
+          });
+          link.classList.add('active');
+          link.setAttribute('aria-current', 'true');
+
+          const category = link.dataset.category;
+          filterReportsByCategory(category);
+        });
+      });
+
+      // Placeholder function to filter reports
+      function filterReportsByCategory(category) {
+        const reportCards = document.querySelectorAll('.report-card');
+        reportCards.forEach(card => {
+          const cardCategory = card.dataset.category;
+          card.style.display = category === 'all' || cardCategory === category ? 'block' : 'none';
+        });
+        updateReportCounts();
+      }
+
+      // Update report counts dynamically
+      function updateReportCounts() {
+        const reportCounts = {
+          'all': 600,
+          'Personal Finance': 45,
+          'Personal Cash Flow': 30,
+          'Health and Medical': 25,
+          'Employee Benefits': 20,
+          'Long-Term Care': 15,
+          'Disability': 10,
+          'Investments': 50,
+          'Retirement Planning': 60,
+          'Education Funding': 30,
+          'Income Taxes': 35,
+          'Estate Planning': 40,
+          'Home Ownership': 25,
+          'Protecting Your Finances': 20,
+          'Social Security and Other Government Programs': 30,
+          'Business Planning': 15,
+          'Charitable Planning': 10,
+          'Advisor Support': 5
+        };
+
+        document.querySelectorAll('.report-count').forEach(countEl => {
+          const category = countEl.closest('a').dataset.category;
+          countEl.textContent = `(${reportCounts[category] || 0})`;
+        });
+      }
+
+      // Initialize counts on load
+      updateReportCounts();
+    });
   </script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
   <script src="scripts.js"></script>
