@@ -8,12 +8,75 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
   <link rel="stylesheet" href="styles.css">
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <style>
+    /* Visually hidden class for accessibility */
+    .visually-hidden {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      border: 0;
+    }
+
+    /* Container for the dropdown */
+    .analysis-topics-container {
+      margin: 1rem 0;
+      max-width: 300px;
+    }
+
+    /* Style the select element */
+    .analysis-topic-select {
+      width: 100%;
+      padding: 0.75rem;
+      font-size: 1rem;
+      font-family: 'Inter', sans-serif;
+      color: #333;
+      background-color: #fff;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      transition: border-color 0.2s, box-shadow 0.2s;
+      cursor: pointer;
+      appearance: none;
+      background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 12 12"><path fill="%23333" d="M6 9L1 4h10z"/></svg>');
+      background-repeat: no-repeat;
+      background-position: right 0.75rem center;
+      background-size: 12px;
+    }
+
+    /* Hover and focus states */
+    .analysis-topic-select:hover,
+    .analysis-topic-select:focus {
+      border-color: #005ea2;
+      box-shadow: 0 0 0 3px rgba(0, 94, 162, 0.1);
+      outline: none;
+    }
+
+    /* Option groups and options */
+    .analysis-topic-select optgroup,
+    .analysis-topic-select option {
+      font-size: 1rem;
+      color: #333;
+    }
+
+    /* Ensure dropdown is accessible */
+    .analysis-topic-select:focus {
+      outline: 2px solid #005ea2;
+      outline-offset: 2px;
+    }
+  </style>
 </head>
 <body>
   <div id="header-placeholder"></div>
   <div class="analysis-page">
-    <div class="analysis-topics">
-      <!-- Populated dynamically from JavaScript -->
+    <div class="analysis-topics-container">
+      <label for="analysis-topic-select" class="visually-hidden">Select Analysis Topic</label>
+      <select id="analysis-topic-select" class="analysis-topic-select" aria-label="Select an analysis topic">
+        <!-- Populated dynamically from JavaScript -->
+      </select>
     </div>
     <div class="analysis-workspace">
       <div class="client-inputs">
