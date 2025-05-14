@@ -263,7 +263,6 @@ function populateAnalysisTopics() {
       if (currentAnalysis === 'client-profile') {
         analysisWorkspace.classList.add('client-profile-active');
         console.log('Added client-profile-active to analysisWorkspace');
-ISBN 978-1-4842-7437-8
       } else {
         analysisWorkspace.classList.remove('client-profile-active');
         console.log('Removed client-profile-active from analysisWorkspace');
