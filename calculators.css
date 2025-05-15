@@ -1,4 +1,11 @@
-/* Visually hidden class for accessibility */
+/* Reset and Accessibility Styles
+   Resets default margins and paddings, and defines visually hidden class for accessibility. */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
 .visually-hidden {
   position: absolute;
   width: 1px;
@@ -10,63 +17,73 @@
   border: 0;
 }
 
-/* Container for the calculators page */
+/* Calculators Page Layout
+   Defines the flex layout for the calculators page, matching header offset from body padding. */
 .calculators-page {
   display: flex;
   gap: 0;
   padding: 0;
-  margin: 0;
-  height: calc(100vh - 70px); /* Match header height from body padding-top */
+  height: calc(100vh - 70px);
   width: 100%;
+  background: #f8fafc;
 }
 
-/* Sidebar for expandable folders */
+/* Sidebar Styles
+   Styles for the calculator sidebar, including background, shadow, and scroll behavior. */
 .calculator-sidebar {
-  width: 250px;
-  background-color: #ffffff;
-  border-right: none;
+  width: 280px;
+  background: #ffffff;
+  border-right: 1px solid #e0e0e0;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
-  padding: 20px 0 20px 0; /* Remove right padding to eliminate space */
+  padding: 20px 0;
   height: 100%;
   overflow-y: auto;
-  box-sizing: border-box;
-  flex-shrink: 0; /* Prevent sidebar from shrinking */
+  flex-shrink: 0;
 }
 
+/* Sidebar Header Styles
+   Styles for the sidebar title, using consistent typography and color. */
 .calculator-sidebar h3 {
   font-size: 16px;
   font-weight: 600;
   color: #3b82f6;
   margin: 0 0 15px 20px;
+  font-family: 'Inter', sans-serif;
 }
 
-/* Expandable folder styles */
+/* Expandable Folder Styles
+   Styles for expandable folder details and summary, with hover effects and icons. */
 .calculator-sidebar details {
   margin-bottom: 12px;
 }
 
 .calculator-sidebar summary {
   font-size: 14px;
+  font-weight: 600;
   padding: 10px 20px;
   cursor: pointer;
-  background-color: #fff;
-  border: none;
+  background: #ffffff;
   border-radius: 4px;
   display: flex;
   align-items: center;
-  transition: background-color 0.2s;
+  transition: background 0.2s, color 0.2s;
+  color: #475569;
+  font-family: 'Inter', sans-serif;
 }
 
 .calculator-sidebar summary:hover {
-  background-color: #e0e7ff;
+  background: #eff6ff;
   color: #3b82f6;
 }
 
 .calculator-sidebar summary i {
   margin-right: 8px;
   color: #64748b;
+  font-size: 14px;
 }
 
+/* Sidebar List Styles
+   Styles for the list items within expandable folders, with hover effects. */
 .calculator-sidebar ul {
   list-style: none;
   padding: 0 20px 0 40px;
@@ -76,16 +93,19 @@
 .calculator-sidebar li {
   padding: 10px 0;
   font-size: 14px;
+  font-weight: 500;
   color: #475569;
   cursor: pointer;
   transition: color 0.2s;
+  font-family: 'Inter', sans-serif;
 }
 
 .calculator-sidebar li:hover {
   color: #3b82f6;
 }
 
-/* Workspace container */
+/* Workspace Styles
+   Defines the flexible workspace layout with padding and background color. */
 .calculators-workspace {
   flex-grow: 1;
   display: flex;
@@ -95,66 +115,109 @@
   min-width: 0;
 }
 
-/* Client inputs section */
+/* Client Inputs Section
+   Styles for the client inputs panel, including shadow, border, and layout. */
 .client-inputs {
-  flex: 1;
-  background-color: #ffffff;
+  flex: 0.35;
+  min-width: 300px;
+  background: #ffffff;
   padding: 15px;
-  border: none;
   border-radius: 12px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-  overflow: visible;
   display: flex;
   flex-direction: column;
+  overflow-y: auto;
 }
 
+/* Client Inputs Header
+   Styles for the client inputs section title, matching typography. */
 .client-inputs h3 {
   font-size: 16px;
   font-weight: 600;
   color: #3b82f6;
-  margin: 0 0 15px 0;
-  padding: 0;
+  margin: 0 0 15px;
+  font-family: 'Inter', sans-serif;
 }
 
-/* Input container and content */
+/* Input Container Styles
+   Ensures proper layout for input content without tabs. */
 .input-container {
-  margin-top: 0;
+  display: flex;
+  flex: 1;
 }
 
 .input-tabs {
-  display: none; /* Hide the tab bar to remove "Investment Growth" tab */
+  display: none;
 }
 
 .input-content {
-  margin-top: 0;
+  flex: 1;
+  padding: 10px;
+  background: #ffffff;
+  border-radius: 8px;
 }
 
-/* Graph outputs section */
+/* Input Group Styles
+   Styles for input groups, including labels and form elements. */
+.input-group {
+  margin-bottom: 15px;
+}
+
+.input-group label {
+  display: block;
+  margin-bottom: 5px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #475569;
+  font-family: 'Inter', sans-serif;
+}
+
+.input-group input,
+.input-group select {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+  font-family: 'Inter', sans-serif;
+  transition: border-color 0.2s;
+}
+
+.input-group input:focus,
+.input-group select:focus {
+  border-color: #3b82f6;
+  outline: none;
+}
+
+/* Graph Outputs Section
+   Styles for the graph outputs panel, including layout and shadow. */
 .graph-outputs {
-  flex: 1;
-  background-color: #ffffff;
+  flex: 0.65;
+  min-width: 400px;
+  background: #ffffff;
   padding: 15px;
-  border: none;
   border-radius: 12px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-  overflow: visible;
   display: flex;
   flex-direction: column;
+  overflow-y: auto;
 }
 
+/* Graph Outputs Header
+   Styles for the graph outputs section title, matching typography. */
 .graph-outputs h3 {
   font-size: 16px;
   font-weight: 600;
   color: #3b82f6;
-  margin: 0 0 15px 0;
-  padding: 0;
+  margin: 0 0 15px;
+  font-family: 'Inter', sans-serif;
 }
 
-/* Output styles */
+/* Output Card Styles
+   Styles for output cards, including hover effects and shadows. */
 .output-card {
-  background-color: #fff;
+  background: #ffffff;
   padding: 16px;
-  border: none;
   border-radius: 12px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
   margin-bottom: 20px;
@@ -166,57 +229,69 @@
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
 }
 
-.output-dropdown {
-  display: none; /* Remove "Select View" dropdown */
-}
-
+.output-dropdown,
 .add-to-presentation-checkbox {
-  display: none; /* Remove "Add to Presentation" checkbox */
+  display: none;
 }
 
-/* Input styles */
-.input-group {
-  margin-bottom: 15px;
-}
-
-.input-group label {
-  display: block;
-  margin-bottom: 5px;
-  font-weight: 500;
-  color: #475569;
-}
-
-.input-group input,
-.input-group select {
-  width: 100%;
-  padding: 8px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  font-size: 14px;
-}
-
-/* Chart styles */
+/* Chart Styles
+   Ensures charts are responsive and properly sized. */
 canvas {
   max-width: 100%;
   height: auto;
+  display: block;
 }
 
-/* Button styles */
+/* Button Styles
+   Styles for action buttons, including hover effects and consistent design. */
 #recalculate-btn,
 #export-graph-btn {
-  margin-top: 15px;
-  padding: 8px 16px;
-  font-size: 14px;
+  background: #3b82f6;
   color: #fff;
-  background-color: #3b82f6;
   border: none;
+  padding: 8px 16px;
   border-radius: 8px;
   cursor: pointer;
+  font-size: 14px;
   font-weight: 600;
+  margin-top: 10px;
   transition: background 0.2s;
+  font-family: 'Inter', sans-serif;
 }
 
 #recalculate-btn:hover,
 #export-graph-btn:hover {
-  background-color: #2563eb;
+  background: #2563eb;
+}
+
+/* Responsive Styles
+   Adjustments for smaller screens to ensure usability and layout consistency. */
+@media (max-width: 768px) {
+  .calculators-page {
+    flex-direction: column;
+  }
+
+  .calculator-sidebar {
+    width: 100%;
+    height: auto;
+  }
+
+  .calculators-workspace {
+    flex-direction: column;
+    padding: 15px;
+  }
+
+  .client-inputs,
+  .graph-outputs {
+    flex: 1;
+    min-width: 100%;
+  }
+
+  .output-card {
+    padding: 12px;
+  }
+
+  .output-card h3 {
+    font-size: 14px;
+  }
 }
