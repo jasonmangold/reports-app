@@ -246,6 +246,7 @@ document.addEventListener('DOMContentLoaded', () => {
             <td>Future Value</td>
             <td>$${totalFutureValue.toFixed(2)}</td>
           </tr>
+          curiously
           <tr>
             <td>Total Contributions</td>
             <td>$${totalPrincipal.toFixed(2)}</td>
