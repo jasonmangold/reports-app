@@ -1,281 +1,335 @@
-document.addEventListener('DOMContentLoaded', () => {
-  // Load header (unchanged)
-  fetch('header.html')
-    .then(response => response.text())
-    .then(data => {
-      document.getElementById('header-placeholder').innerHTML = data;
-      const currentPage = window.location.pathname.split('/').pop() || 'index.html';
-      const navLinks = document.querySelectorAll('nav ul li a');
-      navLinks.forEach(link => {
-        const href = link.getAttribute('href');
-        if (href === currentPage) {
-          link.classList.add('active');
+export const calculatorTabs = [
+  {
+    id: 'investment-growth',
+    label: 'Investment Growth',
+    content: `
+      <h4>Investment Growth Inputs</h4>
+      <div class="input-group">
+        <label for="principal">Initial Investment ($)</label>
+        <input type="number" id="principal" name="principal" min="0" step="0.01" required>
+      </div>
+      <div class="input-group">
+        <label for="interest-rate">Annual Interest Rate (%)</label>
+        <input type="number" id="interest-rate" name="interest-rate" min="0" max="100" step="0.01" required>
+      </div>
+      <div class="input-group">
+        <label for="years">Time Period (Years)</label>
+        <input type="number" id="years" name="years" min="1" step="1" required>
+      </div>
+      <div class="input-group">
+        <label for="compounding">Compounding Frequency</label>
+        <select id="compounding" name="compounding" required>
+          <option value="1">Annually</option>
+          <option value="4">Quarterly</option>
+          <option value="12">Monthly</option>
+          <option value="365">Daily</option>
+        </select>
+      </div>
+    `
+  }
+];
+
+export const reportOptions = [
+  {
+    id: 'output-future-value',
+    label: 'Future Value',
+    reportId: 'report-future-value',
+    title: 'Investment Growth Future Value'
+  }
+];
+
+function calculateFutureValue(principal, rate, years, compounding) {
+  try {
+    const r = parseFloat(rate) / 100; // Convert percentage to decimal
+    const n = parseInt(compounding);
+    const t = parseFloat(years);
+    const pv = parseFloat(principal);
+
+    if (isNaN(pv) || isNaN(r) || isNaN(n) || isNaN(t) || pv < 0 || r < 0 || n <= 0 || t <= 0) {
+      throw new Error('Invalid input values');
+    }
+
+    // Future Value formula: FV = PV * (1 + r/n)^(n*t)
+    const fv = pv * Math.pow(1 + r / n, n * t);
+    return {
+      futureValue: fv,
+      growth: fv - pv
+    };
+  } catch (error) {
+    console.error('Error in calculateFutureValue:', error);
+    return null;
+  }
+}
+
+export function updateCalculatorOutputs(analysisOutputs, clientData, formatCurrency, selectedReports, Chart) {
+  try {
+    if (!analysisOutputs) {
+      console.error('Analysis outputs #analysis-outputs not found');
+      return;
+    }
+
+    const tabContainer = document.getElementById('output-tabs-container');
+    const select = document.getElementById('output-select');
+    const currentSelection = select ? select.value : 'output-future-value';
+
+    // Render dropdown in output-tabs-container
+    if (tabContainer) {
+      tabContainer.innerHTML = `
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <div class="output-dropdown">
+            <label for="output-select">Select View: </label>
+            <select id="output-select" class="output-select">
+              ${reportOptions.map(option => `
+                <option value="${option.id}" ${option.id === currentSelection ? 'selected' : ''}>${option.label}</option>
+              `).join('')}
+            </select>
+          </div>
+          <label class="add-to-presentation-checkbox">
+            <input type="checkbox" id="add-to-presentation" data-report="${reportOptions.find(opt => opt.id === currentSelection).reportId}" data-title="${reportOptions.find(opt => opt.id === currentSelection).title}">
+            Add to Presentation
+          </label>
+        </div>
+      `;
+    }
+
+    // Get input values from clientData or form
+    const principal = parseFloat(clientData.investmentGrowth?.principal) || 0;
+    const interestRate = parseFloat(clientData.investmentGrowth?.interestRate) || 0;
+    const years = parseFloat(clientData.investmentGrowth?.years) || 0;
+    const compounding = parseInt(clientData.investmentGrowth?.compounding) || 1;
+
+    // Calculate future value
+    const result = calculateFutureValue(principal, interestRate, years, compounding);
+    const isValid = result && principal > 0 && years > 0;
+
+    // Prepare data for bar graph
+    const labels = isValid ? ['Initial Investment', 'Future Value'] : ['No Data'];
+    const data = isValid ? [principal, result.futureValue] : [0];
+    const backgroundColors = isValid
+      ? ['rgba(75, 192, 192, 0.6)', 'rgba(54, 162, 235, 0.6)']
+      : ['rgba(255, 99, 132, 0.6)'];
+
+    // Destroy any existing chart
+    const chartCanvas = document.getElementById('future-value-chart');
+    if (chartCanvas && Chart.getChart(chartCanvas)) {
+      Chart.getChart(chartCanvas).destroy();
+    }
+
+    // Render output content
+    analysisOutputs.innerHTML = `
+      ${!tabContainer ? `
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <div class="output-dropdown">
+            <label for="output-select">Select View: </label>
+            <select id="output-select" class="output-select">
+              ${reportOptions.map(option => `
+                <option value="${option.id}" ${option.id === currentSelection ? 'selected' : ''}>${option.label}</option>
+              `).join('')}
+            </select>
+          </div>
+          <label class="add-to-presentation-checkbox">
+            <input type="checkbox" id="add-to-presentation" data-report="${reportOptions.find(opt => opt.id === currentSelection).reportId}" data-title="${reportOptions.find(opt => opt.id === currentSelection).title}">
+            Add to Presentation
+          </label>
+        </div>
+      ` : ''}
+      <div class="output-tab-content ${currentSelection === 'output-future-value' ? 'active' : ''}" id="output-future-value" style="display: ${currentSelection === 'output-future-value' ? 'block' : 'none'};">
+        <div class="output-card">
+          <h3>Future Value</h3>
+          ${isValid ? `
+            <p>Initial Investment: ${formatCurrency(principal)}</p>
+            <p>Future Value: ${formatCurrency(result.futureValue)}</p>
+            <p>Growth: ${formatCurrency(result.growth)}</p>
+            <canvas id="future-value-chart" style="max-height: 400px;"></canvas>
+          ` : `
+            <p>Please enter valid inputs to calculate the future value.</p>
+          `}
+        </div>
+      </div>
+    `;
+
+    // Render bar graph if valid
+    if (isValid) {
+      const ctx = document.getElementById('future-value-chart').getContext('2d');
+      new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: labels,
+          datasets: [{
+            label: 'Amount ($)',
+            data: data,
+            backgroundColor: backgroundColors,
+            borderColor: backgroundColors.map(color => color.replace('0.6', '1')),
+            borderWidth: 1
+          }]
+        },
+        options: {
+          scales: {
+            y: {
+              beginAtZero: true,
+              title: {
+                display: true,
+                text: 'Amount ($)'
+              },
+              ticks: {
+                callback: value => formatCurrency(value)
+              }
+            },
+            x: {
+              title: {
+                display: true,
+                text: 'Investment'
+              }
+            }
+          },
+          plugins: {
+            legend: {
+              display: false
+            }
+          },
+          responsive: true,
+          maintainAspectRatio: false
         }
       });
-      const profilePic = document.getElementById('profile-pic');
-      const dropdownMenu = document.getElementById('dropdown-menu');
-      if (profilePic && dropdownMenu) {
-        profilePic.addEventListener('click', () => {
-          dropdownMenu.style.display = dropdownMenu.style.display === 'block' ? 'none' : 'block';
-        });
-        document.addEventListener('click', (e) => {
-          if (!profilePic.contains(e.target) && !dropdownMenu.contains(e.target)) {
-            dropdownMenu.style.display = 'none';
-          }
-        });
-      }
-    })
-    .catch(error => console.error('Error loading header:', error));
+    }
 
-  // Calculator data (unchanged)
-  const calculators = {
-    'Borrowing': [
-      { id: 'mortgage', name: 'Mortgage Calculator' },
-      { id: 'auto-loan', name: 'Auto Loan Calculator' }
-    ],
-    'Personal Finance': [
-      { id: 'future-value', name: 'Future Value of a Single Sum and Periodic Additions' }
-    ]
+    // Setup dropdown and checkbox interactions
+    setupOutputControls(reportOptions, selectedReports, clientData);
+
+    // Setup form input listeners
+    setupFormInputs(clientData);
+
+  } catch (error) {
+    console.error('Error in updateCalculatorOutputs:', error);
+    analysisOutputs.innerHTML = '<p class="output-card">Unable to render outputs. Please ensure all required fields are filled correctly.</p>';
+    if (tabContainer) tabContainer.innerHTML = '';
+  }
+}
+
+function setupFormInputs(clientData) {
+  const form = document.getElementById('client-input-form');
+  if (!form) return;
+
+  form.querySelectorAll('input, select').forEach(input => {
+    input.addEventListener('change', () => {
+      if (!clientData.investmentGrowth) clientData.investmentGrowth = {};
+      clientData.investmentGrowth[input.name] = input.value;
+    });
+  });
+}
+
+function setupOutputControls(reportOptions, selectedReports, clientData) {
+  try {
+    const select = document.getElementById('output-select');
+    const checkbox = document.getElementById('add-to-presentation');
+    if (!select || !checkbox) {
+      console.warn('Dropdown #output-select or checkbox #add-to-presentation not found');
+      return;
+    }
+
+    const updateCheckboxState = () => {
+      const selectedOption = reportOptions.find(option => option.id === select.value);
+      if (selectedOption) {
+        checkbox.dataset.report = selectedOption.reportId;
+        checkbox.dataset.title = selectedOption.title;
+        checkbox.checked = selectedReports.some(r => r.id === selectedOption.reportId);
+      }
+    };
+
+    updateCheckboxState();
+
+    select.removeEventListener('change', outputDropdownChangeHandler);
+    select.addEventListener('change', function() {
+      outputDropdownChangeHandler.call(this, clientData);
+      updateCheckboxState();
+    });
+
+    checkbox.addEventListener('change', () => {
+      const event = new CustomEvent('addToPresentationToggle', {
+        detail: {
+          reportId: checkbox.dataset.report,
+          reportTitle: checkbox.dataset.title
+        },
+        bubbles: true
+      });
+      checkbox.dispatchEvent(event);
+    });
+  } catch (error) {
+    console.error('Error in setupOutputControls:', error);
+  }
+}
+
+function outputDropdownChangeHandler(clientData) {
+  try {
+    const selectedTab = this.value;
+    document.querySelectorAll('.output-tab-content').forEach(content => {
+      content.style.display = content.id === selectedTab ? 'block' : 'none';
+    });
+  } catch (error) {
+    console.error('Error in outputDropdownChangeHandler:', error);
+  }
+}
+
+// Initialize the calculator page
+document.addEventListener('DOMContentLoaded', () => {
+  const inputTabs = document.querySelector('.input-tabs');
+  const inputContent = document.querySelector('.input-content');
+  const analysisOutputs = document.getElementById('analysis-outputs');
+  const recalculateBtn = document.getElementById('recalculate-btn');
+
+  if (!inputTabs || !inputContent || !analysisOutputs) {
+    console.error('Required elements not found');
+    return;
+  }
+
+  // Client data storage
+  let clientData = { investmentGrowth: {} };
+  let selectedReports = [];
+
+  // Currency formatter
+  const formatCurrency = value => {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD'
+    }).format(value);
   };
 
-  // Populate calculator dropdown (unchanged)
-  const select = document.getElementById('calculator-topic-select');
-  Object.keys(calculators).forEach(category => {
-    const optgroup = document.createElement('optgroup');
-    optgroup.label = category;
-    calculators[category].forEach(calc => {
-      const option = document.createElement('option');
-      option.value = calc.id;
-      option.textContent = calc.name;
-      optgroup.appendChild(option);
-    });
-    select.appendChild(optgroup);
-  });
+  // Render input tabs
+  inputTabs.innerHTML = calculatorTabs.map(tab => `
+    <button class="tab-button ${tab.id === 'investment-growth' ? 'active' : ''}" data-tab="${tab.id}">${tab.label}</button>
+  `).join('');
 
-  // Load calculator content
-  const tabContent = document.getElementById('tab-content');
-  const outputContent = document.getElementById('output-content');
+  // Render initial tab content
+  inputContent.innerHTML = calculatorTabs.find(tab => tab.id === 'investment-growth').content;
 
-  select.addEventListener('change', (e) => {
-    const calcId = e.target.value;
-    updateTabContent(calcId);
-    if (calcId) {
-      updateOutputContent(calcId);
+  // Tab switching
+  inputTabs.addEventListener('click', (e) => {
+    if (e.target.classList.contains('tab-button')) {
+      document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
+      e.target.classList.add('active');
+      const tabId = e.target.dataset.tab;
+      const tab = calculatorTabs.find(t => t.id === tabId);
+      inputContent.innerHTML = tab.content;
+      setupFormInputs(clientData);
     }
   });
 
-  function updateTabContent(calcId) {
-    tabContent.innerHTML = '';
-    if (calcId === 'mortgage') {
-      tabContent.innerHTML = `
-        <div class="input-container">
-          <form id="mortgage-form">
-            <label>Loan Amount ($):<input type="number" id="loan-amount" name="loan-amount" value="200000" required></label>
-            <label>Interest Rate (%):<input type="number" id="interest-rate" name="interest-rate" step="0.01" value="4.5" required></label>
-            <label>Loan Term (years):<input type="number" id="loan-term" name="loan-term" value="30" required></label>
-            <button type="button" id="recalculate-btn">Recalculate</button>
-          </form>
-        </div>
-      `;
-      document.getElementById('recalculate-btn').addEventListener('click', () => {
-        updateOutputContent(calcId);
-      });
-    } else if (calcId === 'future-value') {
-      tabContent.innerHTML = `
-        <div class="input-container">
-        <h3>Inputs</h3>
-          <form id="future-value-form">
-            <label>Initial Investment ($):<input type="number" id="initial-investment" name="initial-investment" value="10000" step="0.01" required></label>
-            <label>Periodic Contribution ($):<input type="number" id="periodic-contribution" name="periodic-contribution" value="500" step="0.01" required></label>
-            <label>Contribution Frequency:<select id="contribution-frequency" name="contribution-frequency">
-              <option value="12">Monthly</option>
-              <option value="4">Quarterly</option>
-              <option value="1">Annually</option>
-            </select></label>
-            <label>Annual Interest Rate (%):<input type="number" id="interest-rate" name="interest-rate" value="5" step="0.01" required></label>
-            <label>Time Period (years):<input type="number" id="time-period" name="time-period" value="10" required></label>
-            <label>Compounding Frequency:<select id="compounding-frequency" name="compounding-frequency">
-              <option value="12">Monthly</option>
-              <option value="4">Quarterly</option>
-              <option value="1">Annually</option>
-            </select></label>
-            <button type="button" id="recalculate-btn">Recalculate</button>
-          </form>
-        </div>
-      `;
-      document.getElementById('recalculate-btn').addEventListener('click', () => {
-        updateOutputContent(calcId);
-      });
-    } else {
-      tabContent.innerHTML = '<p>Select a calculator to begin.</p>';
-    }
+  // Initial output render
+  updateCalculatorOutputs(analysisOutputs, clientData, formatCurrency, selectedReports, Chart);
+
+  // Recalculate button
+  if (recalculateBtn) {
+    recalculateBtn.addEventListener('click', () => {
+      updateCalculatorOutputs(analysisOutputs, clientData, formatCurrency, selectedReports, Chart);
+    });
   }
 
-  function updateOutputContent(calcId) {
-    outputContent.innerHTML = `
-      <h3>Calculator Results</h3>
-    `;
-    if (calcId === 'mortgage') {
-      calculateMortgage();
-    } else if (calcId === 'future-value') {
-      calculateFutureValue();
-    } else {
-      outputContent.innerHTML = '<p>Select a calculator and recalculate to see results.</p>';
-    }
-  }
-
-  // calculateMortgage and calculateFutureValue remain unchanged
-  function calculateMortgage() {
-    const loanAmount = parseFloat(document.getElementById('loan-amount').value);
-    const interestRate = parseFloat(document.getElementById('interest-rate').value) / 100 / 12;
-    const loanTerm = parseInt(document.getElementById('loan-term').value) * 12;
-
-    const monthlyPayment = (loanAmount * interestRate * Math.pow(1 + interestRate, loanTerm)) / 
-                          (Math.pow(1 + interestRate, loanTerm) - 1);
-    const totalPayment = monthlyPayment * loanTerm;
-    const totalInterest = totalPayment - loanAmount;
-
-    outputContent.innerHTML = `
-      <h3>Calculator Results</h3>
-      <table class="output-table">
-        <thead>
-          <tr>
-            <th>Metric</th>
-            <th>Value</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td>Monthly Payment</td>
-            <td>$${monthlyPayment.toFixed(2)}</td>
-          </tr>
-          <tr>
-            <td>Total Payment</td>
-            <td>$${totalPayment.toFixed(2)}</td>
-          </tr>
-          <tr>
-            <td>Total Interest</td>
-            <td>$${totalInterest.toFixed(2)}</td>
-          </tr>
-        </tbody>
-      </table>
-      <canvas id="mortgage-chart"></canvas>
-      <button id="export-graph-btn">Export Graph</button>
-    `;
-
-    const ctx = document.getElementById('mortgage-chart').getContext('2d');
-    if (window.mortgageChart) window.mortgageChart.destroy();
-    window.mortgageChart = new Chart(ctx, {
-      type: 'pie',
-      data: {
-        labels: ['Principal', 'Interest'],
-        datasets: [{
-          data: [loanAmount, totalInterest],
-          backgroundColor: ['#22c55e', '#ef4444']
-        }]
-      },
-      options: {
-        responsive: true,
-        plugins: {
-          legend: { position: 'top' },
-          title: { display: true, text: 'Mortgage Payment Breakdown' }
-        }
+  // Sidebar calculator selection (for Investment Growth)
+  document.querySelectorAll('.calculator-sidebar li').forEach(item => {
+    item.addEventListener('click', (e) => {
+      if (e.target.textContent === 'Investment Growth') {
+        inputTabs.querySelector('.tab-button').click();
       }
     });
-
-    document.getElementById('export-graph-btn').addEventListener('click', () => {
-      const canvasstatuecanvas = document.getElementById('mortgage-chart');
-      const link = document.createElement('a');
-      link.href = canvas.toDataURL(' ersten');
-      link.download = 'mortgage-chart.png';
-      link.click();
-    });
-  }
-
-  function calculateFutureValue() {
-    const initialInvestment = parseFloat(document.getElementById('initial-investment').value);
-    const periodicContribution = parseFloat(document.getElementById('periodic-contribution').value);
-    const contributionFrequency = parseInt(document.getElementById('contribution-frequency').value);
-    const interestRate = parseFloat(document.getElementById('interest-rate').value) / 100;
-    const timePeriod = parseInt(document.getElementById('time-period').value);
-    const compoundingFrequency = parseInt(document.getElementById('compounding-frequency').value);
-
-    const ratePerPeriod = interestRate / compoundingFrequency;
-    const totalPeriods = timePeriod * compoundingFrequency;
-    const fvInitial = initialInvestment * Math.pow(1 + ratePerPeriod, totalPeriods);
-
-    let fvContributions = 0;
-    if (periodicContribution > 0 && contributionFrequency > 0) {
-      const contributionRate = interestRate / contributionFrequency;
-      const totalContributionPeriods = timePeriod * contributionFrequency;
-      fvContributions = periodicContribution * (Math.pow(1 + contributionRate, totalContributionPeriods) - 1) / contributionRate;
-      if (contributionFrequency !== compoundingFrequency) {
-        const periodsPerContribution = compoundingFrequency / contributionFrequency;
-        fvContributions *= Math.pow(1 + ratePerPeriod, periodsPerContribution);
-      }
-    }
-
-    const totalFutureValue = fvInitial + fvContributions;
-    const totalPrincipal = initialInvestment + (periodicContribution * timePeriod * contributionFrequency);
-    const totalInterest = totalFutureValue - totalPrincipal;
-
-    outputContent.innerHTML = `
-      <h3>Calculator Results</h3>
-      <table class="output-table">
-        <thead>
-          <tr>
-            <th>Metric</th>
-            <th>Value</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td>Future Value</td>
-            <td>$${totalFutureValue.toFixed(2)}</td>
-          </tr>
-          <tr>
-            <td>Total Contributions</td>
-            <td>$${totalPrincipal.toFixed(2)}</td>
-          </tr>
-          <tr>
-            <td>Total Interest</td>
-            <td>$${totalInterest.toFixed(2)}</td>
-          </tr>
-        </tbody>
-      </table>
-      <canvas id="future-value-chart"></canvas>
-      <button id="export-graph-btn">Export Graph</button>
-    `;
-
-    const ctx = document.getElementById('future-value-chart').getContext('2d');
-    if (window.fvChart) window.fvChart.destroy();
-    window.fvChart = new Chart(ctx, {
-      type: 'pie',
-      data: {
-        labels: ['Principal', 'Interest'],
-        datasets: [{
-          data: [totalPrincipal, totalInterest],
-          backgroundColor: ['#22c55e', '#ef4444']
-        }]
-      },
-      options: {
-        responsive: true,
-        plugins: {
-          legend: { position: 'top' },
-          title: { display: true, text: 'Future Value Breakdown' }
-        }
-      }
-    });
-
-    document.getElementById('export-graph-btn').addEventListener('click', () => {
-      const canvas = document.getElementById('future-value-chart');
-      const link = document.createElement('a');
-      link.href = canvas.toDataURL('image/png');
-      link.download = 'future-value-chart.png';
-      link.click();
-    });
-  }
-
-  // Initialize with no calculator selected
-  updateTabContent('');
+  });
 });
