@@ -8,6 +8,19 @@ const investmentGrowthContent = `
     <input type="number" id="principal" name="principal" min="0" step="0.01" required>
   </div>
   <div class="input-group">
+    <label for="periodic-contribution">Periodic Contribution ($)</label>
+    <input type="number" id="periodic-contribution" name="periodic-contribution" min="0" step="0.01" required>
+  </div>
+  <div class="input-group">
+    <label for="contribution-frequency">Contribution Frequency</label>
+    <select id="contribution-frequency" name="contribution-frequency" required>
+      <option value="1">Annually</option>
+      <option value="4">Quarterly</option>
+      <option value="12">Monthly</option>
+      <option value="365">Daily</option>
+    </select>
+  </div>
+  <div class="input-group">
     <label for="interest-rate">Annual Interest Rate (%)</label>
     <input type="number" id="interest-rate" name="interest-rate" min="0" max="100" step="0.01" required>
   </div>
@@ -35,21 +48,40 @@ export const reportOptions = [
   }
 ];
 
-function calculateFutureValue(principal, rate, years, compounding) {
+function calculateFutureValue(principal, periodicContribution, contributionFrequency, rate, years, compounding) {
   try {
-    const r = parseFloat(rate) / 100;
-    const n = parseInt(compounding);
-    const t = parseFloat(years);
-    const pv = parseFloat(principal);
+    const r = parseFloat(rate) / 100; // Annual interest rate as decimal
+    const n = parseInt(compounding); // Compounding frequency per year
+    const t = parseFloat(years); // Time period in years
+    const pv = parseFloat(principal) || 0; // Initial investment
+    const pmt = parseFloat(periodicContribution) || 0; // Periodic contribution
+    const m = parseInt(contributionFrequency); // Contribution frequency per year
 
-    if (isNaN(pv) || isNaN(r) || isNaN(n) || isNaN(t) || pv < 0 || r < 0 || n <= 0 || t <= 0) {
+    if (isNaN(pv) || isNaN(pmt) || isNaN(r) || isNaN(n) || isNaN(m) || isNaN(t) || pv < 0 || pmt < 0 || r < 0 || n <= 0 || m <= 0 || t <= 0) {
       throw new Error('Invalid input values');
     }
 
-    const fv = pv * Math.pow(1 + r / n, n * t);
+    // Future Value of Single Sum: FV = PV * (1 + r/n)^(n*t)
+    const fvSingleSum = pv * Math.pow(1 + r / n, n * t);
+
+    // Future Value of Periodic Additions (ordinary annuity): FV = PMT * [((1 + r/n)^(n*t) - 1) / (r/n)]
+    // Adjust for contribution frequency alignment with compounding
+    let fvPeriodic = 0;
+    if (pmt > 0 && m > 0) {
+      const periods = t * m; // Total number of contribution periods
+      const ratePerPeriod = r / n; // Rate per compounding period
+      const effectiveRate = Math.pow(1 + ratePerPeriod, n / m) - 1; // Effective rate per contribution period
+      fvPeriodic = pmt * ((Math.pow(1 + effectiveRate, periods) - 1) / effectiveRate);
+    }
+
+    // Total Future Value
+    const totalFv = fvSingleSum + fvPeriodic;
+
     return {
-      futureValue: fv,
-      growth: fv - pv
+      futureValue: totalFv,
+      singleSumFv: fvSingleSum,
+      periodicFv: fvPeriodic,
+      totalGrowth: totalFv - pv - (pmt * m * t) // Growth = Total FV - Initial Investment - Total Contributions
     };
   } catch (error) {
     console.error('Error in calculateFutureValue:', error);
@@ -88,17 +120,19 @@ export function updateCalculatorOutputs(analysisOutputs, clientData, formatCurre
     }
 
     const principal = parseFloat(clientData.investmentGrowth?.principal) || 0;
+    const periodicContribution = parseFloat(clientData.investmentGrowth?.periodicContribution) || 0;
+    const contributionFrequency = parseInt(clientData.investmentGrowth?.contributionFrequency) || 1;
     const interestRate = parseFloat(clientData.investmentGrowth?.interestRate) || 0;
     const years = parseFloat(clientData.investmentGrowth?.years) || 0;
     const compounding = parseInt(clientData.investmentGrowth?.compounding) || 1;
 
-    const result = calculateFutureValue(principal, interestRate, years, compounding);
-    const isValid = result && principal >= 0 && years >= 0; // Allow zero values to avoid error initially
+    const result = calculateFutureValue(principal, periodicContribution, contributionFrequency, interestRate, years, compounding);
+    const isValid = result && principal >= 0 && periodicContribution >= 0 && years >= 0;
 
-    const labels = isValid ? ['Initial Investment', 'Future Value'] : ['No Data'];
-    const data = isValid ? [principal, result ? result.futureValue : 0] : [0];
+    const labels = isValid ? ['Initial Investment', 'Contributions', 'Future Value'] : ['No Data'];
+    const data = isValid ? [principal, periodicContribution * contributionFrequency * years, result ? result.futureValue : 0] : [0];
     const backgroundColors = isValid
-      ? ['rgba(75, 192, 192, 0.6)', 'rgba(54, 162, 235, 0.6)']
+      ? ['rgba(75, 192, 192, 0.6)', 'rgba(255, 206, 86, 0.6)', 'rgba(54, 162, 235, 0.6)']
       : ['rgba(255, 99, 132, 0.6)'];
 
     const chartCanvas = document.getElementById('future-value-chart');
@@ -118,7 +152,8 @@ export function updateCalculatorOutputs(analysisOutputs, clientData, formatCurre
             </select>
           </div>
           <label class="add-to-presentation-checkbox">
-            <input type="checkbox" id="add-to-presentation" data-report="${reportOptions.find(opt => opt.id === currentSelection).reportId}" data-title="${reportOptions.find(opt => opt.id === currentSelection).title}">
+            <input type="checkbox" id="add-to-presentation" data-report="${reportOptions.find(opt => opt.id === currentSelection).reportId}" data-title="${ Ascertainable: true
+            </input>
             Add to Presentation
           </label>
         </div>
@@ -126,10 +161,13 @@ export function updateCalculatorOutputs(analysisOutputs, clientData, formatCurre
       <div class="output-tab-content ${currentSelection === 'output-future-value' ? 'active' : ''}" id="output-future-value" style="display: ${currentSelection === 'output-future-value' ? 'block' : 'none'};">
         <div class="output-card">
           <h3>Future Value</h3>
-          ${isValid && principal > 0 && years > 0 ? `
+          ${isValid && (principal > 0 || periodicContribution > 0) && years > 0 ? `
             <p>Initial Investment: ${formatCurrency(principal)}</p>
+            <p>Total Contributions: ${formatCurrency(periodicContribution * contributionFrequency * years)}</p>
             <p>Future Value: ${formatCurrency(result.futureValue)}</p>
-            <p>Growth: ${formatCurrency(result.growth)}</p>
+            <p>Future Value (Single Sum): ${formatCurrency(result.singleSumFv)}</p>
+            <p>Future Value (Periodic Additions): ${formatCurrency(result.periodicFv)}</p>
+            <p>Total Growth: ${formatCurrency(result.totalGrowth)}</p>
             <canvas id="future-value-chart" style="max-height: 400px;"></canvas>
           ` : `
             <p>Please enter valid inputs to calculate the future value.</p>
@@ -138,7 +176,7 @@ export function updateCalculatorOutputs(analysisOutputs, clientData, formatCurre
       </div>
     `;
 
-    if (isValid && principal > 0 && years > 0) {
+    if (isValid && (principal > 0 || periodicContribution > 0) && years > 0) {
       const ctx = document.getElementById('future-value-chart').getContext('2d');
       new Chart(ctx, {
         type: 'bar',
@@ -167,7 +205,7 @@ export function updateCalculatorOutputs(analysisOutputs, clientData, formatCurre
             x: {
               title: {
                 display: true,
-                text: 'Investment'
+                text: 'Investment Components'
               }
             }
           },
@@ -199,7 +237,7 @@ function setupFormInputs(clientData) {
     input.addEventListener('change', () => {
       if (!clientData.investmentGrowth) clientData.investmentGrowth = {};
       clientData.investmentGrowth[input.name] = input.value;
-      updateCalculatorOutputs(document.getElementById('analysis-outputs'), clientData, formatCurrency, [], Chart); // Recalculate on change
+      updateCalculatorOutputs(document.getElementById('analysis-outputs'), clientData, formatCurrency, [], Chart);
     });
   });
 }
@@ -297,24 +335,19 @@ document.addEventListener('DOMContentLoaded', () => {
   // Sidebar calculator selection
   document.querySelectorAll('.calculator-sidebar li').forEach(item => {
     item.addEventListener('click', (e) => {
-      e.stopPropagation(); // Prevent details from closing
+      e.stopPropagation();
       const target = e.target.closest('li');
       if (!target) return;
 
       const text = target.textContent.trim();
 
-      // Handle calculator selection
       if (text === 'Investment Growth') {
-        // Clear existing tabs and set Investment Growth as active
         inputTabs.innerHTML = '<button class="tab-button active" data-tab="investment-growth">Investment Growth</button>';
-        // Render inputs in the input-content form
         inputContent.innerHTML = investmentGrowthContent;
         setupFormInputs(clientData);
-        // Update outputs after setting inputs
         updateCalculatorOutputs(analysisOutputs, clientData, formatCurrency, selectedReports, Chart);
       }
 
-      // Ensure <details> remains open when a sub-item is clicked
       const details = target.closest('details');
       if (details) {
         details.open = true;
