@@ -1461,12 +1461,8 @@ p {
     padding: 8px 16px;
   }
 }
-/* Reset default margins and padding */
-body {
-  margin: 0;
-  padding: 0;
-  font-family: 'Inter', sans-serif;
-}
+
+
 
 /* Visually hidden class for accessibility */
 .visually-hidden {
@@ -1483,261 +1479,43 @@ body {
 /* Container for the calculators page */
 .calculators-page {
   display: flex;
-  gap: 1rem;
-  padding: 1rem;
-  max-width: 1400px;
-  margin: 0 auto;
-}
-
-/* Sidebar for expandable folders */
-.calculator-sidebar {
-  width: 250px;
-  background-color: #f5f5f5;
-  border-right: 1px solid #ccc;
-  padding: 1rem;
-  height: calc(100vh - 80px); /* Adjust for header height */
-  overflow-y: auto;
-  box-sizing: border-box;
-}
-
-.calculator-sidebar h3 {
-  font-size: 1.25rem;
-  margin-bottom: 1rem;
-  color: #333;
-}
-
-/* Expandable folder styles */
-.calculator-sidebar details {
-  margin-bottom: 0.5rem;
-}
-
-.calculator-sidebar summary {
-  font-size: 1rem;
-  padding: 0.5rem;
-  cursor: pointer;
-  background-color: #fff;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  display: flex;
-  align-items: center;
-  transition: background-color 0.2s;
-}
-
-.calculator-sidebar summary:hover {
-  background-color: #e0e0e0;
-}
-
-.calculator-sidebar summary i {
-  margin-right: 0.5rem;
-}
-
-.calculator-sidebar ul {
-  list-style: none;
-  padding: 0.5rem 1rem;
+  gap: 0;
+  padding: 0;
   margin: 0;
-}
-
-.calculator-sidebar li {
-  padding: 0.5rem;
-  font-size: 0.95rem;
-  cursor: pointer;
-  border-radius: 4px;
-}
-
-.calculator-sidebar li:hover {
-  background-color: #e0e0e0;
-}
-
-/* Workspace container */
-.calculators-workspace {
-  flex: 1;
-  display: flex;
-  gap: 1rem;
-}
-
-/* Client inputs section */
-.client-inputs {
-  flex: 1;
-  background-color: #fff;
-  padding: 1rem;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-}
-
-.client-inputs h3 {
-  font-size: 1.25rem;
-  margin-bottom: 1rem;
-}
-
-.input-container {
-  margin-top: 1rem;
-}
-
-.input-tabs {
-  display: flex;
-  gap: 0.5rem;
-  margin-bottom: 1rem;
-}
-
-.input-content {
-  margin-top: 1rem;
-}
-
-/* Graph outputs section */
-.graph-outputs {
-  flex: 1;
-  background-color: #fff;
-  padding: 1rem;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-}
-
-.graph-outputs h3 {
-  font-size: 1.25rem;
-  margin-bottom: 1rem;
-}
-
-/* Output styles (from previous CSS) */
-.output-card {
-  background-color: #fff;
-  padding: 20px;
-  border: 1px solid #dee2e6;
-  border-radius: 4px;
-  margin-bottom: 20px;
-}
-
-.output-dropdown {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.output-select {
-  padding: 8px;
-  border: 1px solid #ced4da;
-  border-radius: 4px;
-}
-
-.add-to-presentation-checkbox {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-}
-
-/* Input styles to match summary page */
-.input-group {
-  margin-bottom: 15px;
-}
-
-.input-group label {
-  display: block;
-  margin-bottom: 5px;
-  font-weight: 500;
-}
-
-.input-group input,
-.input-group select {
+  height: calc(100vh - 70px); /* Match header height from body padding-top */
   width: 100%;
-  padding: 8px;
-  border: 1px solid #ced4da;
-  border-radius: 4px;
-  font-size: 14px;
-}
-
-/* Tab button styles */
-.tab-button {
-  padding: 10px 20px;
-  border: none;
-  background-color: #e9ecef;
-  cursor: pointer;
-  border-radius: 4px;
-}
-
-.tab-button.active {
-  background-color: #007bff;
-  color: white;
-}
-
-/* Chart styles */
-canvas {
-  max-width: 100%;
-}
-
-/* Button styles */
-#recalculate-btn,
-#export-graph-btn {
-  margin-top: 1rem;
-  padding: 0.75rem 1rem;
-  font-size: 1rem;
-  color: #fff;
-  background-color: #005ea2;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  transition: background-color 0.2s;
-}
-
-#recalculate-btn:hover,
-#export-graph-btn:hover {
-  background-color: #003e6b;
-}
-/* Reset default margins and padding */
-body {
-  margin: 0;
-  padding: 0;
-  font-family: 'Inter', sans-serif;
-}
-
-/* Visually hidden class for accessibility */
-.visually-hidden {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  border: 0;
-}
-
-/* Container for the calculators page */
-.calculators-page {
-  display: flex;
-  gap: 0; /* Remove gap between sidebar and workspace */
-  padding: 0;
-  max-width: 1400px;
-  margin: 0;
-  height: calc(100vh - 80px); /* Match sidebar height */
 }
 
 /* Sidebar for expandable folders */
 .calculator-sidebar {
   width: 250px;
-  background-color: #f5f5f5;
-  border-right: 1px solid #ccc;
-  padding: 1rem 0 1rem 0; /* Remove left padding to flush against edge */
+  background-color: #ffffff; /* Match .sidebar background */
+  border-right: none; /* Remove border for cleaner look */
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05); /* Match .sidebar shadow */
+  padding: 20px 0; /* Adjusted padding */
   height: 100%;
   overflow-y: auto;
   box-sizing: border-box;
 }
 
 .calculator-sidebar h3 {
-  font-size: 1.25rem;
-  margin: 0 0 1rem 1rem; /* Add left margin to text */
-  color: #333;
+  font-size: 16px; /* Match .sidebar h3 */
+  font-weight: 600;
+  color: #3b82f6; /* Match site color scheme */
+  margin: 0 0 15px 20px; /* Match .sidebar h3 spacing */
 }
 
 /* Expandable folder styles */
 .calculator-sidebar details {
-  margin-bottom: 0.5rem;
+  margin-bottom: 12px; /* Match .sidebar li spacing */
 }
 
 .calculator-sidebar summary {
-  font-size: 1rem;
-  padding: 0.5rem 1rem; /* Ensure padding inside summary */
+  font-size: 14px; /* Match .sidebar font-size */
+  padding: 10px 20px; /* Match .sidebar padding */
   cursor: pointer;
   background-color: #fff;
-  border: 1px solid #ddd;
+  border: none; /* Remove border for cleaner look */
   border-radius: 4px;
   display: flex;
   align-items: center;
@@ -1745,63 +1523,70 @@ body {
 }
 
 .calculator-sidebar summary:hover {
-  background-color: #e0e0e0;
+  background-color: #e0e7ff; /* Match hover effects */
+  color: #3b82f6;
 }
 
 .calculator-sidebar summary i {
-  margin-right: 0.5rem;
+  margin-right: 8px; /* Match spacing */
+  color: #64748b;
 }
 
 .calculator-sidebar ul {
   list-style: none;
-  padding: 0 1rem 0 2rem; /* Increase left padding for nested items */
+  padding: 0 20px 0 40px; /* Match .sidebar ul padding */
   margin: 0;
 }
 
 .calculator-sidebar li {
-  padding: 0.5rem;
-  font-size: 0.95rem;
+  padding: 10px 0; /* Match .sidebar li padding */
+  font-size: 14px; /* Match .sidebar font-size */
+  color: #475569;
   cursor: pointer;
-  border-radius: 4px;
+  transition: color 0.2s;
 }
 
 .calculator-sidebar li:hover {
-  background-color: #e0e0e0;
+  color: #3b82f6; /* Match .sidebar hover color */
 }
 
 /* Workspace container */
 .calculators-workspace {
   flex: 1;
   display: flex;
-  gap: 1rem;
-  padding: 1rem; /* Add padding to workspace to prevent cutoff */
+  gap: 20px; /* Match .reports-page gap */
+  padding: 20px; /* Match .reports-page padding */
+  background: #f8fafc; /* Match body background */
 }
 
 /* Client inputs section */
 .client-inputs {
   flex: 1;
-  background-color: #fff;
-  padding: 1rem;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  overflow: visible; /* Ensure headings aren’t cut off */
+  background-color: #ffffff;
+  padding: 20px; /* Match .sidebar padding */
+  border: none; /* Remove border */
+  border-radius: 12px; /* Match .sidebar border-radius */
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05); /* Match .sidebar shadow */
+  overflow: visible;
 }
 
 .client-inputs h3 {
-  font-size: 1.25rem;
-  margin: 0 0 1rem 0; /* Reset margins to prevent cutoff */
+  font-size: 16px; /* Match .sidebar h3 */
+  font-weight: 600;
+  color: #3b82f6; /* Match site color scheme */
+  margin: 0 0 15px 0; /* Match .sidebar h3 spacing */
   padding: 0;
 }
 
 /* Input container and tabs */
 .input-container {
-  margin-top: 0; /* Remove unnecessary margin */
+  margin-top: 0;
 }
 
 .input-tabs {
   display: flex;
-  gap: 0.5rem;
-  margin-bottom: 1rem;
+  gap: 10px; /* Match .analysis-topics gap */
+  margin-bottom: 15px; /* Match .analysis-topics margin */
 }
 
 .input-content {
@@ -1811,26 +1596,36 @@ body {
 /* Graph outputs section */
 .graph-outputs {
   flex: 1;
-  background-color: #fff;
-  padding: 1rem;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  overflow: visible; /* Ensure headings aren’t cut off */
+  background-color: #ffffff;
+  padding: 20px; /* Match .sidebar padding */
+  border: none; /* Remove border */
+  border-radius: 12px; /* Match .sidebar border-radius */
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05); /* Match .sidebar shadow */
+  overflow: visible;
 }
 
 .graph-outputs h3 {
-  font-size: 1.25rem;
-  margin: 0 0 1rem 0; /* Reset margins to prevent cutoff */
+  font-size: 16px; /* Match .sidebar h3 */
+  font-weight: 600;
+  color: #3b82f6; /* Match site color scheme */
+  margin: 0 0 15px 0; /* Match .sidebar h3 spacing */
   padding: 0;
 }
 
 /* Output styles */
 .output-card {
   background-color: #fff;
-  padding: 20px;
-  border: 1px solid #dee2e6;
-  border-radius: 4px;
+  padding: 16px; /* Match .output-card in Analysis Outputs */
+  border: none; /* Remove border */
+  border-radius: 12px; /* Match .sidebar border-radius */
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05); /* Match .sidebar shadow */
   margin-bottom: 20px;
+  transition: transform 0.2s, box-shadow 0.2s; /* Match .report-card hover */
+}
+
+.output-card:hover {
+  transform: translateY(-5px); /* Match .subfolder hover */
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
 }
 
 .output-dropdown {
@@ -1843,6 +1638,7 @@ body {
   padding: 8px;
   border: 1px solid #ced4da;
   border-radius: 4px;
+  font-size: 14px; /* Match .input-group font-size */
 }
 
 .add-to-presentation-checkbox {
@@ -1860,51 +1656,64 @@ body {
   display: block;
   margin-bottom: 5px;
   font-weight: 500;
+  color: #475569; /* Match .client-inputs label color */
 }
 
 .input-group input,
 .input-group select {
   width: 100%;
   padding: 8px;
-  border: 1px solid #ced4da;
+  border: 1px solid #ddd; /* Match .client-inputs input border */
   border-radius: 4px;
   font-size: 14px;
 }
 
 /* Tab button styles */
 .tab-button {
-  padding: 10px 20px;
-  border: none;
-  background-color: #e9ecef;
-  cursor: pointer;
+  background: #ffffff;
+  border: 1px solid #ddd; /* Match .tab-btn */
   border-radius: 4px;
+  padding: 6px 12px; /* Match .topic-btn */
+  font-size: 14px;
+  font-weight: 600;
+  color: #64748b;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
 }
 
 .tab-button.active {
-  background-color: #007bff;
-  color: white;
+  background: #3b82f6; /* Match site color scheme */
+  color: #ffffff;
+  border-color: #3b82f6;
+}
+
+.tab-button:hover {
+  background: #e0e7ff; /* Match hover effects */
+  color: #3b82f6;
 }
 
 /* Chart styles */
 canvas {
   max-width: 100%;
+  height: auto; /* Ensure charts are responsive */
 }
 
 /* Button styles */
 #recalculate-btn,
 #export-graph-btn {
-  margin-top: 1rem;
-  padding: 0.75rem 1rem;
-  font-size: 1rem;
+  margin-top: 15px; /* Match .add-account-btn margin */
+  padding: 8px 16px; /* Match #recalculate-btn in Client Inputs */
+  font-size: 14px; /* Match .add-account-btn font-size */
   color: #fff;
-  background-color: #005ea2;
+  background-color: #3b82f6; /* Match site color scheme */
   border: none;
-  border-radius: 4px;
+  border-radius: 8px; /* Match .add-account-btn border-radius */
   cursor: pointer;
-  transition: background-color 0.2s;
+  font-weight: 600;
+  transition: background 0.2s;
 }
 
 #recalculate-btn:hover,
 #export-graph-btn:hover {
-  background-color: #003e6b;
+  background-color: #2563eb; /* Match .add-account-btn hover */
 }
