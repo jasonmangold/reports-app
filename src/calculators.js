@@ -1,33 +1,30 @@
-export const calculatorTabs = [
-  {
-    id: 'investment-growth',
-    label: 'Investment Growth',
-    content: `
-      <h4>Investment Growth Inputs</h4>
-      <div class="input-group">
-        <label for="principal">Initial Investment ($)</label>
-        <input type="number" id="principal" name="principal" min="0" step="0.01" required>
-      </div>
-      <div class="input-group">
-        <label for="interest-rate">Annual Interest Rate (%)</label>
-        <input type="number" id="interest-rate" name="interest-rate" min="0" max="100" step="0.01" required>
-      </div>
-      <div class="input-group">
-        <label for="years">Time Period (Years)</label>
-        <input type="number" id="years" name="years" min="1" step="1" required>
-      </div>
-      <div class="input-group">
-        <label for="compounding">Compounding Frequency</label>
-        <select id="compounding" name="compounding" required>
-          <option value="1">Annually</option>
-          <option value="4">Quarterly</option>
-          <option value="12">Monthly</option>
-          <option value="365">Daily</option>
-        </select>
-      </div>
-    `
-  }
-];
+export const calculatorTabs = []; // Removed Investment Growth tab
+
+// Define the Investment Growth content for sidebar access
+const investmentGrowthContent = `
+  <h4>Investment Growth Inputs</h4>
+  <div class="input-group">
+    <label for="principal">Initial Investment ($)</label>
+    <input type="number" id="principal" name="principal" min="0" step="0.01" required>
+  </div>
+  <div class="input-group">
+    <label for="interest-rate">Annual Interest Rate (%)</label>
+    <input type="number" id="interest-rate" name="interest-rate" min="0" max="100" step="0.01" required>
+  </div>
+  <div class="input-group">
+    <label for="years">Time Period (Years)</label>
+    <input type="number" id="years" name="years" min="1" step="1" required>
+  </div>
+  <div class="input-group">
+    <label for="compounding">Compounding Frequency</label>
+    <select id="compounding" name="compounding" required>
+      <option value="1">Annually</option>
+      <option value="4">Quarterly</option>
+      <option value="12">Monthly</option>
+      <option value="365">Daily</option>
+    </select>
+  </div>
+`;
 
 export const reportOptions = [
   {
@@ -40,7 +37,7 @@ export const reportOptions = [
 
 function calculateFutureValue(principal, rate, years, compounding) {
   try {
-    const r = parseFloat(rate) / 100; // Convert percentage to decimal
+    const r = parseFloat(rate) / 100;
     const n = parseInt(compounding);
     const t = parseFloat(years);
     const pv = parseFloat(principal);
@@ -49,7 +46,6 @@ function calculateFutureValue(principal, rate, years, compounding) {
       throw new Error('Invalid input values');
     }
 
-    // Future Value formula: FV = PV * (1 + r/n)^(n*t)
     const fv = pv * Math.pow(1 + r / n, n * t);
     return {
       futureValue: fv,
@@ -72,7 +68,6 @@ export function updateCalculatorOutputs(analysisOutputs, clientData, formatCurre
     const select = document.getElementById('output-select');
     const currentSelection = select ? select.value : 'output-future-value';
 
-    // Render dropdown in output-tabs-container
     if (tabContainer) {
       tabContainer.innerHTML = `
         <div style="display: flex; justify-content: space-between; align-items: center;">
@@ -92,30 +87,25 @@ export function updateCalculatorOutputs(analysisOutputs, clientData, formatCurre
       `;
     }
 
-    // Get input values from clientData or form
     const principal = parseFloat(clientData.investmentGrowth?.principal) || 0;
     const interestRate = parseFloat(clientData.investmentGrowth?.interestRate) || 0;
     const years = parseFloat(clientData.investmentGrowth?.years) || 0;
     const compounding = parseInt(clientData.investmentGrowth?.compounding) || 1;
 
-    // Calculate future value
     const result = calculateFutureValue(principal, interestRate, years, compounding);
     const isValid = result && principal > 0 && years > 0;
 
-    // Prepare data for bar graph
     const labels = isValid ? ['Initial Investment', 'Future Value'] : ['No Data'];
     const data = isValid ? [principal, result.futureValue] : [0];
     const backgroundColors = isValid
       ? ['rgba(75, 192, 192, 0.6)', 'rgba(54, 162, 235, 0.6)']
       : ['rgba(255, 99, 132, 0.6)'];
 
-    // Destroy any existing chart
     const chartCanvas = document.getElementById('future-value-chart');
     if (chartCanvas && Chart.getChart(chartCanvas)) {
       Chart.getChart(chartCanvas).destroy();
     }
 
-    // Render output content
     analysisOutputs.innerHTML = `
       ${!tabContainer ? `
         <div style="display: flex; justify-content: space-between; align-items: center;">
@@ -148,7 +138,6 @@ export function updateCalculatorOutputs(analysisOutputs, clientData, formatCurre
       </div>
     `;
 
-    // Render bar graph if valid
     if (isValid) {
       const ctx = document.getElementById('future-value-chart').getContext('2d');
       new Chart(ctx, {
@@ -193,10 +182,7 @@ export function updateCalculatorOutputs(analysisOutputs, clientData, formatCurre
       });
     }
 
-    // Setup dropdown and checkbox interactions
     setupOutputControls(reportOptions, selectedReports, clientData);
-
-    // Setup form input listeners
     setupFormInputs(clientData);
 
   } catch (error) {
@@ -294,25 +280,11 @@ document.addEventListener('DOMContentLoaded', () => {
     }).format(value);
   };
 
-  // Render input tabs
-  inputTabs.innerHTML = calculatorTabs.map(tab => `
-    <button class="tab-button ${tab.id === 'investment-growth' ? 'active' : ''}" data-tab="${tab.id}">${tab.label}</button>
-  `).join('');
+  // Render empty input tabs (no tabs by default)
+  inputTabs.innerHTML = '';
 
-  // Render initial tab content
-  inputContent.innerHTML = calculatorTabs.find(tab => tab.id === 'investment-growth').content;
-
-  // Tab switching
-  inputTabs.addEventListener('click', (e) => {
-    if (e.target.classList.contains('tab-button')) {
-      document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
-      e.target.classList.add('active');
-      const tabId = e.target.dataset.tab;
-      const tab = calculatorTabs.find(t => t.id === tabId);
-      inputContent.innerHTML = tab.content;
-      setupFormInputs(clientData);
-    }
-  });
+  // Clear initial tab content
+  inputContent.innerHTML = '';
 
   // Initial output render
   updateCalculatorOutputs(analysisOutputs, clientData, formatCurrency, selectedReports, Chart);
@@ -324,12 +296,29 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // Sidebar calculator selection (for Investment Growth)
+  // Sidebar calculator selection
   document.querySelectorAll('.calculator-sidebar li').forEach(item => {
     item.addEventListener('click', (e) => {
-      if (e.target.textContent === 'Investment Growth') {
-        inputTabs.querySelector('.tab-button').click();
+      const target = e.target.closest('li');
+      if (!target) return;
+
+      const text = target.textContent.trim();
+      if (text === 'Investment Growth') {
+        inputContent.innerHTML = investmentGrowthContent;
+        inputTabs.innerHTML = '<button class="tab-button active" data-tab="investment-growth">Investment Growth</button>';
+        setupFormInputs(clientData);
+        updateCalculatorOutputs(analysisOutputs, clientData, formatCurrency, selectedReports, Chart);
       }
     });
   });
+
+  // Handle Financial Planning folder expansion
+  const financialPlanningFolder = document.querySelector('.calculator-sidebar li[data-folder="financial-planning"]');
+  if (financialPlanningFolder) {
+    financialPlanningFolder.addEventListener('click', (e) => {
+      e.stopPropagation();
+      // Toggle folder expansion (assuming a class toggle for visibility)
+      financialPlanningFolder.classList.toggle('expanded');
+    });
+  }
 });
