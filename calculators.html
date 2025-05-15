@@ -17,18 +17,16 @@
     </div>
     <div class="analysis-workspace">
       <div class="client-inputs">
-        <div class="input-content">
-          <div id="tab-content" class="tab-content active"></div>
-        </div>
+        <div class="input-tabs"></div>
+        <div class="input-content"></div>
       </div>
       <div class="graph-outputs">
         <div class="output-tabs">
           <label for="add-to-presentation" class="visually-hidden">Add to Presentation</label>
           <input type="checkbox" id="add-to-presentation" class="presentation-checkbox">
+          <span id="presentation-count" class="count">0</span>
         </div>
-        <div class="output-card" id="output-content">
-          <!-- Populated dynamically -->
-        </div>
+        <div class="output-card" id="analysis-outputs"></div>
       </div>
     </div>
   </div>
