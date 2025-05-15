@@ -1,4 +1,4 @@
-export const calculatorTabs = []; // Removed Investment Growth tab
+export const calculatorTabs = []; // No tabs by default in Client Inputs
 
 // Define the Investment Growth content for sidebar access
 const investmentGrowthContent = `
@@ -280,10 +280,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }).format(value);
   };
 
-  // Render empty input tabs (no tabs by default)
+  // Clear input tabs and content initially
   inputTabs.innerHTML = '';
-
-  // Clear initial tab content
   inputContent.innerHTML = '';
 
   // Initial output render
@@ -299,26 +297,27 @@ document.addEventListener('DOMContentLoaded', () => {
   // Sidebar calculator selection
   document.querySelectorAll('.calculator-sidebar li').forEach(item => {
     item.addEventListener('click', (e) => {
+      e.stopPropagation(); // Prevent details from closing
       const target = e.target.closest('li');
       if (!target) return;
 
       const text = target.textContent.trim();
+
+      // Handle calculator selection
       if (text === 'Investment Growth') {
-        inputContent.innerHTML = investmentGrowthContent;
+        // Clear existing tabs and set Investment Growth as active
         inputTabs.innerHTML = '<button class="tab-button active" data-tab="investment-growth">Investment Growth</button>';
+        // Render inputs in the input-content form
+        inputContent.innerHTML = investmentGrowthContent;
         setupFormInputs(clientData);
         updateCalculatorOutputs(analysisOutputs, clientData, formatCurrency, selectedReports, Chart);
       }
     });
-  });
 
-  // Handle Financial Planning folder expansion
-  const financialPlanningFolder = document.querySelector('.calculator-sidebar li[data-folder="financial-planning"]');
-  if (financialPlanningFolder) {
-    financialPlanningFolder.addEventListener('click', (e) => {
-      e.stopPropagation();
-      // Toggle folder expansion (assuming a class toggle for visibility)
-      financialPlanningFolder.classList.toggle('expanded');
-    });
-  }
+    // Ensure <details> remains open when a sub-item is clicked
+    const details = item.closest('details');
+    if (details && text !== 'Investment Growth') {
+      details.open = true;
+    }
+  });
 });
