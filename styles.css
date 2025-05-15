@@ -1461,7 +1461,7 @@ p {
     padding: 8px 16px;
   }
 }
-/* Ensure sidebar is flush against the left edge */
+/* Ensure sidebar is flush against the left edge without cutoff */
 .calculator-sidebar {
   margin: 0;
   padding: 0;
@@ -1472,41 +1472,53 @@ p {
   width: 250px;
   background-color: #f8f9fa;
   border-right: 1px solid #dee2e6;
-  overflow-y: auto;
+  overflow-y: auto; /* Ensure scrollable content */
+  box-sizing: border-box; /* Include padding/border in width */
 }
 
+/* Sidebar list styling */
 .calculator-sidebar ul {
   list-style: none;
   padding: 0;
   margin: 0;
+  width: 100%; /* Ensure the list takes full width */
 }
 
+/* Sidebar items */
 .calculator-sidebar li {
-  padding: 10px 15px;
+  padding: 10px 15px; /* Ensure enough padding on the left to avoid cutoff */
   cursor: pointer;
+  width: 100%; /* Ensure full width for clickable area */
+  box-sizing: border-box; /* Prevent padding from causing overflow */
 }
 
+/* Hover effect */
 .calculator-sidebar li:hover {
   background-color: #e9ecef;
 }
 
+/* Financial Planning folder styling */
 .calculator-sidebar li[data-folder="financial-planning"] {
   font-weight: bold;
 }
 
+/* Show nested list when expanded */
 .calculator-sidebar li[data-folder="financial-planning"].expanded > ul {
   display: block;
 }
 
+/* Nested list styling */
 .calculator-sidebar li > ul {
   display: none;
-  padding-left: 15px;
+  padding-left: 15px; /* Indent nested items */
+  width: 100%; /* Ensure nested list takes full width */
 }
 
 /* Main content area */
 main {
-  margin-left: 250px;
+  margin-left: 250px; /* Match sidebar width */
   padding: 20px;
+  box-sizing: border-box;
 }
 
 /* Input styles to match summary page */
@@ -1529,6 +1541,7 @@ main {
   font-size: 14px;
 }
 
+/* Input tabs */
 .input-tabs {
   display: flex;
   gap: 10px;
