@@ -1,0 +1,222 @@
+/* Visually hidden class for accessibility */
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  border: 0;
+}
+
+/* Container for the calculators page */
+.calculators-page {
+  display: flex;
+  gap: 0;
+  padding: 0;
+  margin: 0;
+  height: calc(100vh - 70px); /* Match header height from body padding-top */
+  width: 100%;
+}
+
+/* Sidebar for expandable folders */
+.calculator-sidebar {
+  width: 250px;
+  background-color: #ffffff;
+  border-right: none;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+  padding: 20px 0 20px 0; /* Remove right padding to eliminate space */
+  height: 100%;
+  overflow-y: auto;
+  box-sizing: border-box;
+  flex-shrink: 0; /* Prevent sidebar from shrinking */
+}
+
+.calculator-sidebar h3 {
+  font-size: 16px;
+  font-weight: 600;
+  color: #3b82f6;
+  margin: 0 0 15px 20px;
+}
+
+/* Expandable folder styles */
+.calculator-sidebar details {
+  margin-bottom: 12px;
+}
+
+.calculator-sidebar summary {
+  font-size: 14px;
+  padding: 10px 20px;
+  cursor: pointer;
+  background-color: #fff;
+  border: none;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  transition: background-color 0.2s;
+}
+
+.calculator-sidebar summary:hover {
+  background-color: #e0e7ff;
+  color: #3b82f6;
+}
+
+.calculator-sidebar summary i {
+  margin-right: 8px;
+  color: #64748b;
+}
+
+.calculator-sidebar ul {
+  list-style: none;
+  padding: 0 20px 0 40px;
+  margin: 0;
+}
+
+.calculator-sidebar li {
+  padding: 10px 0;
+  font-size: 14px;
+  color: #475569;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.calculator-sidebar li:hover {
+  color: #3b82f6;
+}
+
+/* Workspace container */
+.calculators-workspace {
+  flex-grow: 1;
+  display: flex;
+  gap: 20px;
+  padding: 20px;
+  background: #f8fafc;
+  min-width: 0;
+}
+
+/* Client inputs section */
+.client-inputs {
+  flex: 1;
+  background-color: #ffffff;
+  padding: 15px;
+  border: none;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  overflow: visible;
+  display: flex;
+  flex-direction: column;
+}
+
+.client-inputs h3 {
+  font-size: 16px;
+  font-weight: 600;
+  color: #3b82f6;
+  margin: 0 0 15px 0;
+  padding: 0;
+}
+
+/* Input container and content */
+.input-container {
+  margin-top: 0;
+}
+
+.input-tabs {
+  display: none; /* Hide the tab bar to remove "Investment Growth" tab */
+}
+
+.input-content {
+  margin-top: 0;
+}
+
+/* Graph outputs section */
+.graph-outputs {
+  flex: 1;
+  background-color: #ffffff;
+  padding: 15px;
+  border: none;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  overflow: visible;
+  display: flex;
+  flex-direction: column;
+}
+
+.graph-outputs h3 {
+  font-size: 16px;
+  font-weight: 600;
+  color: #3b82f6;
+  margin: 0 0 15px 0;
+  padding: 0;
+}
+
+/* Output styles */
+.output-card {
+  background-color: #fff;
+  padding: 16px;
+  border: none;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  margin-bottom: 20px;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.output-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+}
+
+.output-dropdown {
+  display: none; /* Remove "Select View" dropdown */
+}
+
+.add-to-presentation-checkbox {
+  display: none; /* Remove "Add to Presentation" checkbox */
+}
+
+/* Input styles */
+.input-group {
+  margin-bottom: 15px;
+}
+
+.input-group label {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: 500;
+  color: #475569;
+}
+
+.input-group input,
+.input-group select {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+/* Chart styles */
+canvas {
+  max-width: 100%;
+  height: auto;
+}
+
+/* Button styles */
+#recalculate-btn,
+#export-graph-btn {
+  margin-top: 15px;
+  padding: 8px 16px;
+  font-size: 14px;
+  color: #fff;
+  background-color: #3b82f6;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: background 0.2s;
+}
+
+#recalculate-btn:hover,
+#export-graph-btn:hover {
+  background-color: #2563eb;
+}
