@@ -3,181 +3,31 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Calculators - Advisys</title>
+  <title>Calculators Test - Advisys</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-  <link rel="stylesheet" href="styles.css">
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
   <style>
-    /* Visually hidden class for accessibility */
-    .visually-hidden {
-      position: absolute;
-      width: 1px;
-      height: 1px;
-      padding: 0;
-      margin: -1px;
-      overflow: hidden;
-      clip: rect(0, 0, 0, 0);
-      border: 0;
-    }
-
-    /* Container for the calculators page */
-    .calculators-page {
-      display: flex;
-      gap: 1rem;
-      padding: 1rem;
-      max-width: 1400px;
-      margin: 0 auto;
-    }
-
-    /* Sidebar for expandable folders */
-    .calculator-sidebar {
-      width: 250px;
-      background-color: #f5f5f5;
-      border-right: 1px solid #ccc;
-      padding: 1rem;
-      height: calc(100vh - 80px);
-      overflow-y: auto;
-    }
-
-    .calculator-sidebar h3 {
-      font-size: 1.25rem;
-      margin-bottom: 1rem;
-      color: #333;
-    }
-
-    /* Expandable folder styles */
-    .calculator-sidebar details {
-      margin-bottom: 0.5rem;
-    }
-
-    .calculator-sidebar summary {
-      font-size: 1rem;
-      padding: 0.5rem;
-      cursor: pointer;
-      background-color: #fff;
-      border: 1px solid #ddd;
-      border-radius: 4px;
-      display: flex;
-      align-items: center;
-      transition: background-color 0.2s;
-    }
-
-    .calculator-sidebar summary:hover {
-      background-color: #e0e0e0;
-    }
-
-    .calculator-sidebar summary i {
-      margin-right: 0.5rem;
-    }
-
-    .calculator-sidebar ul {
-      list-style: none;
-      padding: 0.5rem 1rem;
-      margin: 0;
-    }
-
-    .calculator-sidebar li {
-      padding: 0.5rem;
-      font-size: 0.95rem;
-      cursor: pointer;
-      border-radius: 4px;
-    }
-
-    .calculator-sidebar li:hover {
-      background-color: #e0e0e0;
-    }
-
-    /* Workspace container */
-    .calculators-workspace {
-      flex: 1;
-      display: flex;
-      gap: 1rem;
-    }
-
-    /* Client inputs section */
-    .client-inputs {
-      flex: 1;
-      background-color: #fff;
-      padding: 1rem;
-      border: 1px solid #ccc;
-      border-radius: 4px;
-    }
-
-    .client-inputs h3 {
-      font-size: 1.25rem;
-      margin-bottom: 1rem;
-    }
-
-    .input-container {
-      margin-top: 1rem;
-    }
-
-    .input-tabs {
-      display: flex;
-      gap: 0.5rem;
-      margin-bottom: 1rem;
-    }
-
-    /* Graph outputs section */
-    .graph-outputs {
-      flex: 1;
-      background-color: #fff;
-      padding: 1rem;
-      border: 1px solid #ccc;
-      border-radius: 4px;
-    }
-
-    .graph-outputs h3 {
-      font-size: 1.25rem;
-      margin-bottom: 1rem;
-    }
-
-    /* Buttons */
-    #recalculate-btn,
-    #export-graph-btn {
-      margin-top: 1rem;
-      padding: 0.75rem 1rem;
-      font-size: 1rem;
-      color: #fff;
-      background-color: #005ea2;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-      transition: background-color 0.2s;
-    }
-
-    #recalculate-btn:hover,
-    #export-graph-btn:hover {
-      background-color: #003e6b;
-    }
+    .calculators-page { display: flex; gap: 1rem; padding: 1rem; max-width: 1400px; margin: 0 auto; }
+    .calculator-sidebar { width: 250px; background: #f5f5f5; padding: 1rem; }
+    .calculators-workspace { flex: 1; display: flex; gap: 1rem; }
+    .client-inputs, .graph-outputs { flex: 1; background: #fff; padding: 1rem; border: 1px solid #ccc; border-radius: 4px; }
+    .input-group { margin-bottom: 1rem; }
+    .input-group label { display: block; margin-bottom: 0.25rem; }
+    .input-group input, .input-group select { width: 100%; padding: 0.5rem; border: 1px solid #ccc; border-radius: 4px; }
+    .output-card { padding: 1rem; border: 1px solid #ddd; border-radius: 4px; }
+    .add-to-presentation-checkbox { margin-left: 1rem; }
+    .tab-button { padding: 0.5rem 1rem; border: 1px solid #ccc; border-radius: 4px; background: #f5f5f5; cursor: pointer; }
+    .tab-button.active { background: #005ea2; color: #fff; }
   </style>
 </head>
 <body>
-  <div id="header-placeholder"></div>
   <div class="calculators-page">
     <div class="calculator-sidebar">
       <h3>Calculators</h3>
       <details>
         <summary><i class="fas fa-folder"></i> Financial Planning</summary>
         <ul>
-          <li>Retirement Savings</li>
           <li>Investment Growth</li>
-          <li>Loan Amortization</li>
-        </ul>
-      </details>
-      <details>
-        <summary><i class="fas fa-folder"></i> Tax Calculators</summary>
-        <ul>
-          <li>Income Tax Estimator</li>
-          <li>Capital Gains</li>
-        </ul>
-      </details>
-      <details>
-        <summary><i class="fas fa-folder"></i> Insurance</summary>
-        <ul>
-          <li>Life Insurance Needs</li>
-          <li>Premium Estimator</li>
         </ul>
       </details>
     </div>
@@ -186,52 +36,59 @@
         <h3>Client Inputs</h3>
         <div class="input-container">
           <div class="input-tabs">
-            <!-- Tabs populated dynamically -->
+            <button class="tab-button active" data-tab="investment-growth">Investment Growth</button>
           </div>
           <form id="client-input-form" class="input-content">
-            <!-- Tab content populated dynamically -->
+            <div class="input-group">
+              <label for="principal">Initial Investment ($)</label>
+              <input type="number" id="principal" name="principal" min="0" step="0.01" required>
+            </div>
+            <div class="input-group">
+              <label for="interest-rate">Annual Interest Rate (%)</label>
+              <input type="number" id="interest-rate" name="interest-rate" min="0" max="100" step="0.01" required>
+            </div>
+            <div class="input-group">
+              <label for="years">Time Period (Years)</label>
+              <input type="number" id="years" name="years" min="1" step="1" required>
+            </div>
+            <div class="input-group">
+              <label for="compounding">Compounding Frequency</label>
+              <select id="compounding" name="compounding" required>
+                <option value="1">Annually</option>
+                <option value="4">Quarterly</option>
+                <option value="12">Monthly</option>
+                <option value="365">Daily</option>
+              </select>
+            </div>
           </form>
         </div>
       </div>
       <div class="graph-outputs">
         <h3>Analysis Outputs</h3>
-        <div id="output-tabs-container"></div>
-        <div id="analysis-outputs"></div>
+        <div id="output-tabs-container">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div class="output-dropdown">
+              <label for="output-select">Select View: </label>
+              <select id="output-select" class="output-select">
+                <option value="output-future-value">Future Value</option>
+              </select>
+            </div>
+            <label class="add-to-presentation-checkbox">
+              <input type="checkbox" id="add-to-presentation" data-report="report-future-value" data-title="Investment Growth Future Value">
+              Add to Presentation
+            </label>
+          </div>
+        </div>
+        <div id="analysis-outputs">
+          <div class="output-card">
+            <h3>Future Value</h3>
+            <p>Enter inputs to calculate the future value.</p>
+          </div>
+        </div>
         <button id="recalculate-btn">Recalculate</button>
         <button id="export-graph-btn">Export Graph</button>
       </div>
     </div>
   </div>
-  <script>
-    fetch('header.html')
-      .then(response => response.text())
-      .then(data => {
-        document.getElementById('header-placeholder').innerHTML = data;
-        // Add active class to current page link
-        const currentPage = window.location.pathname.split('/').pop() || 'calculators.html';
-        const navLinks = document.querySelectorAll('nav ul li a');
-        navLinks.forEach(link => {
-          const href = link.getAttribute('href');
-          if (href === currentPage) {
-            link.classList.add('active');
-          }
-        });
-        // Initialize dropdown menu
-        const profilePic = document.getElementById('profile-pic');
-        const dropdownMenu = document.getElementById('dropdown-menu');
-        if (profilePic && dropdownMenu) {
-          profilePic.addEventListener('click', () => {
-            dropdownMenu.style.display = dropdownMenu.style.display === 'block' ? 'none' : 'block';
-          });
-          document.addEventListener('click', (e) => {
-            if (!profilePic.contains(e.target) && !dropdownMenu.contains(e.target)) {
-              dropdownMenu.style.display = 'none';
-            }
-          });
-        }
-      })
-      .catch(error => console.error('Error loading header:', error));
-  </script>
-  <script type="module" src="src/calculators.js"></script>
 </body>
 </html>
