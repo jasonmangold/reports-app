@@ -44,7 +44,7 @@ export const reportOptions = [
     id: 'output-future-value',
     label: 'Future Value',
     reportId: 'report-future-value',
-    title: 'Future Value of Single Sum and Periodic Additions'
+    title: 'Future Value of a Single Sum and Periodic Additions (A364L)'
   }
 ];
 
