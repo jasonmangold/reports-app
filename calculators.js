@@ -1,5 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
-  // Load header
+  // Load header (unchanged)
   fetch('header.html')
     .then(response => response.text())
     .then(data => {
@@ -27,7 +27,7 @@ document.addEventListener('DOMContentLoaded', () => {
     })
     .catch(error => console.error('Error loading header:', error));
 
-  // Calculator data
+  // Calculator data (unchanged)
   const calculators = {
     'Borrowing': [
       { id: 'mortgage', name: 'Mortgage Calculator' },
@@ -38,7 +38,7 @@ document.addEventListener('DOMContentLoaded', () => {
     ]
   };
 
-  // Populate calculator dropdown
+  // Populate calculator dropdown (unchanged)
   const select = document.getElementById('calculator-topic-select');
   Object.keys(calculators).forEach(category => {
     const optgroup = document.createElement('optgroup');
@@ -52,27 +52,10 @@ document.addEventListener('DOMContentLoaded', () => {
     select.appendChild(optgroup);
   });
 
-  // Tab management
-  const tabButtons = document.querySelectorAll('.tab-btn');
+  // Load calculator content
   const tabContent = document.getElementById('tab-content');
   const outputContent = document.getElementById('output-content');
-  const outputTabButtons = document.querySelectorAll('.output-tab-btn');
 
-  tabButtons.forEach(button => {
-    button.addEventListener('click', () => {
-      tabButtons.forEach(btn => btn.classList.remove('active'));
-      button.classList.add('active');
-      const tabId = button.dataset.tab;
-      if (tabId === 'outputs') {
-        const calcId = select.value;
-        updateOutputContent(calcId);
-      }
-      document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
-      tabContent.classList.add('active');
-    });
-  });
-
-  // Load calculator content
   select.addEventListener('change', (e) => {
     const calcId = e.target.value;
     updateTabContent(calcId);
@@ -140,6 +123,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
+  // calculateMortgage and calculateFutureValue remain unchanged
   function calculateMortgage() {
     const loanAmount = parseFloat(document.getElementById('loan-amount').value);
     const interestRate = parseFloat(document.getElementById('interest-rate').value) / 100 / 12;
@@ -199,9 +183,9 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     document.getElementById('export-graph-btn').addEventListener('click', () => {
-      const canvas = document.getElementById('mortgage-chart');
+      const canvasstatuecanvas = document.getElementById('mortgage-chart');
       const link = document.createElement('a');
-      link.href = canvas.toDataURL('image/png');
+      link.href = canvas.toDataURL(' ersten');
       link.download = 'mortgage-chart.png';
       link.click();
     });
