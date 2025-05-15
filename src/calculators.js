@@ -93,7 +93,7 @@ export function updateCalculatorOutputs(analysisOutputs, clientData, formatCurre
     const compounding = parseInt(clientData.investmentGrowth?.compounding) || 1;
 
     const result = calculateFutureValue(principal, interestRate, years, compounding);
-    const isValid = result && principal > 0 && years > 0;
+    const isValid = result && principal >= 0 && years >= 0; // Allow zero values to avoid error initially
 
     const labels = isValid ? ['Initial Investment', 'Future Value'] : ['No Data'];
     const data = isValid ? [principal, result.futureValue] : [0];
@@ -126,7 +126,7 @@ export function updateCalculatorOutputs(analysisOutputs, clientData, formatCurre
       <div class="output-tab-content ${currentSelection === 'output-future-value' ? 'active' : ''}" id="output-future-value" style="display: ${currentSelection === 'output-future-value' ? 'block' : 'none'};">
         <div class="output-card">
           <h3>Future Value</h3>
-          ${isValid ? `
+          ${isValid && principal > 0 && years > 0 ? `
             <p>Initial Investment: ${formatCurrency(principal)}</p>
             <p>Future Value: ${formatCurrency(result.futureValue)}</p>
             <p>Growth: ${formatCurrency(result.growth)}</p>
@@ -138,7 +138,7 @@ export function updateCalculatorOutputs(analysisOutputs, clientData, formatCurre
       </div>
     `;
 
-    if (isValid) {
+    if (isValid && principal > 0 && years > 0) {
       const ctx = document.getElementById('future-value-chart').getContext('2d');
       new Chart(ctx, {
         type: 'bar',
@@ -184,7 +184,6 @@ export function updateCalculatorOutputs(analysisOutputs, clientData, formatCurre
 
     setupOutputControls(reportOptions, selectedReports, clientData);
     setupFormInputs(clientData);
-
   } catch (error) {
     console.error('Error in updateCalculatorOutputs:', error);
     analysisOutputs.innerHTML = '<p class="output-card">Unable to render outputs. Please ensure all required fields are filled correctly.</p>';
@@ -200,6 +199,7 @@ function setupFormInputs(clientData) {
     input.addEventListener('change', () => {
       if (!clientData.investmentGrowth) clientData.investmentGrowth = {};
       clientData.investmentGrowth[input.name] = input.value;
+      updateCalculatorOutputs(document.getElementById('analysis-outputs'), clientData, formatCurrency, [], Chart); // Recalculate on change
     });
   });
 }
@@ -301,7 +301,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const target = e.target.closest('li');
       if (!target) return;
 
-      const text = target.textContent.trim();
+      const text = target.textContent.trim(); // Fix ReferenceError by defining text here
 
       // Handle calculator selection
       if (text === 'Investment Growth') {
@@ -310,6 +310,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // Render inputs in the input-content form
         inputContent.innerHTML = investmentGrowthContent;
         setupFormInputs(clientData);
+        // Update outputs after setting inputs
         updateCalculatorOutputs(analysisOutputs, clientData, formatCurrency, selectedReports, Chart);
       }
     });
