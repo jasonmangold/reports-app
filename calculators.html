@@ -3,81 +3,235 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Calculators</title>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <script src="calculators.js" defer></script>
-  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <title>Calculators - Advisys</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <link rel="stylesheet" href="styles.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
   <style>
-    .card {
-      background: white;
-      border-radius: 0.5rem;
-      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-      padding: 1.5rem;
-      height: 100%;
+    /* Visually hidden class for accessibility */
+    .visually-hidden {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      border: 0;
     }
-    .input-container label {
-      display: block;
+
+    /* Container for the calculators page */
+    .calculators-page {
+      display: flex;
+      gap: 1rem;
+      padding: 1rem;
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    /* Sidebar for expandable folders */
+    .calculator-sidebar {
+      width: 250px;
+      background-color: #f5f5f5;
+      border-right: 1px solid #ccc;
+      padding: 1rem;
+      height: calc(100vh - 80px);
+      overflow-y: auto;
+    }
+
+    .calculator-sidebar h3 {
+      font-size: 1.25rem;
+      margin-bottom: 1rem;
+      color: #333;
+    }
+
+    /* Expandable folder styles */
+    .calculator-sidebar details {
       margin-bottom: 0.5rem;
     }
-    .input-container input,
-    .input-container select {
-      width: 100%;
+
+    .calculator-sidebar summary {
+      font-size: 1rem;
       padding: 0.5rem;
-      margin-bottom: 1rem;
-      border: 1px solid #d1d5db;
-      border-radius: 0.25rem;
-    }
-    .input-container button {
-      background: #3b82f6;
-      color: white;
-      padding: 0.5rem 1rem;
-      border-radius: 0.25rem;
-      border: none;
       cursor: pointer;
+      background-color: #fff;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      transition: background-color 0.2s;
     }
-    .output-table {
-      width: 100%;
-      border-collapse: collapse;
+
+    .calculator-sidebar summary:hover {
+      background-color: #e0e0e0;
+    }
+
+    .calculator-sidebar summary i {
+      margin-right: 0.5rem;
+    }
+
+    .calculator-sidebar ul {
+      list-style: none;
+      padding: 0.5rem 1rem;
+      margin: 0;
+    }
+
+    .calculator-sidebar li {
+      padding: 0.5rem;
+      font-size: 0.95rem;
+      cursor: pointer;
+      border-radius: 4px;
+    }
+
+    .calculator-sidebar li:hover {
+      background-color: #e0e0e0;
+    }
+
+    /* Workspace container */
+    .calculators-workspace {
+      flex: 1;
+      display: flex;
+      gap: 1rem;
+    }
+
+    /* Client inputs section */
+    .client-inputs {
+      flex: 1;
+      background-color: #fff;
+      padding: 1rem;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+
+    .client-inputs h3 {
+      font-size: 1.25rem;
+      margin-bottom: 1rem;
+    }
+
+    .input-container {
       margin-top: 1rem;
     }
-    .output-table th,
-    .output-table td {
-      border: 1px solid #d1d5db;
-      padding: 0.5rem;
-      text-align: left;
+
+    .input-tabs {
+      display: flex;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
     }
+
+    /* Graph outputs section */
+    .graph-outputs {
+      flex: 1;
+      background-color: #fff;
+      padding: 1rem;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+
+    .graph-outputs h3 {
+      font-size: 1.25rem;
+      margin-bottom: 1rem;
+    }
+
+    /* Buttons */
+    #recalculate-btn,
     #export-graph-btn {
       margin-top: 1rem;
-      background: #10b981;
-      color: white;
-      padding: 0.5rem 1rem;
-      border-radius: 0.25rem;
+      padding: 0.75rem 1rem;
+      font-size: 1rem;
+      color: #fff;
+      background-color: #005ea2;
       border: none;
+      border-radius: 4px;
       cursor: pointer;
+      transition: background-color 0.2s;
+    }
+
+    #recalculate-btn:hover,
+    #export-graph-btn:hover {
+      background-color: #003e6b;
     }
   </style>
 </head>
-<body class="bg-gray-100">
+<body>
   <div id="header-placeholder"></div>
-  <main class="container mx-auto p-4">
-    <div class="mb-4">
-      <label for="calculator-topic-select" class="block text-lg font-medium mb-2">Select Calculator:</label>
-      <select id="calculator-topic-select" class="p-2 border rounded w-full max-w-md"></select>
+  <div class="calculators-page">
+    <div class="calculator-sidebar">
+      <h3>Calculators</h3>
+      <details>
+        <summary><i class="fas fa-folder"></i> Financial Planning</summary>
+        <ul>
+          <li>Retirement Savings</li>
+          <li>Investment Growth</li>
+          <li>Loan Amortization</li>
+        </ul>
+      </details>
+      <details>
+        <summary><i class="fas fa-folder"></i> Tax Calculators</summary>
+        <ul>
+          <li>Income Tax Estimator</li>
+          <li>Capital Gains</li>
+        </ul>
+      </details>
+      <details>
+        <summary><i class="fas fa-folder"></i> Insurance</summary>
+        <ul>
+          <li>Life Insurance Needs</li>
+          <li>Premium Estimator</li>
+        </ul>
+      </details>
     </div>
-    <div class="flex flex-col md:flex-row gap-4">
-      <div class="md:w-1/2">
-        <div class="card">
-          <h2 class="text-xl font-bold mb-4">Inputs</h2>
-          <div id="tab-content"></div>
+    <div class="calculators-workspace">
+      <div class="client-inputs">
+        <h3>Client Inputs</h3>
+        <div class="input-container">
+          <div class="input-tabs">
+            <!-- Tabs populated dynamically -->
+          </div>
+          <form id="client-input-form" class="input-content">
+            <!-- Tab content populated dynamically -->
+          </form>
         </div>
       </div>
-      <div class="md:w-1/2">
-        <div class="card">
-          <h2 class="text-xl font-bold mb-4">Output</h2>
-          <div id="output-content"></div>
-        </div>
+      <div class="graph-outputs">
+        <h3>Analysis Outputs</h3>
+        <div id="output-tabs-container"></div>
+        <div id="analysis-outputs"></div>
+        <button id="recalculate-btn">Recalculate</button>
+        <button id="export-graph-btn">Export Graph</button>
       </div>
     </div>
-  </main>
+  </div>
+  <script>
+    fetch('header.html')
+      .then(response => response.text())
+      .then(data => {
+        document.getElementById('header-placeholder').innerHTML = data;
+        // Add active class to current page link
+        const currentPage = window.location.pathname.split('/').pop() || 'calculators.html';
+        const navLinks = document.querySelectorAll('nav ul li a');
+        navLinks.forEach(link => {
+          const href = link.getAttribute('href');
+          if (href === currentPage) {
+            link.classList.add('active');
+          }
+        });
+        // Initialize dropdown menu
+        const profilePic = document.getElementById('profile-pic');
+        const dropdownMenu = document.getElementById('dropdown-menu');
+        if (profilePic && dropdownMenu) {
+          profilePic.addEventListener('click', () => {
+            dropdownMenu.style.display = dropdownMenu.style.display === 'block' ? 'none' : 'block';
+          });
+          document.addEventListener('click', (e) => {
+            if (!profilePic.contains(e.target) && !dropdownMenu.contains(e.target)) {
+              dropdownMenu.style.display = 'none';
+            }
+          });
+        }
+      })
+      .catch(error => console.error('Error loading header:', error));
+  </script>
+  <script type="module" src="src/calculators.js"></script>
 </body>
 </html>
