@@ -96,7 +96,7 @@ export function updateCalculatorOutputs(analysisOutputs, clientData, formatCurre
     const isValid = result && principal >= 0 && years >= 0; // Allow zero values to avoid error initially
 
     const labels = isValid ? ['Initial Investment', 'Future Value'] : ['No Data'];
-    const data = isValid ? [principal, result.futureValue] : [0];
+    const data = isValid ? [principal, result ? result.futureValue : 0] : [0];
     const backgroundColors = isValid
       ? ['rgba(75, 192, 192, 0.6)', 'rgba(54, 162, 235, 0.6)']
       : ['rgba(255, 99, 132, 0.6)'];
@@ -284,7 +284,7 @@ document.addEventListener('DOMContentLoaded', () => {
   inputTabs.innerHTML = '';
   inputContent.innerHTML = '';
 
-  // Initial output render
+  // Initial output render with empty data
   updateCalculatorOutputs(analysisOutputs, clientData, formatCurrency, selectedReports, Chart);
 
   // Recalculate button
@@ -301,7 +301,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const target = e.target.closest('li');
       if (!target) return;
 
-      const text = target.textContent.trim(); // Fix ReferenceError by defining text here
+      const text = target.textContent.trim();
 
       // Handle calculator selection
       if (text === 'Investment Growth') {
@@ -313,12 +313,12 @@ document.addEventListener('DOMContentLoaded', () => {
         // Update outputs after setting inputs
         updateCalculatorOutputs(analysisOutputs, clientData, formatCurrency, selectedReports, Chart);
       }
-    });
 
-    // Ensure <details> remains open when a sub-item is clicked
-    const details = item.closest('details');
-    if (details && text !== 'Investment Growth') {
-      details.open = true;
-    }
+      // Ensure <details> remains open when a sub-item is clicked
+      const details = target.closest('details');
+      if (details) {
+        details.open = true;
+      }
+    });
   });
 });
