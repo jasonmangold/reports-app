@@ -38,37 +38,50 @@ document.addEventListener('DOMContentLoaded', () => {
     ]
   };
 
-  // Populate calculator dropdown (unchanged)
-  const select = document.getElementById('calculator-topic-select');
+  // Populate calculator sidebar
+  const sidebar = document.getElementById('calculator-sidebar');
   Object.keys(calculators).forEach(category => {
-    const optgroup = document.createElement('optgroup');
-    optgroup.label = category;
+    const folder = document.createElement('div');
+    folder.className = 'sidebar-folder';
+    folder.innerHTML = `<h3 class="folder-title">${category}</h3>`;
+    const calcList = document.createElement('ul');
+    calcList.className = 'calc-list';
     calculators[category].forEach(calc => {
-      const option = document.createElement('option');
-      option.value = calc.id;
-      option.textContent = calc.name;
-      optgroup.appendChild(option);
+      const li = document.createElement('li');
+      li.className = 'calc-item';
+      li.dataset.calcId = calc.id;
+      li.textContent = calc.name;
+      calcList.appendChild(li);
     });
-    select.appendChild(optgroup);
+    folder.appendChild(calcList);
+    sidebar.appendChild(folder);
+  });
+
+  // Add event listeners to calculator items
+  const calcItems = document.querySelectorAll('.calc-item');
+  calcItems.forEach(item => {
+    item.addEventListener('click', (e) => {
+      const calcId = e.target.dataset.calcId;
+      updateTabContent(calcId);
+      if (calcId) {
+        updateOutputContent(calcId);
+      }
+      // Highlight selected calculator
+      calcItems.forEach(i => i.classList.remove('selected'));
+      e.target.classList.add('selected');
+    });
   });
 
   // Load calculator content
   const tabContent = document.getElementById('tab-content');
   const outputContent = document.getElementById('output-content');
 
-  select.addEventListener('change', (e) => {
-    const calcId = e.target.value;
-    updateTabContent(calcId);
-    if (calcId) {
-      updateOutputContent(calcId);
-    }
-  });
-
   function updateTabContent(calcId) {
     tabContent.innerHTML = '';
     if (calcId === 'mortgage') {
       tabContent.innerHTML = `
         <div class="input-container">
+          <h3>Inputs</h3>
           <form id="mortgage-form">
             <label>Loan Amount ($):<input type="number" id="loan-amount" name="loan-amount" value="200000" required></label>
             <label>Interest Rate (%):<input type="number" id="interest-rate" name="interest-rate" step="0.01" value="4.5" required></label>
@@ -83,7 +96,7 @@ document.addEventListener('DOMContentLoaded', () => {
     } else if (calcId === 'future-value') {
       tabContent.innerHTML = `
         <div class="input-container">
-        <h3>Inputs</h3>
+          <h3>Inputs</h3>
           <form id="future-value-form">
             <label>Initial Investment ($):<input type="number" id="initial-investment" name="initial-investment" value="10000" step="0.01" required></label>
             <label>Periodic Contribution ($):<input type="number" id="periodic-contribution" name="periodic-contribution" value="500" step="0.01" required></label>
@@ -184,9 +197,9 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     document.getElementById('export-graph-btn').addEventListener('click', () => {
-      const canvasstatuecanvas = document.getElementById('mortgage-chart');
+      const canvas = document.getElementById('mortgage-chart');
       const link = document.createElement('a');
-      link.href = canvas.toDataURL(' ersten');
+      link.href = canvas.toDataURL('image/png');
       link.download = 'mortgage-chart.png';
       link.click();
     });
