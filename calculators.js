@@ -83,7 +83,6 @@ document.addEventListener('DOMContentLoaded', () => {
     } else if (calcId === 'future-value') {
       tabContent.innerHTML = `
         <div class="input-container">
-        <h3>Inputs</h3>
           <form id="future-value-form">
             <label>Initial Investment ($):<input type="number" id="initial-investment" name="initial-investment" value="10000" step="0.01" required></label>
             <label>Periodic Contribution ($):<input type="number" id="periodic-contribution" name="periodic-contribution" value="500" step="0.01" required></label>
