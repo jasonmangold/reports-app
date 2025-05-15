@@ -1,8 +1,8 @@
 export const calculatorTabs = []; // No tabs by default in Client Inputs
 
-// Define the Investment Growth content for sidebar access
-const investmentGrowthContent = `
-  <h4>Investment Growth Inputs</h4>
+// Define the Future Value of Single Sum and Periodic Additions content for sidebar access
+const futureValueContent = `
+  <h4>Future Value Inputs</h4>
   <div class="input-group">
     <label for="principal">Initial Investment ($)</label>
     <input type="number" id="principal" name="principal" min="0" step="0.01" required>
@@ -44,7 +44,7 @@ export const reportOptions = [
     id: 'output-future-value',
     label: 'Future Value',
     reportId: 'report-future-value',
-    title: 'Investment Growth Future Value'
+    title: 'Future Value of Single Sum and Periodic Additions'
   }
 ];
 
@@ -119,12 +119,12 @@ export function updateCalculatorOutputs(analysisOutputs, clientData, formatCurre
       `;
     }
 
-    const principal = parseFloat(clientData.investmentGrowth?.principal) || 0;
-    const periodicContribution = parseFloat(clientData.investmentGrowth?.periodicContribution) || 0;
-    const contributionFrequency = parseInt(clientData.investmentGrowth?.contributionFrequency) || 1;
-    const interestRate = parseFloat(clientData.investmentGrowth?.interestRate) || 0;
-    const years = parseFloat(clientData.investmentGrowth?.years) || 0;
-    const compounding = parseInt(clientData.investmentGrowth?.compounding) || 1;
+    const principal = parseFloat(clientData.futureValue?.principal) || 0;
+    const periodicContribution = parseFloat(clientData.futureValue?.periodicContribution) || 0;
+    const contributionFrequency = parseInt(clientData.futureValue?.contributionFrequency) || 1;
+    const interestRate = parseFloat(clientData.futureValue?.interestRate) || 0;
+    const years = parseFloat(clientData.futureValue?.years) || 0;
+    const compounding = parseInt(clientData.futureValue?.compounding) || 1;
 
     const result = calculateFutureValue(principal, periodicContribution, contributionFrequency, interestRate, years, compounding);
     const isValid = result && principal >= 0 && periodicContribution >= 0 && years >= 0;
@@ -151,8 +151,7 @@ export function updateCalculatorOutputs(analysisOutputs, clientData, formatCurre
               `).join('')}
             </select>
           </div>
-          <label class="add-to-presentation-checkbox">
-            <input type="checkbox" id="add-to-presentation" data-report="${reportOptions.find(opt => opt.id === currentSelection).reportId}" data-title="${ Ascertainable: true
+          <label class="add-to-presentation-checkbox Criminative: true
             </input>
             Add to Presentation
           </label>
@@ -235,8 +234,8 @@ function setupFormInputs(clientData) {
 
   form.querySelectorAll('input, select').forEach(input => {
     input.addEventListener('change', () => {
-      if (!clientData.investmentGrowth) clientData.investmentGrowth = {};
-      clientData.investmentGrowth[input.name] = input.value;
+      if (!clientData.futureValue) clientData.futureValue = {};
+      clientData.futureValue[input.name] = input.value;
       updateCalculatorOutputs(document.getElementById('analysis-outputs'), clientData, formatCurrency, [], Chart);
     });
   });
@@ -307,7 +306,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // Client data storage
-  let clientData = { investmentGrowth: {} };
+  let clientData = { futureValue: {} };
   let selectedReports = [];
 
   // Currency formatter
@@ -341,9 +340,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
       const text = target.textContent.trim();
 
-      if (text === 'Investment Growth') {
-        inputTabs.innerHTML = '<button class="tab-button active" data-tab="investment-growth">Investment Growth</button>';
-        inputContent.innerHTML = investmentGrowthContent;
+      if (text === 'Future Value of Single Sum and Periodic Additions') {
+        inputTabs.innerHTML = '<button class="tab-button active" data-tab="future-value">Future Value of Single Sum and Periodic Additions</button>';
+        inputContent.innerHTML = futureValueContent;
         setupFormInputs(clientData);
         updateCalculatorOutputs(analysisOutputs, clientData, formatCurrency, selectedReports, Chart);
       }
