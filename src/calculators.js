@@ -2,41 +2,43 @@ export const calculatorTabs = []; // No tabs by default in Client Inputs
 
 // Define the Future Value of Single Sum and Periodic Additions content for sidebar access
 const futureValueContent = `
-  <h4>Future Value Inputs</h4>
-  <div class="input-group">
-    <label for="principal">Initial Investment ($)</label>
-    <input type="number" id="principal" name="principal" min="0" step="0.01" required>
-  </div>
-  <div class="input-group">
-    <label for="periodic-contribution">Periodic Contribution ($)</label>
-    <input type="number" id="periodic-contribution" name="periodic-contribution" min="0" step="0.01" required>
-  </div>
-  <div class="input-group">
-    <label for="contribution-frequency">Contribution Frequency</label>
-    <select id="contribution-frequency" name="contribution-frequency" required>
-      <option value="1">Annually</option>
-      <option value="4">Quarterly</option>
-      <option value="12">Monthly</option>
-      <option value="365">Daily</option>
-    </select>
-  </div>
-  <div class="input-group">
-    <label for="interest-rate">Annual Interest Rate (%)</label>
-    <input type="number" id="interest-rate" name="interest-rate" min="0" max="100" step="0.01" required>
-  </div>
-  <div class="input-group">
-    <label for="years">Time Period (Years)</label>
-    <input type="number" id="years" name="years" min="1" step="1" required>
-  </div>
-  <div class="input-group">
-    <label for="compounding">Compounding Frequency</label>
-    <select id="compounding" name="compounding" required>
-      <option value="1">Annually</option>
-      <option value="4">Quarterly</option>
-      <option value="12">Monthly</option>
-      <option value="365">Daily</option>
-    </select>
-  </div>
+  <form id="client-input-form">
+    <h4>Future Value Inputs</h4>
+    <div class="input-group">
+      <label for="principal">Initial Investment ($)</label>
+      <input type="number" id="principal" name="principal" min="0" step="0.01" required>
+    </div>
+    <div class="input-group">
+      <label for="periodic-contribution">Periodic Contribution ($)</label>
+      <input type="number" id="periodic-contribution" name="periodic-contribution" min="0" step="0.01" required>
+    </div>
+    <div class="input-group">
+      <label for="contribution-frequency">Contribution Frequency</label>
+      <select id="contribution-frequency" name="contribution-frequency" required>
+        <option value="1">Annually</option>
+        <option value="4">Quarterly</option>
+        <option value="12">Monthly</option>
+        <option value="365">Daily</option>
+      </select>
+    </div>
+    <div class="input-group">
+      <label for="interest-rate">Annual Interest Rate (%)</label>
+      <input type="number" id="interest-rate" name="interest-rate" min="0" max="100" step="0.01" required>
+    </div>
+    <div class="input-group">
+      <label for="years">Time Period (Years)</label>
+      <input type="number" id="years" name="years" min="1" step="1" required>
+    </div>
+    <div class="input-group">
+      <label for="compounding">Compounding Frequency</label>
+      <select id="compounding" name="compounding" required>
+        <option value="1">Annually</option>
+        <option value="4">Quarterly</option>
+        <option value="12">Monthly</option>
+        <option value="365">Daily</option>
+      </select>
+    </div>
+  </form>
 `;
 
 export const reportOptions = [
@@ -332,25 +334,26 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // Sidebar calculator selection
-  document.querySelectorAll('.calculator-sidebar li').forEach(item => {
-    item.addEventListener('click', (e) => {
-      e.stopPropagation();
-      const target = e.target.closest('li');
-      if (!target) return;
+// Inside the DOMContentLoaded event listener
+document.querySelectorAll('.calculator-sidebar li').forEach(item => {
+  item.addEventListener('click', (e) => {
+    e.stopPropagation();
+    const target = e.target.closest('li');
+    if (!target) return;
 
-      const text = target.textContent.trim();
+    const text = target.textContent.trim();
 
-      if (text === 'Future Value of Single Sum and Periodic Additions') {
-        inputTabs.innerHTML = '<button class="tab-button active" data-tab="future-value">Future Value of Single Sum and Periodic Additions</button>';
-        inputContent.innerHTML = futureValueContent;
-        setupFormInputs(clientData);
-        updateCalculatorOutputs(analysisOutputs, clientData, formatCurrency, selectedReports, Chart);
-      }
+    if (text === 'Future Value of a Single Sum and Periodic Additions (A364L)') {
+      inputTabs.innerHTML = '<button class="tab-button active" data-tab="future-value">Future Value of Single Sum and Periodic Additions</button>';
+      inputContent.innerHTML = futureValueContent;
+      setupFormInputs(clientData);
+      updateCalculatorOutputs(analysisOutputs, clientData, formatCurrency, selectedReports, Chart);
+    }
 
-      const details = target.closest('details');
-      if (details) {
-        details.open = true;
-      }
-    });
+    const details = target.closest('details');
+    if (details) {
+      details.open = true;
+    }
   });
+});
 });
