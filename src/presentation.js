@@ -22,6 +22,39 @@ const downloadPdfBtn = document.getElementById('download-pdf-btn');
 // Initialize on page load
 document.addEventListener('DOMContentLoaded', () => {
   try {
+    // Load header.html
+    fetch('header.html')
+      .then(response => response.text())
+      .then(data => {
+        const headerPlaceholder = document.getElementById('header-placeholder');
+        if (headerPlaceholder) {
+          headerPlaceholder.innerHTML = data;
+          // Add active class to current page link
+          const currentPage = window.location.pathname.split('/').pop() || 'presentation.html';
+          const navLinks = document.querySelectorAll('nav ul li a');
+          navLinks.forEach(link => {
+            const href = link.getAttribute('href');
+            if (href === currentPage) {
+              link.classList.add('active');
+            }
+          });
+          // Initialize dropdown menu
+          const profilePic = document.getElementById('profile-pic');
+          const dropdownMenu = document.getElementById('dropdown-menu');
+          if (profilePic && dropdownMenu) {
+            profilePic.addEventListener('click', () => {
+              dropdownMenu.style.display = dropdownMenu.style.display === 'block' ? 'none' : 'block';
+            });
+            document.addEventListener('click', (e) => {
+              if (!profilePic.contains(e.target) && !dropdownMenu.contains(e.target)) {
+                dropdownMenu.style.display = 'none';
+              }
+            });
+          }
+        } else {
+          console.warn('Header placeholder not found in the DOM.');
+        }
+  try {
     updateClientFileName();
     populateReportList();
     setupDragAndDrop();
