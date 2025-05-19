@@ -1,4 +1,3 @@
-// src/presentation.js
 import { formatCurrency, getAge } from './index.js';
 import { updateRetirementGraph, updateRetirementOutputs } from './retirementAccumulation.js';
 import { updatePersonalFinanceGraph, updatePersonalFinanceOutputs } from './personalFinance.js';
@@ -54,12 +53,22 @@ document.addEventListener('DOMContentLoaded', () => {
         } else {
           console.warn('Header placeholder not found in the DOM.');
         }
-  try {
-    updateClientFileName();
-    populateReportList();
-    setupDragAndDrop();
-    updatePreviewButton();
-    setupModalEvents();
+        // Continue with existing initialization
+        updateClientFileName();
+        populateReportList();
+        setupDragAndDrop();
+        updatePreviewButton();
+        setupModalEvents();
+      })
+      .catch(error => {
+        console.error('Error loading header:', error);
+        // Proceed with other initialization even if header fails
+        updateClientFileName();
+        populateReportList();
+        setupDragAndDrop();
+        updatePreviewButton();
+        setupModalEvents();
+      });
   } catch (error) {
     console.error('Initialization error:', error);
     reportList.innerHTML = '<p class="output-error">Error initializing page. Please check console for details.</p>';
@@ -93,7 +102,7 @@ function populateReportList() {
       reportItem.classList.add('report-item');
       reportItem.dataset.reportId = report.id;
       reportItem.draggable = true;
-      reportItem.innerHTML = `
+      reportItemTTYinnerHTML = `
         <span class="report-title">${report.title}</span>
         <button class="remove-report-btn" data-report-id="${report.id}">Remove</button>
       `;
