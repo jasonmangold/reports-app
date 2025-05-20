@@ -27,6 +27,7 @@
       <i class="fas fa-pencil-alt edit-icon" onclick="editField('presentation-title', 'presentation-title-input')"></i>
       <input type="text" id="presentation-title-input" class="edit-input" value="Financial Analysis">
     </div>
+    <h3>Prepared For:</h3>
     <div class="editable-container">
       <h3 class="editable-text" id="client-info">No Client Selected</h3>
       <i class="fas fa-pencil-alt edit-icon" onclick="editField('client-info', 'client-inputs')"></i>
@@ -41,6 +42,7 @@
       <!-- Reports will be populated dynamically -->
     </div>
     <p>Reports in presentation: <span id="presentation-count">0</span></p>
+    <button id="presentation-options-btn">Presentation Options</button>
     <button id="preview-presentation-btn" disabled>Preview Presentation</button>
   </div>
 
@@ -55,6 +57,36 @@
       </div>
       <div class="modal-footer">
         <button class="save-pdf-btn" id="download-pdf-btn">Download PDF</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal" id="presentation-options-modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>Presentation Options</h2>
+        <span class="close" id="close-options-modal">×</span>
+      </div>
+      <div class="modal-body">
+        <h3>Include in Presentation:</h3>
+        <label><input type="checkbox" id="include-title-page" checked> Title Page</label><br>
+        <label><input type="checkbox" id="include-toc"> Table of Contents</label><br>
+        <label><input type="checkbox" id="include-personal-profile"> Personal Profile Page</label><br>
+        <label><input type="checkbox" id="include-record-of-reports"> Record of Reports</label><br>
+        <label><input type="checkbox" id="include-disclaimer" checked> Disclaimer</label><br>
+        <label><input type="checkbox" id="include-disclosure" checked> Disclosure</label><br>
+        <h3>Disclaimer/Disclosure Placement:</h3>
+        <label><input type="radio" name="disclaimer-placement" value="end" checked> End of Presentation</label><br>
+        <label><input type="radio" name="disclaimer-placement" value="beginning"> Beginning of Presentation</label><br>
+        <h3>Additional Options:</h3>
+        <label><input type="checkbox" id="include-header"> Header</label>
+        <input type="text" id="header-text" placeholder="Enter header text" disabled><br>
+        <label><input type="checkbox" id="include-footer"> Footer</label>
+        <input type="text" id="footer-text" placeholder="Enter footer text" disabled><br>
+        <label><input type="checkbox" id="include-page-numbers" checked> Page Numbers</label><br>
+        <label><input type="checkbox" id="include-presentation-date" checked> Presentation Date</label>
+        <input type="text" id="presentation-date" placeholder="Enter date (e.g., MM/DD/YYYY)" value="05/20/2025"><br>
+        <button onclick="savePresentationOptions()">Save Options</button>
       </div>
     </div>
   </div>
@@ -82,6 +114,44 @@
       document.getElementById('presentation-title').textContent = title || 'Financial Analysis';
       document.getElementById('presentation-title').style.display = 'block';
       document.getElementById('presentation-title-input').style.display = 'none';
+    });
+
+    document.getElementById('presentation-options-btn').addEventListener('click', () => {
+      document指导.getElementById('presentation-options-modal').style.display = 'flex';
+    });
+
+    document.getElementById('close-options-modal').addEventListener('click', () => {
+      document.getElementById('presentation-options-modal').style.display = 'none';
+    });
+
+    function savePresentationOptions() {
+      const options = {
+        includeTitlePage: document.getElementById('include-title-page').checked,
+        includeToc: document.getElementById('include-toc').checked,
+        includePersonalProfile: document.getElementById('include-personal-profile').checked,
+        includeRecordOfReports: document.getElementById('include-record-of-reports').checked,
+        includeDisclaimer: document.getElementById('include-disclaimer').checked,
+        includeDisclosure: document.getElementById('include-disclosure').checked,
+        disclaimerPlacement: document.querySelector('input[name="disclaimer-placement"]:checked').value,
+        includeHeader: document.getElementById('include-header').checked,
+        headerText: document.getElementById('header-text').value,
+        includeFooter: document.getElementById('include-footer').checked,
+        footerText: document.getElementById('footer-text').value,
+        includePageNumbers: document.getElementById('include-page-numbers').checked,
+        includePresentationDate: document.getElementById('include-presentation-date').checked,
+        presentationDate: document.getElementById('presentation-date').value
+      };
+      localStorage.setItem('presentationOptions', JSON.stringify(options));
+      document.getElementById('presentation-options-modal').style.display = 'none';
+    }
+
+    // Enable/disable header and footer inputs based on checkboxes
+    document.getElementById('include-header').addEventListener('change', (e) => {
+      document.getElementById('header-text').disabled = !e.target.checked;
+    });
+
+    document.getElementById('include-footer').addEventListener('change', (e) => {
+      document.getElementById('footer-text').disabled = !e.target.checked;
     });
   </script>
   <script type="module" src="src/presentation.js"></script>
