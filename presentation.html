@@ -8,24 +8,21 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
   <link rel="stylesheet" href="header.css">
   <link rel="stylesheet" href="styles.css">
-  <!-- Include Chart.js for rendering charts -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
-  <!-- Include jsPDF for PDF generation -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-  <!-- Include html2canvas for rendering charts to PDF -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 </head>
 <body>
-<div id="header-placeholder"></div>
+  <div id="header-placeholder"></div>
   <div class="presentation-page">
-    <h2>Presentation Reports</h2>
+    <h2>Presentation for <span id="client-file-name">No Client Selected</span></h2>
     <div class="report-list" id="report-list">
       <!-- Reports will be populated dynamically -->
     </div>
+    <p>Reports in presentation: <span id="presentation-count">0</span></p>
     <button id="preview-presentation-btn" disabled>Preview Presentation</button>
   </div>
 
-  <!-- Modal for PDF Preview -->
   <div class="modal" id="pdf-preview-modal">
     <div class="modal-content">
       <div class="modal-header">
