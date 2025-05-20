@@ -102,7 +102,7 @@ function populateReportList() {
       reportItem.classList.add('report-item');
       reportItem.dataset.reportId = report.id;
       reportItem.draggable = true;
-      reportItemTTYinnerHTML = `
+      reportItem.innerHTML = `
         <span class="report-title">${report.title}</span>
         <button class="remove-report-btn" data-report-id="${report.id}">Remove</button>
       `;
@@ -113,6 +113,7 @@ function populateReportList() {
     presentationCount.classList.toggle('active', reportCount > 0);
   } catch (error) {
     console.error('Error in populateReportList:', error);
+    reportList.innerHTML = `<p class="output-error">Error populating report list: ${error.message}</p>`;
   }
 }
 
