@@ -57,8 +57,8 @@ let clientData = {
 };
 
 const clients = [
-  { id: 1, name: "Jason Mangold", data: clientData.client1 },
-  { id: 2, name: "Jane Doe", data: clientData.client2 }
+  { id: 1, name: "Paul Johnson", data: clientData.client1 },
+  { id: 2, name: "Sally Johnson", data: clientData.client2 }
 ];
 
 const analysisTopicsList = [
@@ -149,10 +149,23 @@ function loadClientData() {
     const savedData = localStorage.getItem('clientData');
     if (savedData) {
       clientData = JSON.parse(savedData);
-      clientData.client1.insurance = clientData.client1.insurance || { lifeInsurance: "0", disabilityInsurance: "0", longTermCare: "0" };
-      clientData.client2.insurance = clientData.client2.insurance || { lifeInsurance: "0", disabilityInsurance: "0", longTermCare: "0" };
-      clientData.assumptions.c1MortalityAge = clientData.assumptions.c1MortalityAge || clientData.assumptions.mortalityAge || "90";
-      clientData.assumptions.c2MortalityAge = clientData.assumptions.c2MortalityAge || clientData.assumptions.mortalityAge || "90";
+      // Normalize insurance fields
+      ['client1', 'client2'].forEach(clientKey => {
+        clientData[clientKey].insurance = clientData[clientKey].insurance || {
+          lifeInsurance: 0,
+          disabilityInsurance: 0,
+          longTermCare: 0
+        };
+        clientData[clientKey].insurance.lifeInsurance = parseFloat(clientData[clientKey].insurance.lifeInsurance) || 0;
+        clientData[clientKey].insurance.disabilityInsurance = parseFloat(clientData[clientKey].insurance.disabilityInsurance) || 0;
+        clientData[clientKey].insurance.longTermCare = parseFloat(clientData[clientKey].insurance.longTermCare) || 0;
+      });
+      // Normalize assumptions
+      clientData.assumptions.c1MortalityAge = parseInt(clientData.assumptions.c1MortalityAge) || parseInt(clientData.assumptions.mortalityAge) || 90;
+      clientData.assumptions.c2MortalityAge = parseInt(clientData.assumptions.c2MortalityAge) || parseInt(clientData.assumptions.mortalityAge) || 90;
+      clientData.assumptions.inflation = parseFloat(clientData.assumptions.inflation) || 3;
+      clientData.assumptions.rorRetirement = parseFloat(clientData.assumptions.rorRetirement) || 4;
+      // Ensure scenarios and incomeNeeds
       clientData.scenarios = clientData.scenarios || { base: null, whatIf: [] };
       clientData.incomeNeeds = clientData.incomeNeeds || {
         monthlyincomeinitial: { initial: "5000" },
