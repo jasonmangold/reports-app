@@ -68,10 +68,96 @@
       outline: 2px solid #005ea2;
       outline-offset: 2px;
     }
+
+    /* Client modal styles */
+    #client-modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.5);
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+    }
+
+    .modal-content {
+      background-color: white;
+      border-radius: 8px;
+      width: 90%;
+      max-width: 400px;
+      padding: 20px;
+      position: relative;
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-bottom: 10px;
+      border-bottom: 1px solid #ddd;
+    }
+
+    .close {
+      font-size: 1.5em;
+      cursor: pointer;
+      color: #555;
+    }
+
+    .close:hover {
+      color: #000;
+    }
+
+    #client-search {
+      width: 100%;
+      padding: 8px;
+      margin-bottom: 10px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+
+    #client-list {
+      list-style: none;
+      padding: 0;
+      max-height: 200px;
+      overflow-y: auto;
+    }
+
+    #client-list li {
+      padding: 10px;
+      cursor: pointer;
+      border-bottom: 1px solid #eee;
+    }
+
+    #client-list li:hover,
+    #client-list li.selected {
+      background-color: #f0f0f0;
+    }
   </style>
 </head>
 <body>
-  <div id="header-placeholder"></div>
+  <div id="header-placeholder">
+    <!-- Fallback header content in case fetch fails -->
+    <header>
+      <nav>
+        <ul>
+          <li><a href="index.html" class="active">Analysis</a></li>
+          <li><a href="reports.html">Reports</a></li>
+          <li><a href="settings.html">Settings</a></li>
+        </ul>
+      </nav>
+      <div id="profile-dropdown">
+        <img id="profile-pic" src="profile-placeholder.png" alt="Profile Picture" width="40" height="40">
+        <div id="dropdown-menu" style="display: none;">
+          <a href="#" id="help-link">Help</a>
+          <a href="#" id="settings-link">Settings</a>
+          <a href="#" id="logout-link">Logout</a>
+        </div>
+      </div>
+    </header>
+  </div>
   <div class="analysis-page">
     <div class="analysis-topics-container">
       <label for="analysis-topic-select" class="visually-hidden">Select Analysis Topic</label>
@@ -82,6 +168,20 @@
     <div class="analysis-workspace">
       <div class="client-inputs">
         <h3>Client Inputs</h3>
+        <button id="client-file-toggle" aria-expanded="false">Select Client</button>
+        <span id="client-file-name">No Client Selected</span>
+        <div id="client-modal" style="display: none;">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h2>Select Client</h2>
+              <span id="close-modal" class="close">&times;</span>
+            </div>
+            <input type="text" id="client-search" placeholder="Search clients..." aria-label="Search clients">
+            <ul id="client-list">
+              <!-- Populated dynamically -->
+            </ul>
+          </div>
+        </div>
         <div class="input-container">
           <div class="input-tabs">
             <!-- Tabs populated dynamically -->
@@ -94,7 +194,9 @@
       <div class="graph-outputs">
         <h3>Analysis Outputs</h3>
         <div id="output-tabs-container"></div>
-        <div id="analysis-outputs"></div>
+        <div id="analysis-outputs">
+          <canvas id="analysis-chart" style="display: none;"></canvas>
+        </div>
         <button id="recalculate-btn">Recalculate</button>
         <button id="export-graph-btn">Export Graph</button>
       </div>
@@ -114,21 +216,11 @@
             link.classList.add('active');
           }
         });
-        // Initialize dropdown menu
-        const profilePic = document.getElementById('profile-pic');
-        const dropdownMenu = document.getElementById('dropdown-menu');
-        if (profilePic && dropdownMenu) {
-          profilePic.addEventListener('click', () => {
-            dropdownMenu.style.display = dropdownMenu.style.display === 'block' ? 'none' : 'block';
-          });
-          document.addEventListener('click', (e) => {
-            if (!profilePic.contains(e.target) && !dropdownMenu.contains(e.target)) {
-              dropdownMenu.style.display = 'none';
-            }
-          });
-        }
       })
-      .catch(error => console.error('Error loading header:', error));
+      .catch(error => {
+        console.error('Error loading header:', error);
+        // Fallback header is already in place
+      });
   </script>
   <script type="module" src="src/index.js"></script>
 </body>
