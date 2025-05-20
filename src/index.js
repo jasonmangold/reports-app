@@ -1148,6 +1148,7 @@ function toggleReportSelection(reportId, reportTitle) {
     console.log('Selected reports:', selectedReports);
   } catch (error) {
     console.error('Error in toggleReportSelection:', error);
+    console.log('Toggling report:', reportId, reportTitle);
   }
 }
 
