@@ -10,7 +10,7 @@
   <link rel="stylesheet" href="styles.css">
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
   <style>
-    /* Existing styles unchanged */
+    /* Visually hidden class for accessibility */
     .visually-hidden {
       position: absolute;
       width: 1px;
@@ -21,10 +21,14 @@
       clip: rect(0, 0, 0, 0);
       border: 0;
     }
+
+    /* Container for the dropdown */
     .analysis-topics-container {
       margin: 1rem 0;
       max-width: 300px;
     }
+
+    /* Style the select element */
     .analysis-topic-select {
       width: 100%;
       padding: 0.75rem;
@@ -43,73 +47,32 @@
       background-position: right 0.75rem center;
       background-size: 12px;
     }
+
+    /* Hover and focus states */
     .analysis-topic-select:hover,
     .analysis-topic-select:focus {
       border-color: #005ea2;
       box-shadow: 0 0 0 3px rgba(0, 94, 162, 0.1);
       outline: none;
     }
+
+    /* Option groups and options */
     .analysis-topic-select optgroup,
     .analysis-topic-select option {
       font-size: 1rem;
       color: #333;
     }
+
+    /* Ensure dropdown is accessible */
     .analysis-topic-select:focus {
       outline: 2px solid #005ea2;
       outline-offset: 2px;
-    }
-    /* New styles for client modal and related elements */
-    #client-modal {
-      display: none;
-      position: fixed;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      background: white;
-      padding: 1rem;
-      border: 1px solid #ccc;
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-      z-index: 1000;
-    }
-    #client-list {
-      list-style: none;
-      padding: 0;
-      max-height: 200px;
-      overflow-y: auto;
-    }
-    #client-list li {
-      padding: 0.5rem;
-      cursor: pointer;
-    }
-    #client-list li:hover {
-      background-color: #f0f0f0;
-    }
-    #client-list li.selected {
-      background-color: #005ea2;
-      color: white;
-    }
-    #client-search {
-      width: 100%;
-      padding: 0.5rem;
-      margin-bottom: 0.5rem;
-    }
-    #close-modal {
-      margin-top: 0.5rem;
     }
   </style>
 </head>
 <body>
   <div id="header-placeholder"></div>
   <div class="analysis-page">
-    <!-- Add client selection elements -->
-    <div id="client-file-name">No Client Selected</div>
-    <button id="client-file-toggle" aria-expanded="false">Select Client</button>
-    <div id="client-modal">
-      <input id="client-search" type="text" placeholder="Search clients...">
-      <ul id="client-list"></ul>
-      <button id="close-modal">Close</button>
-    </div>
-    <div id="presentation-count">0</div>
     <div class="analysis-topics-container">
       <label for="analysis-topic-select" class="visually-hidden">Select Analysis Topic</label>
       <select id="analysis-topic-select" class="analysis-topic-select" aria-label="Select an analysis topic">
@@ -131,9 +94,7 @@
       <div class="graph-outputs">
         <h3>Analysis Outputs</h3>
         <div id="output-tabs-container"></div>
-        <div id="analysis-outputs">
-          <canvas id="analysis-chart" style="max-height: 400px;"></canvas>
-        </div>
+        <div id="analysis-outputs"></div>
         <button id="recalculate-btn">Recalculate</button>
         <button id="export-graph-btn">Export Graph</button>
       </div>
@@ -144,6 +105,7 @@
       .then(response => response.text())
       .then(data => {
         document.getElementById('header-placeholder').innerHTML = data;
+        // Add active class to current page link
         const currentPage = window.location.pathname.split('/').pop() || 'index.html';
         const navLinks = document.querySelectorAll('nav ul li a');
         navLinks.forEach(link => {
@@ -152,7 +114,19 @@
             link.classList.add('active');
           }
         });
-        // Move profile dropdown logic to index.js to avoid duplication
+        // Initialize dropdown menu
+        const profilePic = document.getElementById('profile-pic');
+        const dropdownMenu = document.getElementById('dropdown-menu');
+        if (profilePic && dropdownMenu) {
+          profilePic.addEventListener('click', () => {
+            dropdownMenu.style.display = dropdownMenu.style.display === 'block' ? 'none' : 'block';
+          });
+          document.addEventListener('click', (e) => {
+            if (!profilePic.contains(e.target) && !dropdownMenu.contains(e.target)) {
+              dropdownMenu.style.display = 'none';
+            }
+          });
+        }
       })
       .catch(error => console.error('Error loading header:', error));
   </script>
