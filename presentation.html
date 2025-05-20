@@ -11,23 +11,38 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <style>
+    .editable-container { display: flex; align-items: center; gap: 10px; }
+    .editable-text { font-size: 1.2em; }
+    .edit-icon { cursor: pointer; }
+    .edit-input { display: none; width: 100%; padding: 5px; }
+    .input-section { margin: 20px 0; }
+  </style>
 </head>
 <body>
   <div id="header-placeholder"></div>
   <div class="presentation-page">
-    <h2>Presentation for <span id="client-file-name">No Client Selected</span></h2>
+    <div class="editable-container">
+      <h2 class="editable-text" id="presentation-title">Financial Analysis</h2>
+      <i class="fas fa-pencil-alt edit-icon" onclick="editField('presentation-title', 'presentation-title-input')"></i>
+      <input type="text" id="presentation-title-input" class="edit-input" value="Financial Analysis">
+    </div>
+    <div class="editable-container">
+      <h3 class="editable-text" id="client-info">No Client Selected</h3>
+      <i class="fas fa-pencil-alt edit-icon" onclick="editField('client-info', 'client-inputs')"></i>
+    </div>
+    <div id="client-inputs" class="edit-input">
+      <input type="text" id="client-name-input" placeholder="Enter client name">
+      <input type="text" id="client-address-input" placeholder="Enter client address">
+      <input type="text" id="client-phone-input" placeholder="Enter client phone">
+      <button onclick="saveClientInfo()">Save</button>
+    </div>
     <div class="report-list" id="report-list">
       <!-- Reports will be populated dynamically -->
     </div>
     <p>Reports in presentation: <span id="presentation-count">0</span></p>
     <button id="preview-presentation-btn" disabled>Preview Presentation</button>
   </div>
-  <div class="input-section">
-  <label for="presentation-title-input">Presentation Title:</label>
-  <input type="text" id="presentation-title-input" placeholder="Enter presentation title">
-  <label for="client-name-input">Client Name:</label>
-  <input type="text" id="client-name-input" placeholder="Enter client name (optional)">
-</div>
 
   <div class="modal" id="pdf-preview-modal">
     <div class="modal-content">
@@ -44,6 +59,31 @@
     </div>
   </div>
 
+  <script>
+    function editField(displayId, inputId) {
+      document.getElementById(displayId).style.display = 'none';
+      document.getElementById(inputId).style.display = 'block';
+    }
+
+    function saveClientInfo() {
+      const name = document.getElementById('client-name-input').value;
+      const address = document.getElementById('client-address-input').value;
+      const phone = document.getElementById('client-phone-input').value;
+      let clientInfo = name;
+      if (address) clientInfo += `<br>${address}`;
+      if (phone) clientInfo += `<br>${phone}`;
+      document.getElementById('client-info').innerHTML = clientInfo || 'No Client Selected';
+      document.getElementById('client-info').style.display = 'block';
+      document.getElementById('client-inputs').style.display = 'none';
+    }
+
+    document.getElementById('presentation-title-input').addEventListener('change', () => {
+      const title = document.getElementById('presentation-title-input').value;
+      document.getElementById('presentation-title').textContent = title || 'Financial Analysis';
+      document.getElementById('presentation-title').style.display = 'block';
+      document.getElementById('presentation-title-input').style.display = 'none';
+    });
+  </script>
   <script type="module" src="src/presentation.js"></script>
 </body>
 </html>
