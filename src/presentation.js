@@ -76,8 +76,18 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // Update client file name
+let clientData = JSON.parse(localStorage.getItem('clientData')) || {};
+let selectedReports = JSON.parse(localStorage.getItem('selectedReports')) || [];
+let reportCount = selectedReports.length;
+console.log('selectedReports on load:', selectedReports); // Debug log
+console.log('reportList element:', document.getElementById('report-list')); // Debug log
+console.log('clientFileName element:', document.getElementById('client-file-name')); // Debug log
+console.log('presentationCount element:', document.getElementById('presentation-count')); // Debug log
+
+// Update client file name
 function updateClientFileName() {
   try {
+    console.log('clientFileName element in updateClientFileName:', clientFileName); // Debug log
     let name = clientData.client1?.personal?.name || 'No Client Selected';
     if (clientData.isMarried && clientData.client2?.personal?.name) {
       name = `${clientData.client1.personal.name} & ${clientData.client2.personal.name}`;
@@ -92,6 +102,7 @@ function updateClientFileName() {
 function populateReportList() {
   try {
     reportList.innerHTML = '';
+    console.log('selectedReports:', selectedReports); // Debug log
     if (selectedReports.length === 0) {
       reportList.innerHTML = '<p>No reports selected for presentation.</p>';
       return;
@@ -102,7 +113,7 @@ function populateReportList() {
       reportItem.classList.add('report-item');
       reportItem.dataset.reportId = report.id;
       reportItem.draggable = true;
-      reportItem.innerHTML = `
+      reportItem.innerHTML = `  // Fixed typo from reportItemTTYinnerHTML
         <span class="report-title">${report.title}</span>
         <button class="remove-report-btn" data-report-id="${report.id}">Remove</button>
       `;
