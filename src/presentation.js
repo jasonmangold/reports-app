@@ -3,44 +3,59 @@ import { updateRetirementGraph, updateRetirementOutputs } from './retirementAccu
 import { updatePersonalFinanceGraph, updatePersonalFinanceOutputs } from './personalFinance.js';
 import { updateSummaryOutputs } from './summary.js';
 
-// Load clientData and selectedReports from localStorage
+// Load clientData, selectedReports, and presentationOptions from localStorage
 let clientData = JSON.parse(localStorage.getItem('clientData')) || {};
 let selectedReports = JSON.parse(localStorage.getItem('selectedReports')) || [];
+let presentationOptions = JSON.parse(localStorage.getItem('presentationOptions')) || {
+  includeTitlePage: true,
+  includeToc: false,
+  includePersonalProfile: false,
+  includeRecordOfReports: false,
+  includeDisclaimer: true,
+  includeDisclosure: true,
+  disclaimerPlacement: 'end',
+  includeHeader: false,
+  headerText: '',
+  includeFooter: false,
+  footerText: '',
+  includePageNumbers: true,
+  includePresentationDate: true,
+  presentationDate: '05/20/2025'
+};
 let reportCount = selectedReports.length;
 
 // DOM elements
 const reportList = document.getElementById('report-list');
 const previewBtn = document.getElementById('preview-presentation-btn');
-const clientFileName = document.getElementById('client-file-name');
+const presentationOptionsBtn = document.getElementById('presentation-options-btn');
 const presentationCount = document.getElementById('presentation-count');
 const pdfPreviewModal = document.getElementById('pdf-preview-modal');
 const pdfPreviewContent = document.getElementById('pdf-preview-content');
 const closePdfModal = document.getElementById('close-pdf-modal');
 const downloadPdfBtn = document.getElementById('download-pdf-btn');
 const titleInput = document.getElementById('presentation-title-input');
-const customClientNameInput = document.getElementById('client-name-input');
+const clientNameInput = document.getElementById('client-name-input');
+const clientAddressInput = document.getElementById('client-address-input');
+const clientPhoneInput = document.getElementById('client-phone-input');
+const clientInfo = document.getElementById('client-info');
 
 // Initialize on page load
 document.addEventListener('DOMContentLoaded', () => {
   try {
-    // Log selectedReports for debugging
     console.log('Loaded selectedReports:', selectedReports);
 
-    // Validate and filter selectedReports
     selectedReports = selectedReports.filter(report => 
       report && typeof report === 'object' && report.id && typeof report.title === 'string'
     );
     reportCount = selectedReports.length;
     localStorage.setItem('selectedReports', JSON.stringify(selectedReports));
 
-    // Load header.html
     fetch('header.html')
       .then(response => response.text())
       .then(data => {
         const headerPlaceholder = document.getElementById('header-placeholder');
         if (headerPlaceholder) {
           headerPlaceholder.innerHTML = data;
-          // Add active class to current page link
           const currentPage = window.location.pathname.split('/').pop() || 'presentation.html';
           const navLinks = document.querySelectorAll('nav ul li a');
           navLinks.forEach(link => {
@@ -49,7 +64,6 @@ document.addEventListener('DOMContentLoaded', () => {
               link.classList.add('active');
             }
           });
-          // Initialize dropdown menu
           const profilePic = document.getElementById('profile-pic');
           const dropdownMenu = document.getElementById('dropdown-menu');
           if (profilePic && dropdownMenu) {
@@ -65,23 +79,23 @@ document.addEventListener('DOMContentLoaded', () => {
         } else {
           console.warn('Header placeholder not found in the DOM.');
         }
-        // Continue with existing initialization
-        updateClientFileName();
+        updateClientInfo();
         populateReportList();
         setupDragAndDrop();
         updatePreviewButton();
         setupModalEvents();
         setupInputEvents();
+        setupPresentationOptions();
       })
       .catch(error => {
         console.error('Error loading header:', error);
-        // Proceed with other initialization even if header fails
-        updateClientFileName();
+        updateClientInfo();
         populateReportList();
         setupDragAndDrop();
         updatePreviewButton();
         setupModalEvents();
         setupInputEvents();
+        setupPresentationOptions();
       });
   } catch (error) {
     console.error('Initialization error:', error);
@@ -89,17 +103,21 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 });
 
-// Update client file name
-function updateClientFileName() {
+// Update client information
+function updateClientInfo() {
   try {
-    const customName = customClientNameInput?.value.trim();
-    let name = customName || clientData.client1?.personal?.name || 'No Client Selected';
-    if (!customName && clientData.isMarried && clientData.client2?.personal?.name) {
-      name = `${clientData.client1.personal.name} & ${clientData.client2.personal.name}`;
+    const name = clientNameInput?.value.trim();
+    const address = clientAddressInput?.value.trim();
+    const phone = clientPhoneInput?.value.trim();
+    let clientInfoText = name || clientData.client1?.personal?.name || 'No Client Selected';
+    if (!name && clientData.isMarried && clientData.client2?.personal?.name) {
+      clientInfoText = `${clientData.client1.personal.name} & ${clientData.client2.personal.name}`;
     }
-    clientFileName.textContent = name;
+    if (address) clientInfoText += `<br>${address}`;
+    if (phone) clientInfoText += `<br>${phone}`;
+    clientInfo.innerHTML = clientInfoText;
   } catch (error) {
-    console.error('Error in updateClientFileName:', error);
+    console.error('Error in updateClientInfo:', error);
   }
 }
 
@@ -175,7 +193,6 @@ function setupDragAndDrop() {
       saveSelectedReports();
     });
 
-    // Handle remove report
     reportList.addEventListener('click', (e) => {
       if (e.target.classList.contains('remove-report-btn')) {
         const reportId = e.target.dataset.reportId;
@@ -217,17 +234,60 @@ function saveSelectedReports() {
   presentationCount.classList.toggle('active', reportCount > 0);
 }
 
-// Setup input events for title and client name
+// Setup input events for title and client info
 function setupInputEvents() {
   if (titleInput) {
     titleInput.addEventListener('input', () => {
       localStorage.setItem('presentationTitle', titleInput.value);
     });
   }
-  if (customClientNameInput) {
-    customClientNameInput.addEventListener('input', () => {
-      localStorage.setItem('customClientName', customClientNameInput.value);
-      updateClientFileName();
+  if (clientNameInput) {
+    clientNameInput.addEventListener('input', () => {
+      localStorage.setItem('clientName', clientNameInput.value);
+      updateClientInfo();
+    });
+  }
+  if (clientAddressInput) {
+    clientAddressInput.addEventListener('input', () => {
+      localStorage.setItem('clientAddress', clientAddressInput.value);
+      updateClientInfo();
+    });
+  }
+  if (clientPhoneInput) {
+    clientPhoneInput.addEventListener('input', () => {
+      localStorage.setItem('clientPhone', clientPhoneInput.value);
+      updateClientInfo();
+    });
+  }
+}
+
+// Setup presentation options modal
+function setupPresentationOptions() {
+  if (presentationOptionsBtn) {
+    presentationOptionsBtn.addEventListener('click', () => {
+      document.getElementById('presentation-options-modal').style.display = 'flex';
+    });
+  }
+  const closeOptionsModal = document.getElementById('close-options-modal');
+  if (closeOptionsModal) {
+    closeOptionsModal.addEventListener('click', () => {
+      document.getElementById('presentation-options-modal').style.display = 'none';
+    });
+  }
+  const includeHeaderCheckbox = document.getElementById('include-header');
+  const headerTextInput = document.getElementById('header-text');
+  if (includeHeaderCheckbox && headerTextInput) {
+    headerTextInput.disabled = !includeHeaderCheckbox.checked;
+    includeHeaderCheckbox.addEventListener('change', (e) => {
+      headerTextInput.disabled = !e.target.checked;
+    });
+  }
+  const includeFooterCheckbox = document.getElementById('include-footer');
+  const footerTextInput = document.getElementById('footer-text');
+  if (includeFooterCheckbox && footerTextInput) {
+    footerTextInput.disabled = !includeFooterCheckbox.checked;
+    includeFooterCheckbox.addEventListener('change', (e) => {
+      footerTextInput.disabled = !e.target.checked;
     });
   }
 }
@@ -247,25 +307,115 @@ async function generatePresentationPreview() {
     pdfPreviewContent.innerHTML = '<p>Generating preview...</p>';
     pdfPreviewModal.style.display = 'flex';
 
-    // Create a temporary container for rendering
     const tempContainer = document.createElement('div');
     tempContainer.style.width = '600px';
     tempContainer.style.background = '#fff';
 
-    // Add title page
-    const titlePage = document.createElement('div');
-    titlePage.classList.add('report-preview');
-    titlePage.style.padding = '20px';
-    titlePage.style.marginBottom = '20px';
-    titlePage.style.background = '#fff';
-    const presentationTitle = titleInput?.value || localStorage.getItem('presentationTitle') || 'Financial Presentation';
-    const clientName = customClientNameInput?.value || localStorage.getItem('customClientName') || clientFileName.textContent;
-    titlePage.innerHTML = `
-      <h1 style="text-align: center; font-size: 24px; margin-bottom: 20px;">${presentationTitle}</h1>
-      <h2 style="text-align: center; font-size: 18px;">Prepared for: ${clientName}</h2>
-      <p style="text-align: center; font-size: 14px;">Date: ${new Date().toLocaleDateString()}</p>
-    `;
-    tempContainer.appendChild(titlePage);
+    // Add header and footer if enabled
+    const headerText = presentationOptions.includeHeader ? presentationOptions.headerText : '';
+    const footerText = presentationOptions.includeFooter ? presentationOptions.footerText : '';
+
+    // Add title page if enabled
+    if (presentationOptions.includeTitlePage) {
+      const titlePage = document.createElement('div');
+      titlePage.classList.add('report-preview');
+      titlePage.style.padding = '20px';
+      titlePage.style.marginBottom = '20px';
+      titlePage.style.background = '#fff';
+      const presentationTitle = titleInput?.value || localStorage.getItem('presentationTitle') || 'Financial Analysis';
+      const name = clientNameInput?.value || localStorage.getItem('clientName') || clientData.client1?.personal?.name || 'No Client Selected';
+      let clientInfoText = name;
+      if (!name && clientData.isMarried && clientData.client2?.personal?.name) {
+        clientInfoText = `${clientData.client1.personal.name} & ${clientData.client2.personal.name}`;
+      }
+      const address = clientAddressInput?.value || localStorage.getItem('clientAddress') || '';
+      const phone = clientPhoneInput?.value || localStorage.getItem('clientPhone') || '';
+      if (address) clientInfoText += `<br>${address}`;
+      if (phone) clientInfoText += `<br>${phone}`;
+      titlePage.innerHTML = `
+        ${headerText ? `<p style="text-align: center; font-size: 12px; margin-bottom: 10px;">${headerText}</p>` : ''}
+        <h1 style="text-align: center; font-size: 24px; margin-bottom: 20px;">${presentationTitle}</h1>
+        <h2 style="text-align: center; font-size: 18px;">Prepared for: ${clientInfoText}</h2>
+        <p style="text-align: center; font-size: 14px;">Date: ${presentationOptions.includePresentationDate ? presentationOptions.presentationDate : new Date().toLocaleDateString()}</p>
+        ${footerText ? `<p style="text-align: center; font-size: 12px; margin-top: 10px;">${footerText}</p>` : ''}
+      `;
+      tempContainer.appendChild(titlePage);
+    }
+
+    // Add table of contents if enabled
+    if (presentationOptions.includeToc && selectedReports.length > 0) {
+      const tocPage = document.createElement('div');
+      tocPage.classList.add('report-preview');
+      tocPage.style.padding = '20px';
+      tocPage.style.marginBottom = '20px';
+      tocPage.style.background = '#fff';
+      let tocContent = `<h2 style="text-align: center; font-size: 20px;">Table of Contents</h2><ul style="list-style: none; padding: 0;">`;
+      selectedReports.forEach((report, index) => {
+        tocContent += `<li style="margin: 10px 0;">${index + 1}. ${report.title}</li>`;
+      });
+      tocContent += '</ul>';
+      tocPage.innerHTML = `
+        ${headerText ? `<p style="text-align: center; font-size: 12px; margin-bottom: 10px;">${headerText}</p>` : ''}
+        ${tocContent}
+        ${footerText ? `<p style="text-align: center; font-size: 12px; margin-top: 10px;">${footerText}</p>` : ''}
+      `;
+      tempContainer.appendChild(tocPage);
+    }
+
+    // Add personal profile page if enabled
+    if (presentationOptions.includePersonalProfile && clientData.client1?.personal) {
+      const profilePage = document.createElement('div');
+      profilePage.classList.add('report-preview');
+      profilePage.style.padding = '20px';
+      profilePage.style.marginBottom = '20px';
+      profilePage.style.background = '#fff';
+      let profileContent = `<h2 style="text-align: center; font-size: 20px;">Personal Profile</h2>`;
+      profileContent += `<p>Name: ${clientData.client1.personal.name || 'N/A'}</p>`;
+      if (clientData.isMarried && clientData.client2?.personal?.name) {
+        profileContent += `<p>Spouse: ${clientData.client2.personal.name}</p>`;
+      }
+      profileContent += `<p>Age: ${getAge(clientData.client1.personal.birthDate) || 'N/A'}</p>`;
+      if (clientAddressInput?.value) profileContent += `<p>Address: ${clientAddressInput.value}</p>`;
+      if (clientPhoneInput?.value) profileContent += `<p>Phone: ${clientPhoneInput.value}</p>`;
+      profilePage.innerHTML = `
+        ${headerText ? `<p style="text-align: center; font-size: 12px; margin-bottom: 10px;">${headerText}</p>` : ''}
+        ${profileContent}
+        ${footerText ? `<p style="text-align: center; font-size: 12px; margin-top: 10px;">${footerText}</p>` : ''}
+      `;
+      tempContainer.appendChild(profilePage);
+    }
+
+    // Add disclaimer and disclosure at beginning if enabled and selected
+    if (presentationOptions.disclaimerPlacement === 'beginning') {
+      if (presentationOptions.includeDisclaimer) {
+        const disclaimerPage = document.createElement('div');
+        disclaimerPage.classList.add('report-preview');
+        disclaimerPage.style.padding = '20px';
+        disclaimerPage.style.marginBottom = '20px';
+        disclaimerPage.style.background = '#fff';
+        disclaimerPage.innerHTML = `
+          ${headerText ? `<p style="text-align: center; font-size: 12px; margin-bottom: 10px;">${headerText}</p>` : ''}
+          <h2 style="text-align: center; font-size: 20px;">Disclaimer</h2>
+          <p>This presentation is for informational purposes only and does not constitute financial advice.</p>
+          ${footerText ? `<p style="text-align: center; font-size: 12px; margin-top: 10px;">${footerText}</p>` : ''}
+        `;
+        tempContainer.appendChild(disclaimerPage);
+      }
+      if (presentationOptions.includeDisclosure) {
+        const disclosurePage = document.createElement('div');
+        disclosurePage.classList.add('report-preview');
+        disclosurePage.style.padding = '20px';
+        disclosurePage.style.marginBottom = '20px';
+        disclosurePage.style.background = '#fff';
+        disclosurePage.innerHTML = `
+          ${headerText ? `<p style="text-align: center; font-size: 12px; margin-bottom: 10px;">${headerText}</p>` : ''}
+          <h2 style="text-align: center; font-size: 20px;">Disclosure</h2>
+          <p>All data presented is based on information provided by the client and is subject to change.</p>
+          ${footerText ? `<p style="text-align: center; font-size: 12px; margin-top: 10px;">${footerText}</p>` : ''}
+        `;
+        tempContainer.appendChild(disclosurePage);
+      }
+    }
 
     // Render reports
     for (const report of selectedReports) {
@@ -296,7 +446,11 @@ async function generatePresentationPreview() {
       }
 
       if (!analysisType) {
-        reportDiv.innerHTML = `<h3>${report.title}</h3><p>Invalid report ID format: ${report.id}</p>`;
+        reportDiv.innerHTML = `
+          ${headerText ? `<p style="text-align: center; font-size: 12px; margin-bottom: 10px;">${headerText}</p>` : ''}
+          <h3>${report.title}</h3><p>Invalid report ID format: ${report.id}</p>
+          ${footerText ? `<p style="text-align: center; font-size: 12px; margin-top: 10px;">${footerText}</p>` : ''}
+        `;
         tempContainer.appendChild(reportDiv);
         continue;
       }
@@ -308,10 +462,30 @@ async function generatePresentationPreview() {
       } else if (analysisType === 'summary') {
         await renderSummaryReport(reportDiv, outputType, report.title);
       } else {
-        reportDiv.innerHTML = `<h3>${report.title}</h3><p>Unsupported report type: ${report.id}</p>`;
+        reportDiv.innerHTML = `
+          ${headerText ? `<p style="text-align: center; font-size: 12px; margin-bottom: 10px;">${headerText}</p>` : ''}
+          <h3>${report.title}</h3><p>Unsupported report type: ${report.id}</p>
+          ${footerText ? `<p style="text-align: center; font-size: 12px; margin-top: 10px;">${footerText}</p>` : ''}
+        `;
       }
 
-      // Convert any canvas to image for preview
+      if (headerText) {
+        const headerDiv = document.createElement('p');
+        headerDiv.style.textAlign = 'center';
+        headerDiv.style.fontSize = '12px';
+        headerDiv.style.marginBottom = '10px';
+        headerDiv.textContent = headerText;
+        reportDiv.insertBefore(headerDiv, reportDiv.firstChild);
+      }
+      if (footerText) {
+        const footerDiv = document.createElement('p');
+        footerDiv.style.textAlign = 'center';
+        footerDiv.style.fontSize = '12px';
+        footerDiv.style.marginTop = '10px';
+        footerDiv.textContent = footerText;
+        reportDiv.appendChild(footerDiv);
+      }
+
       const canvas = reportDiv.querySelector('canvas');
       if (canvas) {
         const canvasParent = canvas.parentNode;
@@ -331,7 +505,58 @@ async function generatePresentationPreview() {
       tempContainer.appendChild(reportDiv);
     }
 
-    // Update preview content
+    // Add record of reports if enabled
+    if (presentationOptions.includeRecordOfReports && selectedReports.length > 0) {
+      const recordPage = document.createElement('div');
+      recordPage.classList.add('report-preview');
+      recordPage.style.padding = '20px';
+      recordPage.style.marginBottom = '20px';
+      recordPage.style.background = '#fff';
+      let recordContent = `<h2 style="text-align: center; font-size: 20px;">Record of Reports</h2><ul style="list-style: none; padding: 0;">`;
+      selectedReports.forEach((report, index) => {
+        recordContent += `<li style="margin: 10px 0;">${index + 1}. ${report.title}</li>`;
+      });
+      recordContent += '</ul>';
+      recordPage.innerHTML = `
+        ${headerText ? `<p style="text-align: center; font-size: 12px; margin-bottom: 10px;">${headerText}</p>` : ''}
+        ${recordContent}
+        ${footerText ? `<p style="text-align: center; font-size: 12px; margin-top: 10px;">${footerText}</p>` : ''}
+      `;
+      tempContainer.appendChild(recordPage);
+    }
+
+    // Add disclaimer and disclosure at end if enabled and selected
+    if (presentationOptions.disclaimerPlacement === 'end') {
+      if (presentationOptions.includeDisclaimer) {
+        const disclaimerPage = document.createElement('div');
+        disclaimerPage.classList.add('report-preview');
+        disclaimerPage.style.padding = '20px';
+        disclaimerPage.style.marginBottom = '20px';
+        disclaimerPage.style.background = '#fff';
+        disclaimerPage.innerHTML = `
+          ${headerText ? `<p style="text-align: center; font-size: 12px; margin-bottom: 10px;">${headerText}</p>` : ''}
+          <h2 style="text-align: center; font-size: 20px;">Disclaimer</h2>
+          <p>This presentation is for informational purposes only and does not constitute financial advice.</p>
+          ${footerText ? `<p style="text-align: center; font-size: 12px; margin-top: 10px;">${footerText}</p>` : ''}
+        `;
+        tempContainer.appendChild(disclaimerPage);
+      }
+      if (presentationOptions.includeDisclosure) {
+        const disclosurePage = document.createElement('div');
+        disclosurePage.classList.add('report-preview');
+        disclosurePage.style.padding = '20px';
+        disclosurePage.style.marginBottom = '20px';
+        disclosurePage.style.background = '#fff';
+        disclosurePage.innerHTML = `
+          ${headerText ? `<p style="text-align: center; font-size: 12px; margin-bottom: 10px;">${headerText}</p>` : ''}
+          <h2 style="text-align: center; font-size: 20px;">Disclosure</h2>
+          <p>All data presented is based on information provided by the client and is subject to change.</p>
+          ${footerText ? `<p style="text-align: center; font-size: 12px; margin-top: 10px;">${footerText}</p>` : ''}
+        `;
+        tempContainer.appendChild(disclosurePage);
+      }
+    }
+
     pdfPreviewContent.innerHTML = '';
     pdfPreviewContent.appendChild(tempContainer);
 
@@ -417,30 +642,191 @@ async function downloadPresentationPDF() {
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF({ orientation: 'portrait', unit: 'px', format: 'letter' });
     let yOffset = 20;
+    let pageNumber = 1;
 
-    // Add title page
-    const titlePage = document.createElement('div');
-    titlePage.style.padding = '20px';
-    titlePage.style.background = '#fff';
-    titlePage.style.width = '600px';
-    titlePage.style.position = 'absolute';
-    titlePage.style.left = '-9999px';
-    const presentationTitle = titleInput?.value || localStorage.getItem('presentationTitle') || 'Financial Presentation';
-    const clientName = customClientNameInput?.value || localStorage.getItem('customClientName') || clientFileName.textContent;
-    titlePage.innerHTML = `
-      <h1 style="text-align: center; font-size: 24px; margin-bottom: 20px;">${presentationTitle}</h1>
-      <h2 style="text-align: center; font-size: 18px;">Prepared for: ${clientName}</h2>
-      <p style="text-align: center; font-size: 14px;">Date: ${new Date().toLocaleDateString()}</p>
-    `;
-    document.body.appendChild(titlePage);
+    const headerText = presentationOptions.includeHeader ? presentationOptions.headerText : '';
+    const footerText = presentationOptions.includeFooter ? presentationOptions.footerText : '';
 
-    const titleCanvas = await html2canvas(titlePage, { scale: 2, useCORS: true });
-    const titleImgData = titleCanvas.toDataURL('image/png');
-    const titleImgWidth = doc.internal.pageSize.getWidth() - 40;
-    const titleImgHeight = (titleCanvas.height * titleImgWidth) / titleCanvas.width;
-    doc.addImage(titleImgData, 'PNG', 20, yOffset, titleImgWidth, titleImgHeight);
-    yOffset += titleImgHeight + 20;
-    document.body.removeChild(titlePage);
+    // Add title page if enabled
+    if (presentationOptions.includeTitlePage) {
+      const titlePage = document.createElement('div');
+      titlePage.style.padding = '20px';
+      titlePage.style.background = '#fff';
+      titlePage.style.width = '600px';
+      titlePage.style.position = 'absolute';
+      titlePage.style.left = '-9999px';
+      const presentationTitle = titleInput?.value || localStorage.getItem('presentationTitle') || 'Financial Analysis';
+      const name = clientNameInput?.value || localStorage.getItem('clientName') || clientData.client1?.personal?.name || 'No Client Selected';
+      let clientInfoText = name;
+      if (!name && clientData.isMarried && clientData.client2?.personal?.name) {
+        clientInfoText = `${clientData.client1.personal.name} & ${clientData.client2.personal.name}`;
+      }
+      const address = clientAddressInput?.value || localStorage.getItem('clientAddress') || '';
+      const phone = clientPhoneInput?.value || localStorage.getItem('clientPhone') || '';
+      if (address) clientInfoText += `<br>${address}`;
+      if (phone) clientInfoText += `<br>${phone}`;
+      titlePage.innerHTML = `
+        ${headerText ? `<p style="text-align: center; font-size: 12px; margin-bottom: 10px;">${headerText}</p>` : ''}
+        <h1 style="text-align: center; font-size: 24px; margin-bottom: 20px;">${presentationTitle}</h1>
+        <h2 style="text-align: center; font-size: 18px;">Prepared for: ${clientInfoText}</h2>
+        <p style="text-align: center; font-size: 14px;">Date: ${presentationOptions.includePresentationDate ? presentationOptions.presentationDate : new Date().toLocaleDateString()}</p>
+        ${footerText ? `<p style="text-align: center; font-size: 12px; margin-top: 10px;">${footerText}</p>` : ''}
+      `;
+      document.body.appendChild(titlePage);
+
+      const titleCanvas = await html2canvas(titlePage, { scale: 2, useCORS: true });
+      const titleImgData = titleCanvas.toDataURL('image/png');
+      const titleImgWidth = doc.internal.pageSize.getWidth() - 40;
+      const titleImgHeight = (titleCanvas.height * titleImgWidth) / titleCanvas.width;
+      doc.addImage(titleImgData, 'PNG', 20, yOffset, titleImgWidth, titleImgHeight);
+      if (presentationOptions.includePageNumbers) {
+        doc.text(`${pageNumber}`, doc.internal.pageSize.getWidth() - 30, doc.internal.pageSize.getHeight() - 10);
+      }
+      yOffset += titleImgHeight + 20;
+      document.body.removeChild(titlePage);
+      doc.addPage();
+      yOffset = 20;
+      pageNumber++;
+    }
+
+    // Add table of contents if enabled
+    if (presentationOptions.includeToc && selectedReports.length > 0) {
+      const tocPage = document.createElement('div');
+      tocPage.classList.add('report-preview');
+      tocPage.style.padding = '20px';
+      tocPage.style.background = '#fff';
+      tocPage.style.width = '600px';
+      tocPage.style.position = 'absolute';
+      tocPage.style.left = '-9999px';
+      let tocContent = `<h2 style="text-align: center; font-size: 20px;">Table of Contents</h2><ul style="list-style: none; padding: 0;">`;
+      selectedReports.forEach((report, index) => {
+        tocContent += `<li style="margin: 10px 0;">${index + 1}. ${report.title}</li>`;
+      });
+      tocContent += '</ul>';
+      tocPage.innerHTML = `
+        ${headerText ? `<p style="text-align: center; font-size: 12px; margin-bottom: 10px;">${headerText}</p>` : ''}
+        ${tocContent}
+        ${footerText ? `<p style="text-align: center; font-size: 12px; margin-top: 10px;">${footerText}</p>` : ''}
+      `;
+      document.body.appendChild(tocPage);
+
+      const tocCanvas = await html2canvas(tocPage, { scale: 2, useCORS: true });
+      const tocImgData = tocCanvas.toDataURL('image/png');
+      const tocImgWidth = doc.internal.pageSize.getWidth() - 40;
+      const tocImgHeight = (tocCanvas.height * tocImgWidth) / tocCanvas.width;
+      doc.addImage(tocImgData, 'PNG', 20, yOffset, tocImgWidth, tocImgHeight);
+      if (presentationOptions.includePageNumbers) {
+        doc.text(`${pageNumber}`, doc.internal.pageSize.getWidth() - 30, doc.internal.pageSize.getHeight() - 10);
+      }
+      yOffset += tocImgHeight + 20;
+      document.body.removeChild(tocPage);
+      doc.addPage();
+      yOffset = 20;
+      pageNumber++;
+    }
+
+    // Add personal profile page if enabled
+    if (presentationOptions.includePersonalProfile && clientData.client1?.personal) {
+      const profilePage = document.createElement('div');
+      profilePage.classList.add('report-preview');
+      profilePage.style.padding = '20px';
+      profilePage.style.background = '#fff';
+      profilePage.style.width = '600px';
+      profilePage.style.position = 'absolute';
+      profilePage.style.left = '-9999px';
+      let profileContent = `<h2 style="text-align: center; font-size: 20px;">Personal Profile</h2>`;
+      profileContent += `<p>Name: ${clientData.client1.personal.name || 'N/A'}</p>`;
+      if (clientData.isMarried && clientData.client2?.personal?.name) {
+        profileContent += `<p>Spouse: ${clientData.client2.personal.name}</p>`;
+      }
+      profileContent += `<p>Age: ${getAge(clientData.client1.personal.birthDate) || 'N/A'}</p>`;
+      if (clientAddressInput?.value) profileContent += `<p>Address: ${clientAddressInput.value}</p>`;
+      if (clientPhoneInput?.value) profileContent += `<p>Phone: ${clientPhoneInput.value}</p>`;
+      profilePage.innerHTML = `
+        ${headerText ? `<p style="text-align: center; font-size: 12px; margin-bottom: 10px;">${headerText}</p>` : ''}
+        ${profileContent}
+        ${footerText ? `<p style="text-align: center; font-size: 12px; margin-top: 10px;">${footerText}</p>` : ''}
+      `;
+      document.body.appendChild(profilePage);
+
+      const profileCanvas = await html2canvas(profilePage, { scale: 2, useCORS: true });
+      const profileImgData = profileCanvas.toDataURL('image/png');
+      const profileImgWidth = doc.internal.pageSize.getWidth() - 40;
+      const profileImgHeight = (profileCanvas.height * profileImgWidth) / profileCanvas.width;
+      doc.addImage(profileImgData, 'PNG', 20, yOffset, profileImgWidth, profileImgHeight);
+      if (presentationOptions.includePageNumbers) {
+        doc.text(`${pageNumber}`, doc.internal.pageSize.getWidth() - 30, doc.internal.pageSize.getHeight() - 10);
+      }
+      yOffset += profileImgHeight + 20;
+      document.body.removeChild(profilePage);
+      doc.addPage();
+      yOffset = 20;
+      pageNumber++;
+    }
+
+    // Add disclaimer and disclosure at beginning if enabled and selected
+    if (presentationOptions.disclaimerPlacement === 'beginning') {
+      if (presentationOptions.includeDisclaimer) {
+        const disclaimerPage = document.createElement('div');
+        disclaimerPage.classList.add('report-preview');
+        disclaimerPage.style.padding = '20px';
+        disclaimerPage.style.background = '#fff';
+        disclaimerPage.style.width = '600px';
+        disclaimerPage.style.position = 'absolute';
+        disclaimerPage.style.left = '-9999px';
+        disclaimerPage.innerHTML = `
+          ${headerText ? `<p style="text-align: center; font-size: 12px; margin-bottom: 10px;">${headerText}</p>` : ''}
+          <h2 style="text-align: center; font-size: 20px;">Disclaimer</h2>
+          <p>This presentation is for informational purposes only and does not constitute financial advice.</p>
+          ${footerText ? `<p style="text-align: center; font-size: 12px; margin-top: 10px;">${footerText}</p>` : ''}
+        `;
+        document.body.appendChild(disclaimerPage);
+
+        const disclaimerCanvas = await html2canvas(disclaimerPage, { scale: 2, useCORS: true });
+        const disclaimerImgData = disclaimerCanvas.toDataURL('image/png');
+        const disclaimerImgWidth = doc.internal.pageSize.getWidth() - 40;
+        const disclaimerImgHeight = (disclaimerCanvas.height * disclaimerImgWidth) / disclaimerCanvas.width;
+        doc.addImage(disclaimerImgData, 'PNG', 20, yOffset, disclaimerImgWidth, disclaimerImgHeight);
+        if (presentationOptions.includePageNumbers) {
+          doc.text(`${pageNumber}`, doc.internal.pageSize.getWidth() - 30, doc.internal.pageSize.getHeight() - 10);
+        }
+        yOffset += disclaimerImgHeight + 20;
+        document.body.removeChild(disclaimerPage);
+        doc.addPage();
+        yOffset = 20;
+        pageNumber++;
+      }
+      if (presentationOptions.includeDisclosure) {
+        const disclosurePage = document.createElement('div');
+        disclosurePage.classList.add('report-preview');
+        disclosurePage.style.padding = '20px';
+        disclosurePage.style.background = '#fff';
+        disclosurePage.style.width = '600px';
+        disclosurePage.style.position = 'absolute';
+        disclosurePage.style.left = '-9999px';
+        disclosurePage.innerHTML = `
+          ${headerText ? `<p style="text-align: center; font-size: 12px; margin-bottom: 10px;">${headerText}</p>` : ''}
+          <h2 style="text-align: center; font-size: 20px;">Disclosure</h2>
+          <p>All data presented is based on information provided by the client and is subject to change.</p>
+          ${footerText ? `<p style="text-align: center; font-size: 12px; margin-top: 10px;">${footerText}</p>` : ''}
+        `;
+        document.body.appendChild(disclosurePage);
+
+        const disclosureCanvas = await html2canvas(disclosurePage, { scale: 2, useCORS: true });
+        const disclosureImgData = disclosureCanvas.toDataURL('image/png');
+        const disclosureImgWidth = doc.internal.pageSize.getWidth() - 40;
+        const disclosureImgHeight = (disclosureCanvas.height * disclosureImgWidth) / disclosureCanvas.width;
+        doc.addImage(disclosureImgData, 'PNG', 20, yOffset, disclosureImgWidth, disclosureImgHeight);
+        if (presentationOptions.includePageNumbers) {
+          doc.text(`${pageNumber}`, doc.internal.pageSize.getWidth() - 30, doc.internal.pageSize.getHeight() - 10);
+        }
+        yOffset += disclosureImgHeight + 20;
+        document.body.removeChild(disclosurePage);
+        doc.addPage();
+        yOffset = 20;
+        pageNumber++;
+      }
+    }
 
     // Render reports
     for (const report of selectedReports) {
@@ -475,7 +861,11 @@ async function downloadPresentationPDF() {
       }
 
       if (!analysisType) {
-        reportDiv.innerHTML = `<h3>${report.title}</h3><p>Invalid report ID format: ${report.id}</p>`;
+        reportDiv.innerHTML = `
+          ${headerText ? `<p style="text-align: center; font-size: 12px; margin-bottom: 10px;">${headerText}</p>` : ''}
+          <h3>${report.title}</h3><p>Invalid report ID format: ${report.id}</p>
+          ${footerText ? `<p style="text-align: center; font-size: 12px; margin-top: 10px;">${footerText}</p>` : ''}
+        `;
       } else if (analysisType === 'retirement-accumulation') {
         await renderRetirementReport(reportDiv, outputType, report.title);
       } else if (analysisType === 'personal-finance') {
@@ -483,10 +873,30 @@ async function downloadPresentationPDF() {
       } else if (analysisType === 'summary') {
         await renderSummaryReport(reportDiv, outputType, report.title);
       } else {
-        reportDiv.innerHTML = `<h3>${report.title}</h3><p>Unsupported report type: ${report.id}</p>`;
+        reportDiv.innerHTML = `
+          ${headerText ? `<p style="text-align: center; font-size: 12px; margin-bottom: 10px;">${headerText}</p>` : ''}
+          <h3>${report.title}</h3><p>Unsupported report type: ${report.id}</p>
+          ${footerText ? `<p style="text-align: center; font-size: 12px; margin-top: 10px;">${footerText}</p>` : ''}
+        `;
       }
 
-      // Convert canvas to image
+      if (headerText) {
+        const headerDiv = document.createElement('p');
+        headerDiv.style.textAlign = 'center';
+        headerDiv.style.fontSize = '12px';
+        headerDiv.style.marginBottom = '10px';
+        headerDiv.textContent = headerText;
+        reportDiv.insertBefore(headerDiv, reportDiv.firstChild);
+      }
+      if (footerText) {
+        const footerDiv = document.createElement('p');
+        footerDiv.style.textAlign = 'center';
+        footerDiv.style.fontSize = '12px';
+        footerDiv.style.marginTop = '10px';
+        footerDiv.textContent = footerText;
+        reportDiv.appendChild(footerDiv);
+      }
+
       const canvas = reportDiv.querySelector('canvas');
       if (canvas) {
         const canvasParent = canvas.parentNode;
@@ -505,11 +915,7 @@ async function downloadPresentationPDF() {
 
       await new Promise(resolve => setTimeout(resolve, 100));
 
-      const canvasRender = await html2canvas(reportDiv, { 
-        scale: 2, 
-        useCORS: true, 
-        logging: true 
-      });
+      const canvasRender = await html2canvas(reportDiv, { scale: 2, useCORS: true, logging: true });
       const imgData = canvasRender.toDataURL('image/png');
       const imgWidth = doc.internal.pageSize.getWidth() - 40;
       const imgHeight = (canvasRender.height * imgWidth) / canvasRender.width;
@@ -517,12 +923,115 @@ async function downloadPresentationPDF() {
       if (yOffset + imgHeight > doc.internal.pageSize.getHeight() - 40) {
         doc.addPage();
         yOffset = 20;
+        pageNumber++;
       }
 
       doc.addImage(imgData, 'PNG', 20, yOffset, imgWidth, imgHeight);
+      if (presentationOptions.includePageNumbers) {
+        doc.text(`${pageNumber}`, doc.internal.pageSize.getWidth() - 30, doc.internal.pageSize.getHeight() - 10);
+      }
       yOffset += imgHeight + 20;
-
       document.body.removeChild(reportDiv);
+    }
+
+    // Add record of reports if enabled
+    if (presentationOptions.includeRecordOfReports && selectedReports.length > 0) {
+      doc.addPage();
+      yOffset = 20;
+      pageNumber++;
+      const recordPage = document.createElement('div');
+      recordPage.classList.add('report-preview');
+      recordPage.style.padding = '20px';
+      recordPage.style.background = '#fff';
+      recordPage.style.width = '600px';
+      recordPage.style.position = 'absolute';
+      recordPage.style.left = '-9999px';
+      let recordContent = `<h2 style="text-align: center; font-size: 20px;">Record of Reports</h2><ul style="list-style: none; padding: 0;">`;
+      selectedReports.forEach((report, index) => {
+        recordContent += `<li style="margin: 10px 0;">${index + 1}. ${report.title}</li>`;
+      });
+      recordContent += '</ul>';
+      recordPage.innerHTML = `
+        ${headerText ? `<p style="text-align: center; font-size: 12px; margin-bottom: 10px;">${headerText}</p>` : ''}
+        ${recordContent}
+        ${footerText ? `<p style="text-align: center; font-size: 12px; margin-top: 10px;">${footerText}</p>` : ''}
+      `;
+      document.body.appendChild(recordPage);
+
+      const recordCanvas = await html2canvas(recordPage, { scale: 2, useCORS: true });
+      const recordImgData = recordCanvas.toDataURL('image/png');
+      const recordImgWidth = doc.internal.pageSize.getWidth() - 40;
+      const recordImgHeight = (recordCanvas.height * recordImgWidth) / recordCanvas.width;
+      doc.addImage(recordImgData, 'PNG', 20, yOffset, recordImgWidth, recordImgHeight);
+      if (presentationOptions.includePageNumbers) {
+        doc.text(`${pageNumber}`, doc.internal.pageSize.getWidth() - 30, doc.internal.pageSize.getHeight() - 10);
+      }
+      yOffset += recordImgHeight + 20;
+      document.body.removeChild(recordPage);
+    }
+
+    // Add disclaimer and disclosure at end if enabled and selected
+    if (presentationOptions.disclaimerPlacement === 'end') {
+      if (presentationOptions.includeDisclaimer) {
+        doc.addPage();
+        yOffset = 20;
+        pageNumber++;
+        const disclaimerPage = document.createElement('div');
+        disclaimerPage.classList.add('report-preview');
+        disclaimerPage.style.padding = '20px';
+        disclaimerPage.style.background = '#fff';
+        disclaimerPage.style.width = '600px';
+        disclaimerPage.style.position = 'absolute';
+        disclaimerPage.style.left = '-9999px';
+        disclaimerPage.innerHTML = `
+          ${headerText ? `<p style="text-align: center; font-size: 12px; margin-bottom: 10px;">${headerText}</p>` : ''}
+          <h2 style="text-align: center; font-size: 20px;">Disclaimer</h2>
+          <p>This presentation is for informational purposes only and does not constitute financial advice.</p>
+          ${footerText ? `<p style="text-align: center; font-size: 12px; margin-top: 10px;">${footerText}</p>` : ''}
+        `;
+        document.body.appendChild(disclaimerPage);
+
+        const disclaimerCanvas = await html2canvas(disclaimerPage, { scale: 2, useCORS: true });
+        const disclaimerImgData = disclaimerCanvas.toDataURL('image/png');
+        const disclaimerImgWidth = doc.internal.pageSize.getWidth() - 40;
+        const disclaimerImgHeight = (disclaimerCanvas.height * disclaimerImgWidth) / disclaimerCanvas.width;
+        doc.addImage(disclaimerImgData, 'PNG', 20, yOffset, disclaimerImgWidth, disclaimerImgHeight);
+        if (presentationOptions.includePageNumbers) {
+          doc.text(`${pageNumber}`, doc.internal.pageSize.getWidth() - 30, doc.internal.pageSize.getHeight() - 10);
+        }
+        yOffset += disclaimerImgHeight + 20;
+        document.body.removeChild(disclaimerPage);
+      }
+      if (presentationOptions.includeDisclosure) {
+        doc.addPage();
+        yOffset = 20;
+        pageNumber++;
+        const disclosurePage = document.createElement('div');
+        disclosurePage.classList.add('report-preview');
+        disclosurePage.style.padding = '20px';
+        disclosurePage.style.background = '#fff';
+        disclosurePage.style.width = '600px';
+        disclosurePage.style.position = 'absolute';
+        disclosurePage.style.left = '-9999px';
+        disclosurePage.innerHTML = `
+          ${headerText ? `<p style="text-align: center; font-size: 12px; margin-bottom: 10px;">${headerText}</p>` : ''}
+          <h2 style="text-align: center; font-size: 20px;">Disclosure</h2>
+          <p>All data presented is based on information provided by the client and is subject to change.</p>
+          ${footerText ? `<p style="text-align: center; font-size: 12px; margin-top: 10px;">${footerText}</p>` : ''}
+        `;
+        document.body.appendChild(disclosurePage);
+
+        const disclosureCanvas = await html2canvas(disclosurePage, { scale: 2, useCORS: true });
+        const disclosureImgData = disclosureCanvas.toDataURL('image/png');
+        const disclosureImgWidth = doc.internal.pageSize.getWidth() - 40;
+        const disclosureImgHeight = (disclosureCanvas.height * disclosureImgWidth) / disclosureCanvas.width;
+        doc.addImage(disclosureImgData, 'PNG', 20, yOffset, disclosureImgWidth, disclosureImgHeight);
+        if (presentationOptions.includePageNumbers) {
+          doc.text(`${pageNumber}`, doc.internal.pageSize.getWidth() - 30, doc.internal.pageSize.getHeight() - 10);
+        }
+        yOffset += disclosureImgHeight + 20;
+        document.body.removeChild(disclosurePage);
+      }
     }
 
     doc.save('Presentation.pdf');
