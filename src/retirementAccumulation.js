@@ -10,17 +10,17 @@ export const retirementAccumulationTabs = [
       <label>Marital Status: <input type="checkbox" id="is-married"></label>
       <div class="client">
         <h5>Client 1</h5>
-        <label>Name: <input type="text" id="c1-name" placeholder="John Doe"></label>
+        <label>Name: <input type="text" id="c1-name" placeholder="Paul Johnson"></label>
         <label>Date of Birth: <input type="date" id="c1-dob"></label>
         <div id="c1-age-display" class="age-display"></div>
-        <label>Retirement Age: <input type="number" id="c1-retirement-age" min="1" max="120" placeholder="65"></label>
+        <label>Retirement Age: <input type="number" id="c1-retirement-age" min="1" max="120" placeholder="67"></label>
       </div>
       <div class="client" id="client2-section" style="display: none;">
         <h5>Client 2</h5>
-        <label>Name: <input type="text" id="c2-name" placeholder="Jane Doe"></label>
+        <label>Name: <input type="text" id="c2-name" placeholder="Sally Johnson"></label>
         <label>Date of Birth: <input type="date" id="c2-dob"></label>
         <div id="c2-age-display" class="age-display"></div>
-        <label>Retirement Age: <input type="number" id="c2-retirement-age" min="1" max="120" placeholder="65"></label>
+        <label>Retirement Age: <input type="number" id="c2-retirement-age" min="1" max="120" placeholder="67"></label>
       </div>
     `
   },
@@ -51,15 +51,15 @@ export const retirementAccumulationTabs = [
     content: `
       <div class="client">
         <h5>Client 1</h5>
-        <label>Employment Income ($/yr): <input type="number" id="c1-employment" min="0" step="1000" placeholder="50000"></label>
+        <label>Employment Income ($/yr): <input type="number" id="c1-employment" min="0" step="1000" placeholder="65000"></label>
         <label>Social Security ($/mo): <input type="number" id="c1-social-security" min="0" step="100" placeholder="2000"></label>
         <label>Other Income ($/mo): <input type="number" id="c1-other-income" min="0" step="100" placeholder="500"></label>
       </div>
       <div class="client" id="client2-income-section" style="display: none;">
         <h5>Client 2</h5>
-        <label>Employment Income ($/yr): <input type="number" id="c2-employment" min="0" step="1000" placeholder="40000"></label>
-        <label>Social Security ($/mo): <input type="number" id="c2-social-security" min="0" step="100" placeholder="1800"></label>
-        <label>Other Income ($/mo): <input type="number" id="c2-other-income" min="0" step="100" placeholder="400"></label>
+        <label>Employment Income ($/yr): <input type="number" id="c2-employment" min="0" step="1000" placeholder="50000"></label>
+        <label>Social Security ($/mo): <input type="number" id="c2-social-security" min="0" step="100" placeholder="1500"></label>
+        <label>Other Income ($/mo): <input type="number" id="c2-other-income" min="0" step="100" placeholder="300"></label>
       </div>
     `
   },
@@ -84,8 +84,8 @@ export const retirementAccumulationTabs = [
           <label>Account Name: <input type="text" id="c2-account-0-name" placeholder="IRA"></label>
           <label>Balance ($): <input type="number" id="c2-account-0-balance" min="0" step="1000" placeholder="80000"></label>
           <label>Contribution ($/yr): <input type="number" id="c2-account-0-contribution" min="0" step="1000" placeholder="8000"></label>
-          <label>Employer Match (%): <input type="number" id="c2-account-0-employer-match" min="0" max="100" step="0.1" placeholder="2"></label>
-          <label>ROR (%): <input type="number" id="c2-account-0-ror" min="0" max="100" step="0.1" placeholder="5"></label>
+          <label>Employer Match (%): <input type="number" id="c2-account-0-employer-match" min="0" max="100" step="0.1" placeholder="0"></label>
+          <label>ROR (%): <input type="number" id="c2-account-0-ror" min="0" max="100" step="0.1" placeholder="6"></label>
         </div>
         <button type="button" class="add-account-btn" data-client="c2">Add Account</button>
       </div>
@@ -170,14 +170,14 @@ export function setupAgeDisplayListeners(getAge) {
         const newAccountDiv = document.createElement('div');
         newAccountDiv.className = 'account';
         newAccountDiv.dataset.accountIndex = newIndex;
-        newAccountDiv.innerHTML = `
-          <label>Account Name: <input type="text" id="${client}-account-${newIndex}-name" placeholder="Account ${newIndex + 1}"></label>
-          <label>Balance ($): <input type="number" id="${client}-account-${newIndex}-balance" min="0" step="1000" placeholder="0"></label>
-          <label>Contribution ($/yr): <input type="number" id="${client}-account-${newIndex}-contribution" min="0" step="1000" placeholder="0"></label>
-          <label>Employer Match (%): <input type="number" id="${client}-account-${newIndex}-employer-match" min="0" max="100" step="0.1" placeholder="0"></label>
-          <label>ROR (%): <input type="number" id="${client}-account-${newIndex}-ror" min="0" max="100" step="0.1" placeholder="6"></label>
-          <button type="button" class="remove-account-btn" data-client="${client}" data-index="${newIndex}">Remove</button>
-        `;
+newAccountDiv.innerHTML = `
+  <label>Account Name: <input type="text" id="${client}-account-${newIndex}-name" placeholder="Account ${newIndex + 1}"></label>
+  <label>Balance ($): <input type="number" id="${client}-account-${newIndex}-balance" min="0" step="1000" placeholder="0"></label>
+  <label>Contribution ($/yr): <input type="number" id="${client}-account-${newIndex}-contribution" min="0" step="1000" placeholder="0"></label>
+  <label>Employer Match (%): <input type="number" id="${client}-account-${newIndex}-employer-match" min="0" max="100" step="0.1" placeholder="0"></label>
+  <label>ROR (%): <input type="number" id="${client}-account-${newIndex}-ror" min="0" max="100" step="0.1" placeholder="0"></label>
+  <button type="button" class="remove-account-btn" data-client="${client}" data-index="${newIndex}">Remove</button>
+`;
         accountsContainer.insertBefore(newAccountDiv, button);
 
         // Setup remove button
@@ -1299,14 +1299,13 @@ export function setupInputListeners(clientData, formatCurrency, getAge, Chart) {
         data.client2 = { personal: {}, incomeSources: {}, accounts: [] };
       }
 
-      // Income Needs
-      data.incomeNeeds = {
-        initial: parseFloat(document.getElementById('monthly-income-initial').value) || 5000,
-        yearsafter1: parseInt(document.getElementById('years-after-retirement-1').value) || 5,
-        monthly1: parseFloat(document.getElementById('monthly-income-1').value) || 4500,
-        yearsafter2: parseInt(document.getElementById('years-after-retirement-2').value) || 10,
-        monthly2: parseFloat(document.getElementById('monthly-income-2').value) || 4000
-      };
+data.incomeNeeds = {
+    initial: parseFloat(document.getElementById('monthly-income-initial').value) || 5000,
+    yearsafter1: parseInt(document.getElementById('years-after-retirement-1').value) || 5,
+    monthly1: parseFloat(document.getElementById('monthly-income-1').value) || 4500,
+    yearsafter2: parseInt(document.getElementById('years-after-retirement-2').value) || 10,
+    monthly2: parseFloat(document.getElementById('monthly-income-2').value) || 4000
+  };
 
       // Income Sources
       data.client1.incomeSources = {
