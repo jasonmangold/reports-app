@@ -23,6 +23,16 @@ const customClientNameInput = document.getElementById('client-name-input');
 // Initialize on page load
 document.addEventListener('DOMContentLoaded', () => {
   try {
+    // Log selectedReports for debugging
+    console.log('Loaded selectedReports:', selectedReports);
+
+    // Validate and filter selectedReports
+    selectedReports = selectedReports.filter(report => 
+      report && typeof report === 'object' && report.id && typeof report.title === 'string'
+    );
+    reportCount = selectedReports.length;
+    localStorage.setItem('selectedReports', JSON.stringify(selectedReports));
+
     // Load header.html
     fetch('header.html')
       .then(response => response.text())
@@ -103,12 +113,16 @@ function populateReportList() {
     }
 
     selectedReports.forEach((report, index) => {
+      if (!report.id || !report.title) {
+        console.warn(`Invalid report at index ${index}:`, report);
+        return;
+      }
       const reportItem = document.createElement('div');
       reportItem.classList.add('report-item');
       reportItem.dataset.reportId = report.id;
       reportItem.draggable = true;
       reportItem.innerHTML = `
-        <span class="report-title">${report.title}</span>
+        <span class="report-title">${report.title || 'Untitled Report'}</span>
         <button class="remove-report-btn" data-report-id="${report.id}">Remove</button>
       `;
       reportList.appendChild(reportItem);
@@ -155,7 +169,9 @@ function setupDragAndDrop() {
       e.preventDefault();
       const reportId = e.dataTransfer.getData('text/plain');
       const newOrder = Array.from(reportList.children).map(item => item.dataset.reportId);
-      selectedReports = newOrder.map(id => selectedReports.find(report => report.id === id));
+      selectedReports = newOrder
+        .map(id => selectedReports.find(report => report.id === id))
+        .filter(report => report !== undefined);
       saveSelectedReports();
     });
 
@@ -253,6 +269,11 @@ async function generatePresentationPreview() {
 
     // Render reports
     for (const report of selectedReports) {
+      if (!report.id || !report.title) {
+        console.warn('Skipping invalid report:', report);
+        continue;
+      }
+
       const reportDiv = document.createElement('div');
       reportDiv.classList.add('report-preview');
       reportDiv.style.padding = '20px';
@@ -260,7 +281,7 @@ async function generatePresentationPreview() {
       reportDiv.style.background = '#fff';
 
       const parts = report.id.split('-');
-      let analysisType = parts[0];
+      let analysisType = parts[0] || '';
       let outputType = parts.length > 1 ? parts[parts.length - 1] : '';
 
       if (report.id.startsWith('report-retirement-fact-finder')) {
@@ -272,6 +293,12 @@ async function generatePresentationPreview() {
         analysisType = 'personal-finance';
       } else if (report.id.includes('summary')) {
         analysisType = 'summary';
+      }
+
+      if (!analysisType) {
+        reportDiv.innerHTML = `<h3>${report.title}</h3><p>Invalid report ID format: ${report.id}</p>`;
+        tempContainer.appendChild(reportDiv);
+        continue;
       }
 
       if (analysisType === 'retirement-accumulation') {
@@ -319,7 +346,11 @@ async function generatePresentationPreview() {
 
 // Render Retirement Accumulation report
 async function renderRetirementReport(container, outputType, title) {
-  container.innerHTML = `<h3>${title}</h3>`;
+  container.innerHTML = `<h3>${title || 'Untitled Report'}</h3>`;
+  if (!clientData || Object.keys(clientData).length === 0) {
+    container.innerHTML += '<p>No client data available for this report.</p>';
+    return;
+  }
   if (outputType === 'graph') {
     const canvas = document.createElement('canvas');
     canvas.id = `temp-chart-${Date.now()}`;
@@ -335,14 +366,18 @@ async function renderRetirementReport(container, outputType, title) {
   } else {
     updateRetirementOutputs(container, clientData, formatCurrency, getAge, selectedReports, window.Chart, outputType);
     if (!container.innerHTML.includes('output-card') && !container.innerHTML.includes('output-table')) {
-      container.innerHTML += '<p>No retirement data available.</p>';
+      container.innerHTML += '<p>No retirement data available for this output type.</p>';
     }
   }
 }
 
 // Render Personal Finance report
 async function renderPersonalFinanceReport(container, outputType, title) {
-  container.innerHTML = `<h3>${title}</h3>`;
+  container.innerHTML = `<h3>${title || 'Untitled Report'}</h3>`;
+  if (!clientData || Object.keys(clientData).length === 0) {
+    container.innerHTML += '<p>No client data available for this report.</p>';
+    return;
+  }
   if (outputType === 'graph') {
     const canvas = document.createElement('canvas');
     canvas.id = `temp-chart-${Date.now()}`;
@@ -358,17 +393,21 @@ async function renderPersonalFinanceReport(container, outputType, title) {
   } else {
     updatePersonalFinanceOutputs(container, clientData, formatCurrency, selectedReports, window.Chart, outputType);
     if (!container.innerHTML.includes('output-card') && !container.innerHTML.includes('output-table')) {
-      container.innerHTML += '<p>No personal finance data available.</p>';
+      container.innerHTML += '<p>No personal finance data available for this output type.</p>';
     }
   }
 }
 
 // Render Summary report
 async function renderSummaryReport(container, outputType, title) {
-  container.innerHTML = `<h3>${title}</h3>`;
+  container.innerHTML = `<h3>${title || 'Untitled Report'}</h3>`;
+  if (!clientData || Object.keys(clientData).length === 0) {
+    container.innerHTML += '<p>No client data available for this report.</p>';
+    return;
+  }
   updateSummaryOutputs(container, clientData, formatCurrency, selectedReports, window.Chart, getAge, outputType);
   if (!container.innerHTML.includes('output-card') && !container.innerHTML.includes('output-table')) {
-    container.innerHTML += '<p>No summary data available.</p>';
+    container.innerHTML += '<p>No summary data available for this output type.</p>';
   }
 }
 
@@ -405,6 +444,11 @@ async function downloadPresentationPDF() {
 
     // Render reports
     for (const report of selectedReports) {
+      if (!report.id || !report.title) {
+        console.warn('Skipping invalid report in PDF generation:', report);
+        continue;
+      }
+
       const reportDiv = document.createElement('div');
       reportDiv.classList.add('report-preview');
       reportDiv.style.padding = '20px';
@@ -416,7 +460,7 @@ async function downloadPresentationPDF() {
       document.body.appendChild(reportDiv);
 
       const parts = report.id.split('-');
-      let analysisType = parts[0];
+      let analysisType = parts[0] || '';
       let outputType = parts.length > 1 ? parts[parts.length - 1] : '';
 
       if (report.id.startsWith('report-retirement-fact-finder')) {
@@ -430,7 +474,9 @@ async function downloadPresentationPDF() {
         analysisType = 'summary';
       }
 
-      if (analysisType === 'retirement-accumulation') {
+      if (!analysisType) {
+        reportDiv.innerHTML = `<h3>${report.title}</h3><p>Invalid report ID format: ${report.id}</p>`;
+      } else if (analysisType === 'retirement-accumulation') {
         await renderRetirementReport(reportDiv, outputType, report.title);
       } else if (analysisType === 'personal-finance') {
         await renderPersonalFinanceReport(reportDiv, outputType, report.title);
