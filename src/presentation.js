@@ -11,37 +11,35 @@ let reportCount = selectedReports.length;
 // DOM elements
 const reportList = document.getElementById('report-list');
 const previewBtn = document.getElementById('preview-presentation-btn');
-const clientFileName = document.getElementById('client-file-name');
 const presentationCount = document.getElementById('presentation-count');
 const pdfPreviewModal = document.getElementById('pdf-preview-modal');
 const pdfPreviewContent = document.getElementById('pdf-preview-content');
 const closePdfModal = document.getElementById('close-pdf-modal');
 const downloadPdfBtn = document.getElementById('download-pdf-btn');
 const titleInput = document.getElementById('presentation-title-input');
-const customClientNameInput = document.getElementById('client-name-input');
+const clientNameInput = document.getElementById('client-name-input');
+const clientAddressInput = document.getElementById('client-address-input');
+const clientPhoneInput = document.getElementById('client-phone-input');
+const clientInfo = document.getElementById('client-info');
 
 // Initialize on page load
 document.addEventListener('DOMContentLoaded', () => {
   try {
-    // Log selectedReports for debugging
     console.log('Loaded selectedReports:', selectedReports);
 
-    // Validate and filter selectedReports
     selectedReports = selectedReports.filter(report => 
       report && typeof report === 'object' && report.id && typeof report.title === 'string'
     );
     reportCount = selectedReports.length;
     localStorage.setItem('selectedReports', JSON.stringify(selectedReports));
 
-    // Load header.html
     fetch('header.html')
       .then(response => response.text())
       .then(data => {
         const headerPlaceholder = document.getElementById('header-placeholder');
         if (headerPlaceholder) {
           headerPlaceholder.innerHTML = data;
-          // Add active class to current page link
-          const currentPage = window.location.pathname.split('/').pop() || 'presentation.html';
+33          const currentPage = window.location.pathname.split('/').pop() || 'presentation.html';
           const navLinks = document.querySelectorAll('nav ul li a');
           navLinks.forEach(link => {
             const href = link.getAttribute('href');
@@ -49,7 +47,6 @@ document.addEventListener('DOMContentLoaded', () => {
               link.classList.add('active');
             }
           });
-          // Initialize dropdown menu
           const profilePic = document.getElementById('profile-pic');
           const dropdownMenu = document.getElementById('dropdown-menu');
           if (profilePic && dropdownMenu) {
@@ -65,8 +62,7 @@ document.addEventListener('DOMContentLoaded', () => {
         } else {
           console.warn('Header placeholder not found in the DOM.');
         }
-        // Continue with existing initialization
-        updateClientFileName();
+        updateClientInfo();
         populateReportList();
         setupDragAndDrop();
         updatePreviewButton();
@@ -75,8 +71,7 @@ document.addEventListener('DOMContentLoaded', () => {
       })
       .catch(error => {
         console.error('Error loading header:', error);
-        // Proceed with other initialization even if header fails
-        updateClientFileName();
+        updateClientInfo();
         populateReportList();
         setupDragAndDrop();
         updatePreviewButton();
@@ -89,17 +84,21 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 });
 
-// Update client file name
-function updateClientFileName() {
+// Update client information
+function updateClientInfo() {
   try {
-    const customName = customClientNameInput?.value.trim();
-    let name = customName || clientData.client1?.personal?.name || 'No Client Selected';
-    if (!customName && clientData.isMarried && clientData.client2?.personal?.name) {
-      name = `${clientData.client1.personal.name} & ${clientData.client2.personal.name}`;
+    const name = clientNameInput?.value.trim();
+    const address = clientAddressInput?.value.trim();
+    const phone = clientPhoneInput?.value.trim();
+    let clientInfoText = name || clientData.client1?.personal?.name || 'No Client Selected';
+    if (!name && clientData.isMarried && clientData.client2?.personal?.name) {
+      clientInfoText = `${clientData.client1.personal.name} & ${clientData.client2.personal.name}`;
     }
-    clientFileName.textContent = name;
+    if (address) clientInfoText += `<br>${address}`;
+    if (phone) clientInfoText += `<br>${phone}`;
+    clientInfo.innerHTML = clientInfoText;
   } catch (error) {
-    console.error('Error in updateClientFileName:', error);
+    console.error('Error in updateClientInfo:', error);
   }
 }
 
@@ -175,7 +174,6 @@ function setupDragAndDrop() {
       saveSelectedReports();
     });
 
-    // Handle remove report
     reportList.addEventListener('click', (e) => {
       if (e.target.classList.contains('remove-report-btn')) {
         const reportId = e.target.dataset.reportId;
@@ -217,17 +215,29 @@ function saveSelectedReports() {
   presentationCount.classList.toggle('active', reportCount > 0);
 }
 
-// Setup input events for title and client name
+// Setup input events for title and client info
 function setupInputEvents() {
   if (titleInput) {
     titleInput.addEventListener('input', () => {
       localStorage.setItem('presentationTitle', titleInput.value);
     });
   }
-  if (customClientNameInput) {
-    customClientNameInput.addEventListener('input', () => {
-      localStorage.setItem('customClientName', customClientNameInput.value);
-      updateClientFileName();
+  if (clientNameInput) {
+    clientNameInput.addEventListener('input', () => {
+      localStorage.setItem('clientName', clientNameInput.value);
+      updateClientInfo();
+    });
+  }
+  if (clientAddressInput) {
+    clientAddressInput.addEventListener('input', () => {
+      localStorage.setItem('clientAddress', clientAddressInput.value);
+      updateClientInfo();
+    });
+  }
+  if (clientPhoneInput) {
+    clientPhoneInput.addEventListener('input', () => {
+      localStorage.setItem('clientPhone', clientPhoneInput.value);
+      updateClientInfo();
     });
   }
 }
@@ -247,27 +257,32 @@ async function generatePresentationPreview() {
     pdfPreviewContent.innerHTML = '<p>Generating preview...</p>';
     pdfPreviewModal.style.display = 'flex';
 
-    // Create a temporary container for rendering
     const tempContainer = document.createElement('div');
     tempContainer.style.width = '600px';
     tempContainer.style.background = '#fff';
 
-    // Add title page
     const titlePage = document.createElement('div');
     titlePage.classList.add('report-preview');
     titlePage.style.padding = '20px';
     titlePage.style.marginBottom = '20px';
     titlePage.style.background = '#fff';
-    const presentationTitle = titleInput?.value || localStorage.getItem('presentationTitle') || 'Financial Presentation';
-    const clientName = customClientNameInput?.value || localStorage.getItem('customClientName') || clientFileName.textContent;
+    const presentationTitle = titleInput?.value || localStorage.getItem('presentationTitle') || 'Financial Analysis';
+    const name = clientNameInput?.value || localStorage.getItem('clientName') || clientData.client1?.personal?.name || 'No Client Selected';
+    let clientInfoText = name;
+    if (clientData.isMarried && clientData.client2?.personal?.name && !clientNameInput?.value) {
+      clientInfoText = `${clientData.client1.personal.name} & ${clientData.client2.personal.name}`;
+    }
+    const address = clientAddressInput?.value || localStorage.getItem('clientAddress') || '';
+    const phone = clientPhoneInput?.value || localStorage.getItem('clientPhone') || '';
+    if (address) clientInfoText += `<br>${address}`;
+    if (phone) clientInfoText += `<br>${phone}`;
     titlePage.innerHTML = `
       <h1 style="text-align: center; font-size: 24px; margin-bottom: 20px;">${presentationTitle}</h1>
-      <h2 style="text-align: center; font-size: 18px;">Prepared for: ${clientName}</h2>
+      <h2 style="text-align: center; font-size: 18px;">Prepared for: ${clientInfoText}</h2>
       <p style="text-align: center; font-size: 14px;">Date: ${new Date().toLocaleDateString()}</p>
     `;
     tempContainer.appendChild(titlePage);
 
-    // Render reports
     for (const report of selectedReports) {
       if (!report.id || !report.title) {
         console.warn('Skipping invalid report:', report);
@@ -311,7 +326,6 @@ async function generatePresentationPreview() {
         reportDiv.innerHTML = `<h3>${report.title}</h3><p>Unsupported report type: ${report.id}</p>`;
       }
 
-      // Convert any canvas to image for preview
       const canvas = reportDiv.querySelector('canvas');
       if (canvas) {
         const canvasParent = canvas.parentNode;
@@ -331,7 +345,6 @@ async function generatePresentationPreview() {
       tempContainer.appendChild(reportDiv);
     }
 
-    // Update preview content
     pdfPreviewContent.innerHTML = '';
     pdfPreviewContent.appendChild(tempContainer);
 
@@ -418,18 +431,25 @@ async function downloadPresentationPDF() {
     const doc = new jsPDF({ orientation: 'portrait', unit: 'px', format: 'letter' });
     let yOffset = 20;
 
-    // Add title page
     const titlePage = document.createElement('div');
     titlePage.style.padding = '20px';
     titlePage.style.background = '#fff';
     titlePage.style.width = '600px';
     titlePage.style.position = 'absolute';
     titlePage.style.left = '-9999px';
-    const presentationTitle = titleInput?.value || localStorage.getItem('presentationTitle') || 'Financial Presentation';
-    const clientName = customClientNameInput?.value || localStorage.getItem('customClientName') || clientFileName.textContent;
+    const presentationTitle = titleInput?.value || localStorage.getItem('presentationTitle') || 'Financial Analysis';
+    const name = clientNameInput?.value || localStorage.getItem('clientName') || clientData.client1?.personal?.name || 'No Client Selected';
+    let clientInfoText = name;
+    if (clientData.isMarried && clientData.client2?.personal?.name && !clientNameInput?.value) {
+      clientInfoText = `${clientData.client1.personal.name} & ${clientData.client2.personal.name}`;
+    }
+    const address = clientAddressInput?.value || localStorage.getItem('clientAddress') || '';
+    const phone = clientPhoneInput?.value || localStorage.getItem('clientPhone') || '';
+    if (address) clientInfoText += `<br>${address}`;
+    if (phone) clientInfoText += `<br>${phone}`;
     titlePage.innerHTML = `
       <h1 style="text-align: center; font-size: 24px; margin-bottom: 20px;">${presentationTitle}</h1>
-      <h2 style="text-align: center; font-size: 18px;">Prepared for: ${clientName}</h2>
+      <h2 style="text-align: center; font-size: 18px;">Prepared for: ${clientInfoText}</h2>
       <p style="text-align: center; font-size: 14px;">Date: ${new Date().toLocaleDateString()}</p>
     `;
     document.body.appendChild(titlePage);
@@ -442,7 +462,6 @@ async function downloadPresentationPDF() {
     yOffset += titleImgHeight + 20;
     document.body.removeChild(titlePage);
 
-    // Render reports
     for (const report of selectedReports) {
       if (!report.id || !report.title) {
         console.warn('Skipping invalid report in PDF generation:', report);
@@ -486,7 +505,6 @@ async function downloadPresentationPDF() {
         reportDiv.innerHTML = `<h3>${report.title}</h3><p>Unsupported report type: ${report.id}</p>`;
       }
 
-      // Convert canvas to image
       const canvas = reportDiv.querySelector('canvas');
       if (canvas) {
         const canvasParent = canvas.parentNode;
