@@ -1280,3 +1280,222 @@ p {
     padding: 8px 16px;
   }
 }
+/* Presentation page container */
+.presentation-page {
+  max-width: 800px;
+  margin: 20px auto;
+  padding: 20px;
+  font-family: 'Inter', sans-serif;
+}
+
+/* Editable container for title and client info */
+.editable-container {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 15px;
+}
+
+/* Editable text styles */
+.editable-text {
+  margin: 0;
+  font-size: 1.2em;
+  color: #333;
+}
+
+/* Pencil icon styles */
+.edit-icon {
+  cursor: pointer;
+  color: #555;
+  font-size: 1em;
+  transition: color 0.2s;
+}
+
+.edit-icon:hover {
+  color: #007bff;
+}
+
+/* Input field container for client info */
+.edit-input {
+  display: none;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+}
+
+/* Input field styles */
+.edit-input input {
+  padding: 8px;
+  font-size: 1em;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* Save button for client info */
+.edit-input button {
+  padding: 8px 16px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  align-self: flex-start;
+}
+
+.edit-input button:hover {
+  background-color: #0056b3;
+}
+
+/* Report list styles */
+.report-list {
+  margin: 20px 0;
+  min-height: 100px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  padding: 10px;
+}
+
+/* Report item styles */
+.report-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px;
+  margin: 5px 0;
+  background-color: #f9f9f9;
+  border-radius: 4px;
+  cursor: move;
+}
+
+.report-item.dragging {
+  opacity: 0.5;
+}
+
+/* Remove button styles */
+.remove-report-btn {
+  padding: 5px 10px;
+  background-color: #dc3545;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.remove-report-btn:hover {
+  background-color: #c82333;
+}
+
+/* Presentation count styles */
+p {
+  font-size: 1em;
+  color: #333;
+}
+
+p .active {
+  color: #007bff;
+  font-weight: 600;
+}
+
+/* Preview button styles */
+#preview-presentation-btn {
+  padding: 10px 20px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 1em;
+}
+
+#preview-presentation-btn:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
+
+#preview-presentation-btn:hover:not(:disabled) {
+  background-color: #0056b3;
+}
+
+/* Modal styles */
+.modal {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background-color: white;
+  border-radius: 8px;
+  width: 90%;
+  max-width: 700px;
+  max-height: 80vh;
+  overflow-y: auto;
+  position: relative;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 20px;
+  border-bottom: 1px solid #ddd;
+}
+
+.modal-header h2 {
+  margin: 0;
+  font-size: 1.5em;
+}
+
+.close {
+  font-size: 1.5em;
+  cursor: pointer;
+  color: #555;
+}
+
+.close:hover {
+  color: #000;
+}
+
+.modal-body {
+  padding: 20px;
+}
+
+.modal-footer {
+  padding: 10px 20px;
+  border-top: 1px solid #ddd;
+  text-align: right;
+}
+
+.save-pdf-btn {
+  padding: 10px 20px;
+  background-color: #28a745;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.save-pdf-btn:hover {
+  background-color: #218838;
+}
+
+/* Output error styles */
+.output-error {
+  color: #dc3545;
+  font-size: 1em;
+  text-align: center;
+}
+
+/* Report preview styles */
+.report-preview {
+  page-break-after: always;
+}
