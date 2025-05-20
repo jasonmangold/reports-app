@@ -17,6 +17,8 @@ const pdfPreviewModal = document.getElementById('pdf-preview-modal');
 const pdfPreviewContent = document.getElementById('pdf-preview-content');
 const closePdfModal = document.getElementById('close-pdf-modal');
 const downloadPdfBtn = document.getElementById('download-pdf-btn');
+const titleInput = document.getElementById('presentation-title-input');
+const customClientNameInput = document.getElementById('client-name-input');
 
 // Initialize on page load
 document.addEventListener('DOMContentLoaded', () => {
@@ -59,6 +61,7 @@ document.addEventListener('DOMContentLoaded', () => {
         setupDragAndDrop();
         updatePreviewButton();
         setupModalEvents();
+        setupInputEvents();
       })
       .catch(error => {
         console.error('Error loading header:', error);
@@ -68,6 +71,7 @@ document.addEventListener('DOMContentLoaded', () => {
         setupDragAndDrop();
         updatePreviewButton();
         setupModalEvents();
+        setupInputEvents();
       });
   } catch (error) {
     console.error('Initialization error:', error);
@@ -78,8 +82,9 @@ document.addEventListener('DOMContentLoaded', () => {
 // Update client file name
 function updateClientFileName() {
   try {
-    let name = clientData.client1?.personal?.name || 'No Client Selected';
-    if (clientData.isMarried && clientData.client2?.personal?.name) {
+    const customName = customClientNameInput?.value.trim();
+    let name = customName || clientData.client1?.personal?.name || 'No Client Selected';
+    if (!customName && clientData.isMarried && clientData.client2?.personal?.name) {
       name = `${clientData.client1.personal.name} & ${clientData.client2.personal.name}`;
     }
     clientFileName.textContent = name;
@@ -196,6 +201,21 @@ function saveSelectedReports() {
   presentationCount.classList.toggle('active', reportCount > 0);
 }
 
+// Setup input events for title and client name
+function setupInputEvents() {
+  if (titleInput) {
+    titleInput.addEventListener('input', () => {
+      localStorage.setItem('presentationTitle', titleInput.value);
+    });
+  }
+  if (customClientNameInput) {
+    customClientNameInput.addEventListener('input', () => {
+      localStorage.setItem('customClientName', customClientNameInput.value);
+      updateClientFileName();
+    });
+  }
+}
+
 // Setup modal events
 function setupModalEvents() {
   previewBtn.addEventListener('click', generatePresentationPreview);
@@ -211,13 +231,25 @@ async function generatePresentationPreview() {
     pdfPreviewContent.innerHTML = '<p>Generating preview...</p>';
     pdfPreviewModal.style.display = 'flex';
 
-    // Log clientData to ensure it's available
-    console.log('clientData:', clientData);
-
     // Create a temporary container for rendering
     const tempContainer = document.createElement('div');
     tempContainer.style.width = '600px';
     tempContainer.style.background = '#fff';
+
+    // Add title page
+    const titlePage = document.createElement('div');
+    titlePage.classList.add('report-preview');
+    titlePage.style.padding = '20px';
+    titlePage.style.marginBottom = '20px';
+    titlePage.style.background = '#fff';
+    const presentationTitle = titleInput?.value || localStorage.getItem('presentationTitle') || 'Financial Presentation';
+    const clientName = customClientNameInput?.value || localStorage.getItem('customClientName') || clientFileName.textContent;
+    titlePage.innerHTML = `
+      <h1 style="text-align: center; font-size: 24px; margin-bottom: 20px;">${presentationTitle}</h1>
+      <h2 style="text-align: center; font-size: 18px;">Prepared for: ${clientName}</h2>
+      <p style="text-align: center; font-size: 14px;">Date: ${new Date().toLocaleDateString()}</p>
+    `;
+    tempContainer.appendChild(titlePage);
 
     // Render reports
     for (const report of selectedReports) {
@@ -227,9 +259,6 @@ async function generatePresentationPreview() {
       reportDiv.style.marginBottom = '20px';
       reportDiv.style.background = '#fff';
 
-      console.log(`Processing report: ${report.id}`);
-
-      // Handle different report ID formats
       const parts = report.id.split('-');
       let analysisType = parts[0];
       let outputType = parts.length > 1 ? parts[parts.length - 1] : '';
@@ -245,8 +274,6 @@ async function generatePresentationPreview() {
         analysisType = 'summary';
       }
 
-      console.log(`Analysis type: ${analysisType}, Output type: ${outputType}`);
-
       if (analysisType === 'retirement-accumulation') {
         await renderRetirementReport(reportDiv, outputType, report.title);
       } else if (analysisType === 'personal-finance') {
@@ -257,9 +284,6 @@ async function generatePresentationPreview() {
         reportDiv.innerHTML = `<h3>${report.title}</h3><p>Unsupported report type: ${report.id}</p>`;
       }
 
-      // Log the content of reportDiv
-      console.log(`Report ${report.id} content:`, reportDiv.innerHTML);
-
       // Convert any canvas to image for preview
       const canvas = reportDiv.querySelector('canvas');
       if (canvas) {
@@ -267,13 +291,11 @@ async function generatePresentationPreview() {
         document.body.appendChild(canvas);
         await new Promise(resolve => setTimeout(resolve, 1000));
         const imgData = canvas.toDataURL('image/png');
-        console.log(`Canvas data for ${report.id}:`, imgData);
         const img = document.createElement('img');
         img.src = imgData;
         img.style.width = canvas.style.width || '600px';
         img.style.height = canvas.style.height || '400px';
         canvasParent.replaceChild(img, canvas);
-        // Only remove from document.body if it’s still there
         if (canvas.parentNode === document.body) {
           document.body.removeChild(canvas);
         }
@@ -286,10 +308,6 @@ async function generatePresentationPreview() {
     pdfPreviewContent.innerHTML = '';
     pdfPreviewContent.appendChild(tempContainer);
 
-    // Log final content
-    console.log('Final pdfPreviewContent:', pdfPreviewContent.innerHTML);
-
-    // Ensure modal content is visible
     pdfPreviewContent.style.display = 'block';
     pdfPreviewContent.style.opacity = '1';
     pdfPreviewContent.style.visibility = 'visible';
@@ -302,7 +320,6 @@ async function generatePresentationPreview() {
 // Render Retirement Accumulation report
 async function renderRetirementReport(container, outputType, title) {
   container.innerHTML = `<h3>${title}</h3>`;
-  console.log(`Rendering retirement report, outputType: ${outputType}`);
   if (outputType === 'graph') {
     const canvas = document.createElement('canvas');
     canvas.id = `temp-chart-${Date.now()}`;
@@ -316,7 +333,6 @@ async function renderRetirementReport(container, outputType, title) {
     await new Promise(resolve => setTimeout(resolve, 1000));
     return chartInstance;
   } else {
-    // Pass the specific outputType to render the correct view
     updateRetirementOutputs(container, clientData, formatCurrency, getAge, selectedReports, window.Chart, outputType);
     if (!container.innerHTML.includes('output-card') && !container.innerHTML.includes('output-table')) {
       container.innerHTML += '<p>No retirement data available.</p>';
@@ -327,7 +343,6 @@ async function renderRetirementReport(container, outputType, title) {
 // Render Personal Finance report
 async function renderPersonalFinanceReport(container, outputType, title) {
   container.innerHTML = `<h3>${title}</h3>`;
-  console.log(`Rendering personal finance report, outputType: ${outputType}`);
   if (outputType === 'graph') {
     const canvas = document.createElement('canvas');
     canvas.id = `temp-chart-${Date.now()}`;
@@ -351,7 +366,6 @@ async function renderPersonalFinanceReport(container, outputType, title) {
 // Render Summary report
 async function renderSummaryReport(container, outputType, title) {
   container.innerHTML = `<h3>${title}</h3>`;
-  console.log(`Rendering summary report, outputType: ${outputType}`);
   updateSummaryOutputs(container, clientData, formatCurrency, selectedReports, window.Chart, getAge, outputType);
   if (!container.innerHTML.includes('output-card') && !container.innerHTML.includes('output-table')) {
     container.innerHTML += '<p>No summary data available.</p>';
@@ -365,6 +379,31 @@ async function downloadPresentationPDF() {
     const doc = new jsPDF({ orientation: 'portrait', unit: 'px', format: 'letter' });
     let yOffset = 20;
 
+    // Add title page
+    const titlePage = document.createElement('div');
+    titlePage.style.padding = '20px';
+    titlePage.style.background = '#fff';
+    titlePage.style.width = '600px';
+    titlePage.style.position = 'absolute';
+    titlePage.style.left = '-9999px';
+    const presentationTitle = titleInput?.value || localStorage.getItem('presentationTitle') || 'Financial Presentation';
+    const clientName = customClientNameInput?.value || localStorage.getItem('customClientName') || clientFileName.textContent;
+    titlePage.innerHTML = `
+      <h1 style="text-align: center; font-size: 24px; margin-bottom: 20px;">${presentationTitle}</h1>
+      <h2 style="text-align: center; font-size: 18px;">Prepared for: ${clientName}</h2>
+      <p style="text-align: center; font-size: 14px;">Date: ${new Date().toLocaleDateString()}</p>
+    `;
+    document.body.appendChild(titlePage);
+
+    const titleCanvas = await html2canvas(titlePage, { scale: 2, useCORS: true });
+    const titleImgData = titleCanvas.toDataURL('image/png');
+    const titleImgWidth = doc.internal.pageSize.getWidth() - 40;
+    const titleImgHeight = (titleCanvas.height * titleImgWidth) / titleCanvas.width;
+    doc.addImage(titleImgData, 'PNG', 20, yOffset, titleImgWidth, titleImgHeight);
+    yOffset += titleImgHeight + 20;
+    document.body.removeChild(titlePage);
+
+    // Render reports
     for (const report of selectedReports) {
       const reportDiv = document.createElement('div');
       reportDiv.classList.add('report-preview');
@@ -408,7 +447,6 @@ async function downloadPresentationPDF() {
         document.body.appendChild(canvas);
         await new Promise(resolve => setTimeout(resolve, 1000));
         const imgData = canvas.toDataURL('image/png');
-        console.log(`Canvas data for ${report.id} in PDF:`, imgData);
         const img = document.createElement('img');
         img.src = imgData;
         img.style.width = canvas.style.width || '600px';
@@ -421,13 +459,11 @@ async function downloadPresentationPDF() {
 
       await new Promise(resolve => setTimeout(resolve, 100));
 
-      console.log(`Rendering report ${report.id} for PDF:`, reportDiv.innerHTML);
       const canvasRender = await html2canvas(reportDiv, { 
         scale: 2, 
         useCORS: true, 
         logging: true 
       });
-      console.log(`html2canvas output for ${report.id}:`, canvasRender.toDataURL('image/png'));
       const imgData = canvasRender.toDataURL('image/png');
       const imgWidth = doc.internal.pageSize.getWidth() - 40;
       const imgHeight = (canvasRender.height * imgWidth) / canvasRender.width;
