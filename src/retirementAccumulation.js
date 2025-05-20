@@ -170,14 +170,14 @@ export function setupAgeDisplayListeners(getAge) {
         const newAccountDiv = document.createElement('div');
         newAccountDiv.className = 'account';
         newAccountDiv.dataset.accountIndex = newIndex;
-newAccountDiv.innerHTML = `
-  <label>Account Name: <input type="text" id="${client}-account-${newIndex}-name" placeholder="Account ${newIndex + 1}"></label>
-  <label>Balance ($): <input type="number" id="${client}-account-${newIndex}-balance" min="0" step="1000" placeholder="0"></label>
-  <label>Contribution ($/yr): <input type="number" id="${client}-account-${newIndex}-contribution" min="0" step="1000" placeholder="0"></label>
-  <label>Employer Match (%): <input type="number" id="${client}-account-${newIndex}-employer-match" min="0" max="100" step="0.1" placeholder="0"></label>
-  <label>ROR (%): <input type="number" id="${client}-account-${newIndex}-ror" min="0" max="100" step="0.1" placeholder="0"></label>
-  <button type="button" class="remove-account-btn" data-client="${client}" data-index="${newIndex}">Remove</button>
-`;
+        newAccountDiv.innerHTML = `
+          <label>Account Name: <input type="text" id="${client}-account-${newIndex}-name" placeholder="Account ${newIndex + 1}"></label>
+          <label>Balance ($): <input type="number" id="${client}-account-${newIndex}-balance" min="0" step="1000" placeholder="0"></label>
+          <label>Contribution ($/yr): <input type="number" id="${client}-account-${newIndex}-contribution" min="0" step="1000" placeholder="0"></label>
+          <label>Employer Match (%): <input type="number" id="${client}-account-${newIndex}-employer-match" min="0" max="100" step="0.1" placeholder="0"></label>
+          <label>ROR (%): <input type="number" id="${client}-account-${newIndex}-ror" min="0" max="100" step="0.1" placeholder="0"></label>
+          <button type="button" class="remove-account-btn" data-client="${client}" data-index="${newIndex}">Remove</button>
+        `;
         accountsContainer.insertBefore(newAccountDiv, button);
 
         // Setup remove button
@@ -278,7 +278,7 @@ function calculateRetirementIncome(clientData, getAge) {
 
         // Future value calculations
         const fvBalance = balance * Math.pow(1 + ror / 12, monthsToClientRetirement);
-        const fvContributions = monthlyContribution && ror ? monthlyContribution * (Math.pow(1 + ror / 12, monthsToClientRetirement) - 1) / (ror / 12) * (1 + ror / 12) : 0  
+        const fvContributions = monthlyContribution && ror ? monthlyContribution * (Math.pow(1 + ror / 12, monthsToClientRetirement) - 1) / (ror / 12) * (1 + ror / 12) : 0;
         const fvEmployerMatch = monthlyEmployerMatch && ror ? monthlyEmployerMatch * (Math.pow(1 + ror / 12, monthsToClientRetirement) - 1) / (ror / 12) * (1 + ror / 12) : 0;
 
         let accountBalance = fvBalance + fvContributions + fvEmployerMatch;
@@ -1225,160 +1225,172 @@ function updateSpecificTab(tabId, clientData, formatCurrency, getAge, Chart) {
  */
 export function setupInputListeners(clientData, formatCurrency, getAge, Chart) {
   try {
-    // Store the last selected tab to maintain state
-    let lastSelectedTab = 'output-graph'; // Default to graph for initial load
+    // Ensure DOM is fully loaded
+    document.addEventListener('DOMContentLoaded', () => {
+      let lastSelectedTab = 'output-graph';
 
-    // Debounce function
-    function debounce(func, wait) {
-      let timeout;
-      return function executedFunction(...args) {
-        const later = () => {
+      function debounce(func, wait) {
+        let timeout;
+        return function executedFunction(...args) {
+          const later = () => {
+            clearTimeout(timeout);
+            func(...args);
+          };
           clearTimeout(timeout);
-          func(...args);
+          timeout = setTimeout(later, wait);
         };
-        clearTimeout(timeout);
-        timeout = setTimeout(later, wait);
-      };
-    }
+      }
 
-    // Update clientData and refresh current tab
-    const updateOnInputChange = debounce(() => {
-      // Update clientData
-      updateClientData(clientData);
+      function updateClientData(data) {
+        try {
+          // Personal
+          data.isMarried = document.getElementById('is-married').checked;
+          const c1Name = document.getElementById('c1-name').value;
+          if (c1Name) data.client1.personal.name = c1Name;
+          const c1Dob = document.getElementById('c1-dob').value;
+          if (c1Dob) data.client1.personal.dob = c1Dob;
+          const c1RetirementAge = document.getElementById('c1-retirement-age').value;
+          if (c1RetirementAge) data.client1.personal.retirementAge = c1RetirementAge;
+          if (data.isMarried) {
+            data.client2.personal = data.client2.personal || {};
+            const c2Name = document.getElementById('c2-name').value;
+            if (c2Name) data.client2.personal.name = c2Name;
+            const c2Dob = document.getElementById('c2-dob').value;
+            if (c2Dob) data.client2.personal.dob = c2Dob;
+            const c2RetirementAge = document.getElementById('c2-retirement-age').value;
+            if (c2RetirementAge) data.client2.personal.retirementAge = c2RetirementAge;
+          } else {
+            data.client2 = { personal: {}, incomeSources: {}, accounts: [] };
+          }
 
-      // Get current active tab
-      let activeTab = document.querySelector('.output-tab-content[style*="display: block"]') ||
-                      document.querySelector('.output-tab-content.active');
-      
-      // Determine the current tab: prioritize active tab, then dropdown, then last selected
-      let currentTab;
-      if (activeTab) {
-        currentTab = activeTab.id;
-      } else {
+          // Income Needs
+          data.incomeNeeds = {
+            initial: parseFloat(document.getElementById('monthly-income-initial').value) || data.incomeNeeds.initial || 5000,
+            yearsafter1: parseInt(document.getElementById('years-after-retirement-1').value) || data.incomeNeeds.yearsafter1 || 5,
+            monthly1: parseFloat(document.getElementById('monthly-income-1').value) || data.incomeNeeds.monthly1 || 4500,
+            yearsafter2: parseInt(document.getElementById('years-after-retirement-2').value) || data.incomeNeeds.yearsafter2 || 10,
+            monthly2: parseFloat(document.getElementById('monthly-income-2').value) || data.incomeNeeds.monthly2 || 4000
+          };
+
+          // Income Sources
+          data.client1.incomeSources = {
+            employment: parseFloat(document.getElementById('c1-employment').value) || data.client1.incomeSources.employment || 0,
+            socialSecurity: parseFloat(document.getElementById('c1-social-security').value) || data.client1.incomeSources.socialSecurity || 0,
+            other: parseFloat(document.getElementById('c1-other-income').value) || data.client1.incomeSources.other || 0
+          };
+          if (data.isMarried) {
+            data.client2.incomeSources = {
+              employment: parseFloat(document.getElementById('c2-employment').value) || data.client2.incomeSources.employment || 0,
+              socialSecurity: parseFloat(document.getElementById('c2-social-security').value) || data.client2.incomeSources.socialSecurity || 0,
+              other: parseFloat(document.getElementById('c2-other-income').value) || data.client2.incomeSources.other || 0
+            };
+          } else {
+            data.client2.incomeSources = { employment: 0, socialSecurity: 0, other: 0 };
+          }
+
+          // Capital Accounts
+          const c1Accounts = document.querySelectorAll('#c1-accounts .account');
+          const newC1Accounts = [];
+          c1Accounts.forEach((account, index) => {
+            const name = document.getElementById(`c1-account-${index}-name`).value;
+            const balance = document.getElementById(`c1-account-${index}-balance`).value;
+            const contribution = document.getElementById(`c1-account-${index}-contribution`).value;
+            const employerMatch = document.getElementById(`c1-account-${index}-employer-match`).value;
+            const ror = document.getElementById(`c1-account-${index}-ror`).value;
+            newC1Accounts.push({
+              name: name || data.client1.accounts[index]?.name || `Account ${index + 1}`,
+              balance: balance ? parseFloat(balance) : parseFloat(data.client1.accounts[index]?.balance) || 0,
+              contribution: contribution ? parseFloat(contribution) : parseFloat(data.client1.accounts[index]?.contribution) || 0,
+              employerMatch: employerMatch ? parseFloat(employerMatch) : parseFloat(data.client1.accounts[index]?.employerMatch) || 0,
+              ror: ror ? parseFloat(ror) : parseFloat(data.client1.accounts[index]?.ror) || 6
+            });
+          });
+          data.client1.accounts = newC1Accounts.length ? newC1Accounts : data.client1.accounts;
+
+          const c2Accounts = document.querySelectorAll('#c2-accounts .account');
+          const newC2Accounts = [];
+          if (data.isMarried) {
+            c2Accounts.forEach((account, index) => {
+              const name = document.getElementById(`c2-account-${index}-name`).value;
+              const balance = document.getElementById(`c2-account-${index}-balance`).value;
+              const contribution = document.getElementById(`c2-account-${index}-contribution`).value;
+              const employerMatch = document.getElementById(`c2-account-${index}-employer-match`).value;
+              const ror = document.getElementById(`c2-account-${index}-ror`).value;
+              newC2Accounts.push({
+                name: name || data.client2.accounts[index]?.name || `Account ${index + 1}`,
+                balance: balance ? parseFloat(balance) : parseFloat(data.client2.accounts[index]?.balance) || 0,
+                contribution: contribution ? parseFloat(contribution) : parseFloat(data.client2.accounts[index]?.contribution) || 0,
+                employerMatch: employerMatch ? parseFloat(employerMatch) : parseFloat(data.client2.accounts[index]?.employerMatch) || 0,
+                ror: ror ? parseFloat(ror) : parseFloat(data.client2.accounts[index]?.ror) || 6
+              });
+            });
+          }
+          data.client2.accounts = data.isMarried && newC2Accounts.length ? newC2Accounts : data.client2.accounts;
+
+          // Assumptions
+          data.assumptions = {
+            c1MortalityAge: parseFloat(document.getElementById('c1-mortality-age').value) || data.assumptions.c1MortalityAge || 90,
+            c2MortalityAge: data.isMarried ? (parseFloat(document.getElementById('c2-mortality-age').value) || data.assumptions.c2MortalityAge || 90) : null,
+            inflation: parseFloat(document.getElementById('inflation').value) || data.assumptions.inflation || 3,
+            rorRetirement: parseFloat(document.getElementById('ror-retirement').value) || data.assumptions.rorRetirement || 4
+          };
+        } catch (error) {
+          console.error('Error in updateClientData:', error);
+        }
+      }
+
+      const updateOnInputChange = debounce(() => {
+        updateClientData(clientData);
+        let activeTab = document.querySelector('.output-tab-content[style*="display: block"]') ||
+                        document.querySelector('.output-tab-content.active');
+        let currentTab;
+        if (activeTab) {
+          currentTab = activeTab.id;
+        } else {
+          const select = document.getElementById('output-select');
+          currentTab = select && select.value ? select.value : lastSelectedTab;
+          console.log('No active tab found, using output-select value or last selected:', currentTab);
+        }
         const select = document.getElementById('output-select');
-        currentTab = select && select.value ? select.value : lastSelectedTab;
-        console.log('No active tab found, using output-select value or last selected:', currentTab);
-      }
+        if (select && select.value !== currentTab) {
+          const previousOnChange = select.onchange;
+          select.onchange = null;
+          select.value = currentTab;
+          select.onchange = previousOnChange;
+          console.log('Updated output-select to:', currentTab);
+        }
+        window.currentActiveTab = currentTab;
+        updateSpecificTab(currentTab, clientData, formatCurrency, getAge, Chart);
+        lastSelectedTab = currentTab;
+      }, 300);
 
-      // Debug logging
-      console.log('Active tab:', activeTab ? activeTab.id : 'none', 'Selected tab:', currentTab);
-
-      // Sync the select dropdown without triggering a change event
-      const select = document.getElementById('output-select');
-      if (select && select.value !== currentTab) {
-        const previousOnChange = select.onchange;
-        select.onchange = null;
-        select.value = currentTab;
-        select.onchange = previousOnChange;
-        console.log('Updated output-select to:', currentTab);
-      }
-
-      // Store current tab for updateRetirementOutputs
-      window.currentActiveTab = currentTab;
-
-      // Update the specific tab
-      updateSpecificTab(currentTab, clientData, formatCurrency, getAge, Chart);
-
-      // Update last selected tab
-      lastSelectedTab = currentTab;
-    }, 300);
-
-    // Function to update clientData from inputs
-    function updateClientData(data) {
-      // Personal
-      data.isMarried = document.getElementById('is-married').checked;
-      data.client1.personal.name = document.getElementById('c1-name').value;
-      data.client1.personal.dob = document.getElementById('c1-dob').value;
-      data.client1.personal.retirementAge = document.getElementById('c1-retirement-age').value;
-      if (data.isMarried) {
-        data.client2.personal = data.client2.personal || {};
-        data.client2.personal.name = document.getElementById('c2-name').value;
-        data.client2.personal.dob = document.getElementById('c2-dob').value;
-        data.client2.personal.retirementAge = document.getElementById('c2-retirement-age').value;
-      } else {
-        data.client2 = { personal: {}, incomeSources: {}, accounts: [] };
-      }
-
-data.incomeNeeds = {
-    initial: parseFloat(document.getElementById('monthly-income-initial').value) || 5000,
-    yearsafter1: parseInt(document.getElementById('years-after-retirement-1').value) || 5,
-    monthly1: parseFloat(document.getElementById('monthly-income-1').value) || 4500,
-    yearsafter2: parseInt(document.getElementById('years-after-retirement-2').value) || 10,
-    monthly2: parseFloat(document.getElementById('monthly-income-2').value) || 4000
-  };
-
-      // Income Sources
-      data.client1.incomeSources = {
-        employment: parseFloat(document.getElementById('c1-employment').value) || 0,
-        socialSecurity: parseFloat(document.getElementById('c1-social-security').value) || 0,
-        other: parseFloat(document.getElementById('c1-other-income').value) || 0
-      };
-      if (data.isMarried) {
-        data.client2.incomeSources = {
-          employment: parseFloat(document.getElementById('c2-employment').value) || 0,
-          socialSecurity: parseFloat(document.getElementById('c2-social-security').value) || 0,
-          other: parseFloat(document.getElementById('c2-other-income').value) || 0
-        };
-      } else {
-        data.client2.incomeSources = { employment: 0, socialSecurity: 0, other: 0 };
-      }
-
-      // Capital Accounts
-      data.client1.accounts = [];
-      const c1Accounts = document.querySelectorAll('#c1-accounts .account');
-      c1Accounts.forEach((account, index) => {
-        data.client1.accounts.push({
-          name: document.getElementById(`c1-account-${index}-name`).value || `Account ${index + 1}`,
-          balance: parseFloat(document.getElementById(`c1-account-${index}-balance`).value) || 0,
-          contribution: parseFloat(document.getElementById(`c1-account-${index}-contribution`).value) || 0,
-          employerMatch: parseFloat(document.getElementById(`c1-account-${index}-employer-match`).value) || 0,
-          ror: parseFloat(document.getElementById(`c1-account-${index}-ror`).value) || 6
-        });
+      const inputs = document.querySelectorAll('input');
+      inputs.forEach(input => {
+        input.removeEventListener('input', updateOnInputChange);
+        input.removeEventListener('change', updateOnInputChange);
+        input.addEventListener('input', updateOnInputChange);
+        input.addEventListener('change', updateOnInputChange);
       });
 
-      data.client2.accounts = [];
-      if (data.isMarried) {
-        const c2Accounts = document.querySelectorAll('#c2-accounts .account');
-        c2Accounts.forEach((account, index) => {
-          data.client2.accounts.push({
-            name: document.getElementById(`c2-account-${index}-name`).value || `Account ${index + 1}`,
-            balance: parseFloat(document.getElementById(`c2-account-${index}-balance`).value) || 0,
-            contribution: parseFloat(document.getElementById(`c2-account-${index}-contribution`).value) || 0,
-            employerMatch: parseFloat(document.getElementById(`c2-account-${index}-employer-match`).value) || 0,
-            ror: parseFloat(document.getElementById(`c2-account-${index}-ror`).value) || 6
-          });
-        });
+      const addAccountButtons = document.querySelectorAll('.add-account-btn');
+      addAccountButtons.forEach(button => {
+        button.removeEventListener('click', updateOnInputChange);
+        button.addEventListener('click', updateOnInputChange);
+      });
+
+      const removeAccountButtons = document.querySelectorAll('.remove-account-btn');
+      removeAccountButtons.forEach(button => {
+        button.removeEventListener('click', updateOnInputChange);
+        button.addEventListener('click', updateOnInputChange);
+      });
+
+      // Populate inputs with clientData to ensure placeholders are overridden
+      if (typeof populateInputFields === 'function') {
+        populateInputFields(clientData);
+      } else {
+        console.warn('populateInputFields function not found');
       }
-
-      // Assumptions
-      data.assumptions = {
-        c1MortalityAge: parseFloat(document.getElementById('c1-mortality-age').value) || 90,
-        c2MortalityAge: data.isMarried ? (parseFloat(document.getElementById('c2-mortality-age').value) || 90) : null,
-        inflation: parseFloat(document.getElementById('inflation').value) || 3,
-        rorRetirement: parseFloat(document.getElementById('ror-retirement').value) || 4
-      };
-    }
-
-    // Remove existing listeners to prevent duplicates
-    const inputs = document.querySelectorAll('input');
-    inputs.forEach(input => {
-      input.removeEventListener('input', updateOnInputChange);
-      input.removeEventListener('change', updateOnInputChange);
-      input.addEventListener('input', updateOnInputChange);
-      input.addEventListener('change', updateOnInputChange);
-    });
-
-    const addAccountButtons = document.querySelectorAll('.add-account-btn');
-    addAccountButtons.forEach(button => {
-      button.removeEventListener('click', updateOnInputChange);
-      button.addEventListener('click', updateOnInputChange);
-    });
-
-    const removeAccountButtons = document.querySelectorAll('.remove-account-btn');
-    removeAccountButtons.forEach(button => {
-      button.removeEventListener('click', updateOnInputChange);
-      button.addEventListener('click', updateOnInputChange);
-    });
+    }, { once: true });
   } catch (error) {
     console.error('Error in setupInputListeners:', error);
   }
