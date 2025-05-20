@@ -149,7 +149,7 @@ function loadClientData() {
     const savedData = localStorage.getItem('clientData');
     if (savedData) {
       clientData = JSON.parse(savedData);
-      // Normalize insurance fields
+      // Normalize data types as before
       ['client1', 'client2'].forEach(clientKey => {
         clientData[clientKey].insurance = clientData[clientKey].insurance || {
           lifeInsurance: 0,
@@ -159,13 +159,19 @@ function loadClientData() {
         clientData[clientKey].insurance.lifeInsurance = parseFloat(clientData[clientKey].insurance.lifeInsurance) || 0;
         clientData[clientKey].insurance.disabilityInsurance = parseFloat(clientData[clientKey].insurance.disabilityInsurance) || 0;
         clientData[clientKey].insurance.longTermCare = parseFloat(clientData[clientKey].insurance.longTermCare) || 0;
+        // Normalize accounts
+        clientData[clientKey].accounts = clientData[clientKey].accounts.map(account => ({
+          name: account.name || `Account ${clientData[clientKey].accounts.indexOf(account) + 1}`,
+          balance: parseFloat(account.balance) || 0,
+          contribution: parseFloat(account.contribution) || 0,
+          employerMatch: parseFloat(account.employerMatch) || 0,
+          ror: parseFloat(account.ror) || 6
+        }));
       });
-      // Normalize assumptions
       clientData.assumptions.c1MortalityAge = parseInt(clientData.assumptions.c1MortalityAge) || parseInt(clientData.assumptions.mortalityAge) || 90;
       clientData.assumptions.c2MortalityAge = parseInt(clientData.assumptions.c2MortalityAge) || parseInt(clientData.assumptions.mortalityAge) || 90;
       clientData.assumptions.inflation = parseFloat(clientData.assumptions.inflation) || 3;
       clientData.assumptions.rorRetirement = parseFloat(clientData.assumptions.rorRetirement) || 4;
-      // Ensure scenarios and incomeNeeds
       clientData.scenarios = clientData.scenarios || { base: null, whatIf: [] };
       clientData.incomeNeeds = clientData.incomeNeeds || {
         monthlyincomeinitial: { initial: "5000" },
@@ -174,8 +180,56 @@ function loadClientData() {
         yearsafterretirement2: { yearsafter2: "10" },
         monthlyincome2: { monthly2: "4000" }
       };
-      console.log('Loaded clientData from localStorage:', clientData);
+    } else {
+      // Initialize with placeholder values from retirementAccumulationTabs
+      clientData = {
+        isMarried: false,
+        client1: {
+          personal: { name: "Paul Johnson", dob: "", retirementAge: "67" },
+          incomeSources: { employment: "65000", socialSecurity: "2000", other: "500" },
+          accounts: [
+            {
+              name: "401(k)",
+              balance: "100000",
+              contribution: "10000",
+              employerMatch: "3",
+              ror: "6"
+            }
+          ],
+          insurance: { lifeInsurance: "0", disabilityInsurance: "0", longTermCare: "0" }
+        },
+        client2: {
+          personal: { name: "Sally Johnson", dob: "", retirementAge: "67" },
+          incomeSources: { employment: "50000", socialSecurity: "1500", other: "300" },
+          accounts: [
+            {
+              name: "IRA",
+              balance: "80000",
+              contribution: "8000",
+              employerMatch: "0",
+              ror: "6"
+            }
+          ],
+          insurance: { lifeInsurance: "0", disabilityInsurance: "0", longTermCare: "0" }
+        },
+        assumptions: {
+          c1MortalityAge: "90",
+          c2MortalityAge: "90",
+          mortalityAge: "90",
+          inflation: "3",
+          rorRetirement: "4"
+        },
+        scenarios: { base: null, whatIf: [] },
+        incomeNeeds: {
+          monthlyincomeinitial: { initial: "5000" },
+          yearsafterretirement1: { yearsafter1: "5" },
+          monthlyincome1: { monthly1: "4500" },
+          yearsafterretirement2: { yearsafter2: "10" },
+          monthlyincome2: { monthly2: "4000" }
+        }
+      };
     }
+    console.log('Loaded clientData:', clientData);
   } catch (error) {
     console.error('Error in loadClientData:', error);
   }
