@@ -374,7 +374,6 @@ function setupPresentationOptions() {
       localStorage.setItem('presentationOptions', JSON.stringify(presentationOptions));
     });
   }
-  // Handle other presentation options
   const optionCheckboxes = [
     'include-title-page', 'include-toc', 'include-personal-profile',
     'include-record-of-reports', 'include-disclaimer', 'include-disclosure',
@@ -438,19 +437,28 @@ async function renderRetirementReport(container, reportId) {
       chartContainer.style.width = '100%';
       chartContainer.style.height = '400px';
       const canvas = document.createElement('canvas');
+      canvas.width = 800;
+      canvas.height = 400;
       chartContainer.appendChild(canvas);
       reportDiv.appendChild(chartContainer);
 
       const savedConfig = loadChartConfig('retirement-accumulation');
+      const graphType = reportId.includes('timeline') ? 'timeline' : 'income';
       if (savedConfig) {
-        new Chart(canvas, savedConfig);
+        // Modify config for timeline if needed
+        let modifiedConfig = JSON.parse(JSON.stringify(savedConfig));
+        if (graphType === 'timeline') {
+          // Adjust config for timeline (simplified; assumes updateRetirementGraph handles type internally)
+          modifiedConfig.options.plugins = modifiedConfig.options.plugins || {};
+          modifiedConfig.options.plugins.title = { display: true, text: 'Retirement Timeline' };
+        }
+        new Chart(canvas, modifiedConfig);
       } else {
         // Fallback to generating chart
-        const graphType = reportId.includes('timeline') ? 'timeline' : 'income';
         updateRetirementGraph(canvas, clientData, Chart, getAge, graphType);
       }
 
-      // Wait for chart to render and convert to image
+      // Ensure chart is non-interactive and convert to image
       await new Promise(resolve => setTimeout(resolve, 500));
       const img = document.createElement('img');
       img.src = canvas.toDataURL('image/png');
@@ -458,6 +466,12 @@ async function renderRetirementReport(container, reportId) {
       img.style.height = 'auto';
       chartContainer.innerHTML = '';
       chartContainer.appendChild(img);
+
+      // Destroy chart instance to prevent interactivity
+      const chartInstance = Chart.getChart(canvas);
+      if (chartInstance) {
+        chartInstance.destroy();
+      }
     }
 
     container.appendChild(reportDiv);
@@ -489,6 +503,8 @@ async function renderPersonalFinanceReport(container, reportId) {
       chartContainer.style.width = '100%';
       chartContainer.style.height = '400px';
       const canvas = document.createElement('canvas');
+      canvas.width = 800;
+      canvas.height = 400;
       chartContainer.appendChild(canvas);
       reportDiv.appendChild(chartContainer);
 
@@ -500,7 +516,7 @@ async function renderPersonalFinanceReport(container, reportId) {
         updatePersonalFinanceGraph(canvas, clientData, Chart);
       }
 
-      // Wait for chart to render and convert to image
+      // Convert to image
       await new Promise(resolve => setTimeout(resolve, 500));
       const img = document.createElement('img');
       img.src = canvas.toDataURL('image/png');
@@ -508,6 +524,12 @@ async function renderPersonalFinanceReport(container, reportId) {
       img.style.height = 'auto';
       chartContainer.innerHTML = '';
       chartContainer.appendChild(img);
+
+      // Destroy chart instance
+      const chartInstance = Chart.getChart(canvas);
+      if (chartInstance) {
+        chartInstance.destroy();
+      }
     }
 
     container.appendChild(reportDiv);
@@ -533,12 +555,14 @@ async function renderSummaryReport(container, reportId) {
     updateSummaryOutputs(outputContainer, clientData, formatCurrency, selectedReports, Chart, getAge);
     reportDiv.appendChild(outputContainer);
 
-    // Render chart if applicable (e.g., Financial Fitness Score)
+    // Render chart if applicable
     if (reportId.includes('graph')) {
       const chartContainer = document.createElement('div');
       chartContainer.style.width = '100%';
       chartContainer.style.height = '400px';
       const canvas = document.createElement('canvas');
+      canvas.width = 800;
+      canvas.height = 400;
       chartContainer.appendChild(canvas);
       reportDiv.appendChild(chartContainer);
 
@@ -550,7 +574,7 @@ async function renderSummaryReport(container, reportId) {
         updateSummaryOutputs(chartContainer, clientData, formatCurrency, selectedReports, Chart, getAge);
       }
 
-      // Wait for chart to render and convert to image
+      // Convert to image
       await new Promise(resolve => setTimeout(resolve, 500));
       const img = document.createElement('img');
       img.src = canvas.toDataURL('image/png');
@@ -558,6 +582,12 @@ async function renderSummaryReport(container, reportId) {
       img.style.height = 'auto';
       chartContainer.innerHTML = '';
       chartContainer.appendChild(img);
+
+      // Destroy chart instance
+      const chartInstance = Chart.getChart(canvas);
+      if (chartInstance) {
+        chartInstance.destroy();
+      }
     }
 
     container.appendChild(reportDiv);
@@ -747,14 +777,19 @@ async function generatePresentationPreview() {
       } else if (report.id.includes('summary')) {
         await renderSummaryReport(tempContainer, report.id);
       } else {
+        // Handle generic or unrecognized reports
         const reportDiv = document.createElement('div');
         reportDiv.classList.add('report-preview');
         reportDiv.style.padding = '20px';
         reportDiv.style.marginBottom = '20px';
         reportDiv.style.background = '#fff';
-        reportDiv.innerHTML = `<h2>${report.title}</h2><p>Content for ${report.title} is not yet implemented.</p>`;
+        reportDiv.innerHTML = `
+          <h2>${report.title}</h2>
+          <p>Data for ${report.title} is not available in this preview.</p>
+        `;
         addHeaderFooter(reportDiv);
         tempContainer.appendChild(reportDiv);
+        console.warn(`Unrecognized report ID: ${report.id}`);
       }
     }
 
@@ -835,8 +870,8 @@ async function downloadPresentationPDF() {
       },
       x: 10,
       y: 10,
-      width: 430, // Letter width in pixels at 72 DPI
-      windowWidth: 800 // Match tempContainer width
+      width: 430,
+      windowWidth: 800
     });
   } catch (error) {
     console.error('Error in downloadPresentationPDF:', error);
