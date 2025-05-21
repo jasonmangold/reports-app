@@ -1067,7 +1067,9 @@ function toggleReportSelection(reportId, reportTitle) {
       selectedReports = selectedReports.filter(report => report.id !== reportId);
       reportCount--;
     } else {
-      selectedReports.push({ id: reportId, title: reportTitle, order: selectedReports.length });
+      // Ensure title is included, default to reportId if title is undefined
+      const title = reportTitle || reportId.replace('report-', '').replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+      selectedReports.push({ id: reportId, title: title, order: selectedReports.length });
       reportCount++;
     }
     localStorage.setItem('selectedReports', JSON.stringify(selectedReports));
