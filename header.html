@@ -3,6 +3,7 @@
     <img src="logo.png" alt="Advisys Logo" class="logo-img">
   </div>
   <div class="client-file">
+    <button id="client-file-toggle" aria-label="Toggle Client Selection">Select Client</button>
     <span id="client-file-name" aria-label="Select Client" role="button" tabindex="0">No Client Selected</span>
   </div>
   <nav>
@@ -19,7 +20,7 @@
     <i class="fas fa-bell"></i>
     <i class="fas fa-moon dark-mode-toggle"></i>
     <div class="profile-container">
-      <img src="headshot.png" alt="Profile Picture" class="profile-pic" id="profile-pic">
+      <img src="headshot.png" alt="Profile Picture" class="profile-pic" id="profile-pic" width="40" height="40">
       <div class="dropdown-menu" id="dropdown-menu" style="display: none;">
         <a href="#" id="help-link"><i class="fas fa-question-circle"></i> Help</a>
         <a href="#" id="settings-link"><i class="fas fa-cog"></i> Settings</a>
@@ -41,7 +42,22 @@
   }
   .logo { flex-shrink: 0; }
   .logo-img { height: 40px; }
-  .client-file { flex-grow: 0; margin: 0 20px; }
+  .client-file { flex-grow: 0; margin: 0 20px; display: flex; align-items: center; gap: 10px; }
+  #client-file-toggle {
+    padding: 8px 12px;
+    font-size: 14px;
+    font-family: 'Inter', sans-serif;
+    color: #333;
+    background-color: #f5f5f5;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s, border-color 0.3s;
+  }
+  #client-file-toggle:hover {
+    background-color: #e0e0e0;
+    border-color: #007bff;
+  }
   #client-file-name {
     cursor: pointer;
     font-size: 16px;
