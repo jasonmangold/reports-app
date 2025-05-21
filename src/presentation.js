@@ -187,29 +187,37 @@ function setupClientSearch() {
 function populateReportList() {
   try {
     reportList.innerHTML = '';
-    if (selectedReports.length === 0) {
+    if (!Array.isArray(selectedReports) || selectedReports.length === 0) {
       reportList.innerHTML = '<p>No reports selected for presentation.</p>';
       return;
     }
 
-    selectedReports.forEach((report, index) => {
-      if (!report.id || !report.title) {
-        console.warn(`Invalid report at index ${index}:`, report);
-        return;
-      }
+    const validReports = selectedReports.filter(report => 
+      report && typeof report === 'object' && report.id && typeof report.title === 'string'
+    );
+
+    if (validReports.length === 0) {
+      reportList.innerHTML = '<p>No valid reports available.</p>';
+      return;
+    }
+
+    validReports.forEach((report, index) => {
       const reportItem = document.createElement('div');
       reportItem.classList.add('report-item');
       reportItem.dataset.reportId = report.id;
       reportItem.draggable = true;
       reportItem.innerHTML = `
-        <span class="report-title">${report.title || 'Untitled Report'}</span>
+        <span class="report-title">${report.title}</span>
         <button class="remove-report-btn" data-report-id="${report.id}">Remove</button>
       `;
       reportList.appendChild(reportItem);
     });
 
+    reportCount = validReports.length;
     presentationCount.textContent = reportCount;
     presentationCount.classList.toggle('active', reportCount > 0);
+    localStorage.setItem('selectedReports', JSON.stringify(validReports));
+    updatePreviewButton();
   } catch (error) {
     console.error('Error in populateReportList:', error);
     reportList.innerHTML = `<p class="output-error">Error populating report list: ${error.message}</p>`;
