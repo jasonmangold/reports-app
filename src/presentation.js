@@ -4,7 +4,23 @@ import { updatePersonalFinanceGraph, updatePersonalFinanceOutputs } from './pers
 import { updateSummaryOutputs } from './summary.js';
 
 // Load clientData, selectedReports, and presentationOptions from localStorage
-let clientData = JSON.parse(localStorage.getItem('clientData')) || {};
+let clientData = JSON.parse(localStorage.getItem('clientData')) || {
+  client1: {
+    personal: { name: "Paul Johnson", dob: "1980-01-01", retirementAge: "67" },
+    incomeSources: { employment: "65000", socialSecurity: "2000", other: "500", interestDividends: "1000" },
+    accounts: [{ name: "401(k)", balance: "100000", contribution: "10000", employerMatch: "3", ror: "6" }],
+    other: { assets: [{ name: "Rental Property", balance: "200000", ror: "4", debt: "50000" }] },
+    insurance: { lifeInsurance: "0", disabilityInsurance: "0", longTermCare: "0" }
+  },
+  client2: {
+    personal: { name: "Sally Johnson", dob: "1982-01-01", retirementAge: "67" },
+    incomeSources: { employment: "50000", socialSecurity: "1500", other: "300", interestDividends: "800" },
+    accounts: [{ name: "IRA", balance: "80000", contribution: "8000", employerMatch: "0", ror: "6" }],
+    other: { assets: [] },
+    insurance: { lifeInsurance: "0", disabilityInsurance: "0", longTermCare: "0" }
+  },
+  isMarried: false
+};
 let selectedReports = JSON.parse(localStorage.getItem('selectedReports')) || [];
 let presentationOptions = JSON.parse(localStorage.getItem('presentationOptions')) || {
   includeTitlePage: true,
@@ -20,9 +36,16 @@ let presentationOptions = JSON.parse(localStorage.getItem('presentationOptions')
   footerText: '',
   includePageNumbers: true,
   includePresentationDate: true,
-  presentationDate: '05/20/2025'
+  presentationDate: '05/21/2025'
 };
 let reportCount = selectedReports.length;
+let selectedClientId = 1;
+
+// Client list for modal
+const clients = [
+  { id: 1, name: clientData.client1.personal.name, data: clientData.client1 },
+  { id: 2, name: clientData.client2.personal.name, data: clientData.client2 }
+];
 
 // DOM elements
 const reportList = document.getElementById('report-list');
@@ -38,79 +61,56 @@ const clientNameInput = document.getElementById('client-name-input');
 const clientAddressInput = document.getElementById('client-address-input');
 const clientPhoneInput = document.getElementById('client-phone-input');
 const clientInfo = document.getElementById('client-info');
+const clientFileName = document.getElementById('client-file-name');
+const clientList = document.getElementById('client-list');
+const clientSearch = document.getElementById('client-search');
 
 // Initialize on page load
 document.addEventListener('DOMContentLoaded', () => {
   try {
-    console.log('Loaded selectedReports:', selectedReports);
-
+    console.log('Initializing presentation page...');
     selectedReports = selectedReports.filter(report => 
       report && typeof report === 'object' && report.id && typeof report.title === 'string'
     );
     reportCount = selectedReports.length;
     localStorage.setItem('selectedReports', JSON.stringify(selectedReports));
-
-    fetch('header.html')
-      .then(response => response.text())
-      .then(data => {
-        const headerPlaceholder = document.getElementById('header-placeholder');
-        if (headerPlaceholder) {
-          headerPlaceholder.innerHTML = data;
-          const currentPage = window.location.pathname.split('/').pop() || 'presentation.html';
-          const navLinks = document.querySelectorAll('nav ul li a');
-          navLinks.forEach(link => {
-            const href = link.getAttribute('href');
-            if (href === currentPage) {
-              link.classList.add('active');
-            }
-          });
-          const profilePic = document.getElementById('profile-pic');
-          const dropdownMenu = document.getElementById('dropdown-menu');
-          if (profilePic && dropdownMenu) {
-            profilePic.addEventListener('click', () => {
-              dropdownMenu.style.display = dropdownMenu.style.display === 'block' ? 'none' : 'block';
-            });
-            document.addEventListener('click', (e) => {
-              if (!profilePic.contains(e.target) && !dropdownMenu.contains(e.target)) {
-                dropdownMenu.style.display = 'none';
-              }
-            });
-          }
-        } else {
-          console.warn('Header placeholder not found in the DOM.');
-        }
-        updateClientInfo();
-        populateReportList();
-        setupDragAndDrop();
-        updatePreviewButton();
-        setupModalEvents();
-        setupInputEvents();
-        setupPresentationOptions();
-      })
-      .catch(error => {
-        console.error('Error loading header:', error);
-        updateClientInfo();
-        populateReportList();
-        setupDragAndDrop();
-        updatePreviewButton();
-        setupModalEvents();
-        setupInputEvents();
-        setupPresentationOptions();
-      });
+    updateClientFileName();
+    updateClientInfo();
+    populateClientList();
+    populateReportList();
+    setupDragAndDrop();
+    updatePreviewButton();
+    setupModalEvents();
+    setupInputEvents();
+    setupPresentationOptions();
+    setupClientSearch();
   } catch (error) {
     console.error('Initialization error:', error);
     reportList.innerHTML = '<p class="output-error">Error initializing page. Please check console for details.</p>';
   }
 });
 
+// Update client file name in header
+function updateClientFileName() {
+  try {
+    let name = clientData.client1.personal.name || 'No Client Selected';
+    if (clientData.isMarried && clientData.client2.personal.name) {
+      name = `${clientData.client1.personal.name} & ${clientData.client2.personal.name}`;
+    }
+    clientFileName.textContent = name;
+  } catch (error) {
+    console.error('Error in updateClientFileName:', error);
+  }
+}
+
 // Update client information
 function updateClientInfo() {
   try {
-    const name = clientNameInput?.value.trim();
+    const name = clientNameInput?.value.trim() || clientData.client1?.personal?.name || 'No Client Selected';
     const address = clientAddressInput?.value.trim();
     const phone = clientPhoneInput?.value.trim();
-    let clientInfoText = name || clientData.client1?.personal?.name || 'No Client Selected';
-    if (!name && clientData.isMarried && clientData.client2?.personal?.name) {
+    let clientInfoText = name;
+    if (clientData.isMarried && clientData.client2?.personal?.name && !clientNameInput?.value.trim()) {
       clientInfoText = `${clientData.client1.personal.name} & ${clientData.client2.personal.name}`;
     }
     if (address) clientInfoText += `<br>${address}`;
@@ -118,6 +118,68 @@ function updateClientInfo() {
     clientInfo.innerHTML = clientInfoText;
   } catch (error) {
     console.error('Error in updateClientInfo:', error);
+  }
+}
+
+// Populate client list in modal
+function populateClientList() {
+  try {
+    clientList.innerHTML = '';
+    clients.forEach(client => {
+      const li = document.createElement('li');
+      li.textContent = client.name;
+      li.dataset.clientId = client.id;
+      if (client.id === selectedClientId) {
+        li.classList.add('selected');
+      }
+      li.addEventListener('click', () => {
+        selectedClientId = client.id;
+        clientData.client1 = client.data;
+        localStorage.setItem('clientData', JSON.stringify(clientData));
+        updateClientFileName();
+        updateClientInfo();
+        clientList.querySelectorAll('li').forEach(item => item.classList.remove('selected'));
+        li.classList.add('selected');
+        document.getElementById('client-modal').style.display = 'none';
+        clientFileName.setAttribute('aria-expanded', 'false');
+      });
+      clientList.appendChild(li);
+    });
+  } catch (error) {
+    console.error('Error in populateClientList:', error);
+  }
+}
+
+// Setup client search functionality
+function setupClientSearch() {
+  try {
+    clientSearch.addEventListener('input', () => {
+      const searchTerm = clientSearch.value.toLowerCase();
+      const filteredClients = clients.filter(client => client.name.toLowerCase().includes(searchTerm));
+      clientList.innerHTML = '';
+      filteredClients.forEach(client => {
+        const li = document.createElement('li');
+        li.textContent = client.name;
+        li.dataset.clientId = client.id;
+        if (client.id === selectedClientId) {
+          li.classList.add('selected');
+        }
+        li.addEventListener('click', () => {
+          selectedClientId = client.id;
+          clientData.client1 = client.data;
+          localStorage.setItem('clientData', JSON.stringify(clientData));
+          updateClientFileName();
+          updateClientInfo();
+          clientList.querySelectorAll('li').forEach(item => item.classList.remove('selected'));
+          li.classList.add('selected');
+          document.getElementById('client-modal').style.display = 'none';
+          clientFileName.setAttribute('aria-expanded', 'false');
+        });
+        clientList.appendChild(li);
+      });
+    });
+  } catch (error) {
+    console.error('Error in setupClientSearch:', error);
   }
 }
 
@@ -323,7 +385,7 @@ async function generatePresentationPreview() {
       titlePage.style.marginBottom = '20px';
       titlePage.style.background = '#fff';
       const presentationTitle = titleInput?.value || localStorage.getItem('presentationTitle') || 'Financial Analysis';
-      const name = clientNameInput?.value || localStorage.getItem('clientName') || clientData.client1?.personal?.name || 'No Client Selected';
+      const name = clientNameInput?.value || clientData.client1?.personal?.name || 'No Client Selected';
       let clientInfoText = name;
       if (!name && clientData.isMarried && clientData.client2?.personal?.name) {
         clientInfoText = `${clientData.client1.personal.name} & ${clientData.client2.personal.name}`;
@@ -374,7 +436,7 @@ async function generatePresentationPreview() {
       if (clientData.isMarried && clientData.client2?.personal?.name) {
         profileContent += `<p>Spouse: ${clientData.client2.personal.name}</p>`;
       }
-      profileContent += `<p>Age: ${getAge(clientData.client1.personal.birthDate) || 'N/A'}</p>`;
+      profileContent += `<p>Age: ${getAge(clientData.client1.personal.dob) || 'N/A'}</p>`;
       if (clientAddressInput?.value) profileContent += `<p>Address: ${clientAddressInput.value}</p>`;
       if (clientPhoneInput?.value) profileContent += `<p>Phone: ${clientPhoneInput.value}</p>`;
       profilePage.innerHTML = `
@@ -656,7 +718,7 @@ async function downloadPresentationPDF() {
       titlePage.style.position = 'absolute';
       titlePage.style.left = '-9999px';
       const presentationTitle = titleInput?.value || localStorage.getItem('presentationTitle') || 'Financial Analysis';
-      const name = clientNameInput?.value || localStorage.getItem('clientName') || clientData.client1?.personal?.name || 'No Client Selected';
+      const name = clientNameInput?.value || clientData.client1?.personal?.name || 'No Client Selected';
       let clientInfoText = name;
       if (!name && clientData.isMarried && clientData.client2?.personal?.name) {
         clientInfoText = `${clientData.client1.personal.name} & ${clientData.client2.personal.name}`;
@@ -739,7 +801,7 @@ async function downloadPresentationPDF() {
       if (clientData.isMarried && clientData.client2?.personal?.name) {
         profileContent += `<p>Spouse: ${clientData.client2.personal.name}</p>`;
       }
-      profileContent += `<p>Age: ${getAge(clientData.client1.personal.birthDate) || 'N/A'}</p>`;
+      profileContent += `<p>Age: ${getAge(clientData.client1.personal.dob) || 'N/A'}</p>`;
       if (clientAddressInput?.value) profileContent += `<p>Address: ${clientAddressInput.value}</p>`;
       if (clientPhoneInput?.value) profileContent += `<p>Phone: ${clientPhoneInput.value}</p>`;
       profilePage.innerHTML = `
@@ -815,7 +877,7 @@ async function downloadPresentationPDF() {
         const disclosureCanvas = await html2canvas(disclosurePage, { scale: 2, useCORS: true });
         const disclosureImgData = disclosureCanvas.toDataURL('image/png');
         const disclosureImgWidth = doc.internal.pageSize.getWidth() - 40;
-        const disclosureImgHeight = (disclosureCanvas.height * disclosureImgWidth) / disclosureCanvas.width;
+        const disclosureImgHeight = (disclaimerCanvas.height * disclosureImgWidth) / disclosureCanvas.width;
         doc.addImage(disclosureImgData, 'PNG', 20, yOffset, disclosureImgWidth, disclosureImgHeight);
         if (presentationOptions.includePageNumbers) {
           doc.text(`${pageNumber}`, doc.internal.pageSize.getWidth() - 30, doc.internal.pageSize.getHeight() - 10);
