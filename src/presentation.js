@@ -64,6 +64,17 @@ const clientInfo = document.getElementById('client-info');
 const clientList = document.getElementById('client-list');
 const clientSearch = document.getElementById('client-search');
 
+// Load chart configuration from localStorage
+function loadChartConfig(analysisType) {
+  try {
+    const savedConfig = localStorage.getItem(`chartConfig_${analysisType}`);
+    return savedConfig ? JSON.parse(savedConfig) : null;
+  } catch (error) {
+    console.error('Error in loadChartConfig:', error);
+    return null;
+  }
+}
+
 // Initialize on page load
 document.addEventListener('DOMContentLoaded', () => {
   try {
@@ -339,6 +350,13 @@ function setupPresentationOptions() {
     headerTextInput.disabled = !includeHeaderCheckbox.checked;
     includeHeaderCheckbox.addEventListener('change', (e) => {
       headerTextInput.disabled = !e.target.checked;
+      presentationOptions.includeHeader = e.target.checked;
+      presentationOptions.headerText = headerTextInput.value;
+      localStorage.setItem('presentationOptions', JSON.stringify(presentationOptions));
+    });
+    headerTextInput.addEventListener('input', () => {
+      presentationOptions.headerText = headerTextInput.value;
+      localStorage.setItem('presentationOptions', JSON.stringify(presentationOptions));
     });
   }
   const includeFooterCheckbox = document.getElementById('include-footer');
@@ -347,6 +365,43 @@ function setupPresentationOptions() {
     footerTextInput.disabled = !includeFooterCheckbox.checked;
     includeFooterCheckbox.addEventListener('change', (e) => {
       footerTextInput.disabled = !e.target.checked;
+      presentationOptions.includeFooter = e.target.checked;
+      presentationOptions.footerText = footerTextInput.value;
+      localStorage.setItem('presentationOptions', JSON.stringify(presentationOptions));
+    });
+    footerTextInput.addEventListener('input', () => {
+      presentationOptions.footerText = footerTextInput.value;
+      localStorage.setItem('presentationOptions', JSON.stringify(presentationOptions));
+    });
+  }
+  // Handle other presentation options
+  const optionCheckboxes = [
+    'include-title-page', 'include-toc', 'include-personal-profile',
+    'include-record-of-reports', 'include-disclaimer', 'include-disclosure',
+    'include-page-numbers', 'include-presentation-date'
+  ];
+  optionCheckboxes.forEach(id => {
+    const checkbox = document.getElementById(id);
+    if (checkbox) {
+      checkbox.addEventListener('change', (e) => {
+        const optionKey = id.replace(/-([a-z])/g, (match, letter) => letter.toUpperCase());
+        presentationOptions[optionKey] = e.target.checked;
+        localStorage.setItem('presentationOptions', JSON.stringify(presentationOptions));
+      });
+    }
+  });
+  const disclaimerPlacement = document.getElementById('disclaimer-placement');
+  if (disclaimerPlacement) {
+    disclaimerPlacement.addEventListener('change', (e) => {
+      presentationOptions.disclaimerPlacement = e.target.value;
+      localStorage.setItem('presentationOptions', JSON.stringify(presentationOptions));
+    });
+  }
+  const presentationDateInput = document.getElementById('presentation-date');
+  if (presentationDateInput) {
+    presentationDateInput.addEventListener('input', () => {
+      presentationOptions.presentationDate = presentationDateInput.value;
+      localStorage.setItem('presentationOptions', JSON.stringify(presentationOptions));
     });
   }
 }
@@ -360,6 +415,158 @@ function setupModalEvents() {
   downloadPdfBtn.addEventListener('click', downloadPresentationPDF);
 }
 
+// Render report functions
+async function renderRetirementReport(container, reportId) {
+  try {
+    const reportDiv = document.createElement('div');
+    reportDiv.classList.add('report-preview');
+    reportDiv.style.padding = '20px';
+    reportDiv.style.marginBottom = '20px';
+    reportDiv.style.background = '#fff';
+
+    const title = selectedReports.find(r => r.id === reportId)?.title || 'Retirement Accumulation';
+    reportDiv.innerHTML = `<h2>${title}</h2>`;
+
+    // Render non-chart outputs
+    const outputContainer = document.createElement('div');
+    updateRetirementOutputs(outputContainer, clientData, formatCurrency, getAge, selectedReports, Chart);
+    reportDiv.appendChild(outputContainer);
+
+    // Render chart if applicable
+    if (reportId.includes('graph') || reportId.includes('timeline')) {
+      const chartContainer = document.createElement('div');
+      chartContainer.style.width = '100%';
+      chartContainer.style.height = '400px';
+      const canvas = document.createElement('canvas');
+      chartContainer.appendChild(canvas);
+      reportDiv.appendChild(chartContainer);
+
+      const savedConfig = loadChartConfig('retirement-accumulation');
+      if (savedConfig) {
+        new Chart(canvas, savedConfig);
+      } else {
+        // Fallback to generating chart
+        const graphType = reportId.includes('timeline') ? 'timeline' : 'income';
+        updateRetirementGraph(canvas, clientData, Chart, getAge, graphType);
+      }
+
+      // Wait for chart to render and convert to image
+      await new Promise(resolve => setTimeout(resolve, 500));
+      const img = document.createElement('img');
+      img.src = canvas.toDataURL('image/png');
+      img.style.width = '100%';
+      img.style.height = 'auto';
+      chartContainer.innerHTML = '';
+      chartContainer.appendChild(img);
+    }
+
+    container.appendChild(reportDiv);
+  } catch (error) {
+    console.error('Error in renderRetirementReport:', error);
+    container.innerHTML += `<p class="output-error">Error rendering retirement report: ${error.message}</p>`;
+  }
+}
+
+async function renderPersonalFinanceReport(container, reportId) {
+  try {
+    const reportDiv = document.createElement('div');
+    reportDiv.classList.add('report-preview');
+    reportDiv.style.padding = '20px';
+    reportDiv.style.marginBottom = '20px';
+    reportDiv.style.background = '#fff';
+
+    const title = selectedReports.find(r => r.id === reportId)?.title || 'Personal Finance';
+    reportDiv.innerHTML = `<h2>${title}</h2>`;
+
+    // Render non-chart outputs
+    const outputContainer = document.createElement('div');
+    updatePersonalFinanceOutputs(outputContainer, clientData, formatCurrency, selectedReports, Chart);
+    reportDiv.appendChild(outputContainer);
+
+    // Render chart if applicable
+    if (reportId.includes('graph')) {
+      const chartContainer = document.createElement('div');
+      chartContainer.style.width = '100%';
+      chartContainer.style.height = '400px';
+      const canvas = document.createElement('canvas');
+      chartContainer.appendChild(canvas);
+      reportDiv.appendChild(chartContainer);
+
+      const savedConfig = loadChartConfig('personal-finance');
+      if (savedConfig) {
+        new Chart(canvas, savedConfig);
+      } else {
+        // Fallback to generating chart
+        updatePersonalFinanceGraph(canvas, clientData, Chart);
+      }
+
+      // Wait for chart to render and convert to image
+      await new Promise(resolve => setTimeout(resolve, 500));
+      const img = document.createElement('img');
+      img.src = canvas.toDataURL('image/png');
+      img.style.width = '100%';
+      img.style.height = 'auto';
+      chartContainer.innerHTML = '';
+      chartContainer.appendChild(img);
+    }
+
+    container.appendChild(reportDiv);
+  } catch (error) {
+    console.error('Error in renderPersonalFinanceReport:', error);
+    container.innerHTML += `<p class="output-error">Error rendering personal finance report: ${error.message}</p>`;
+  }
+}
+
+async function renderSummaryReport(container, reportId) {
+  try {
+    const reportDiv = document.createElement('div');
+    reportDiv.classList.add('report-preview');
+    reportDiv.style.padding = '20px';
+    reportDiv.style.marginBottom = '20px';
+    reportDiv.style.background = '#fff';
+
+    const title = selectedReports.find(r => r.id === reportId)?.title || 'Summary';
+    reportDiv.innerHTML = `<h2>${title}</h2>`;
+
+    // Render non-chart outputs
+    const outputContainer = document.createElement('div');
+    updateSummaryOutputs(outputContainer, clientData, formatCurrency, selectedReports, Chart, getAge);
+    reportDiv.appendChild(outputContainer);
+
+    // Render chart if applicable (e.g., Financial Fitness Score)
+    if (reportId.includes('graph')) {
+      const chartContainer = document.createElement('div');
+      chartContainer.style.width = '100%';
+      chartContainer.style.height = '400px';
+      const canvas = document.createElement('canvas');
+      chartContainer.appendChild(canvas);
+      reportDiv.appendChild(chartContainer);
+
+      const savedConfig = loadChartConfig('summary');
+      if (savedConfig) {
+        new Chart(canvas, savedConfig);
+      } else {
+        // Fallback to generating chart
+        updateSummaryOutputs(chartContainer, clientData, formatCurrency, selectedReports, Chart, getAge);
+      }
+
+      // Wait for chart to render and convert to image
+      await new Promise(resolve => setTimeout(resolve, 500));
+      const img = document.createElement('img');
+      img.src = canvas.toDataURL('image/png');
+      img.style.width = '100%';
+      img.style.height = 'auto';
+      chartContainer.innerHTML = '';
+      chartContainer.appendChild(img);
+    }
+
+    container.appendChild(reportDiv);
+  } catch (error) {
+    console.error('Error in renderSummaryReport:', error);
+    container.innerHTML += `<p class="output-error">Error rendering summary report: ${error.message}</p>`;
+  }
+}
+
 // Generate presentation preview
 async function generatePresentationPreview() {
   try {
@@ -369,10 +576,49 @@ async function generatePresentationPreview() {
     const tempContainer = document.createElement('div');
     tempContainer.style.width = '800px';
     tempContainer.style.background = '#fff';
+    tempContainer.style.fontFamily = 'Arial, sans-serif';
+    tempContainer.style.position = 'relative';
+
+    let pageNumber = 1;
 
     // Add header and footer if enabled
     const headerText = presentationOptions.includeHeader ? presentationOptions.headerText : '';
     const footerText = presentationOptions.includeFooter ? presentationOptions.footerText : '';
+
+    const addHeaderFooter = (section) => {
+      if (headerText) {
+        const header = document.createElement('div');
+        header.style.position = 'absolute';
+        header.style.top = '10px';
+        header.style.left = '20px';
+        header.style.right = '20px';
+        header.style.textAlign = 'center';
+        header.style.fontSize = '12px';
+        header.style.borderBottom = '1px solid #ccc';
+        header.textContent = headerText;
+        section.appendChild(header);
+      }
+      if (footerText || presentationOptions.includePageNumbers || presentationOptions.includePresentationDate) {
+        const footer = document.createElement('div');
+        footer.style.position = 'absolute';
+        footer.style.bottom = '10px';
+        footer.style.left = '20px';
+        footer.style.right = '20px';
+        footer.style.textAlign = 'center';
+        footer.style.fontSize = '12px';
+        footer.style.borderTop = '1px solid #ccc';
+        let footerContent = footerText;
+        if (presentationOptions.includePageNumbers) {
+          footerContent += ` | Page ${pageNumber}`;
+          pageNumber++;
+        }
+        if (presentationOptions.includePresentationDate) {
+          footerContent += ` | ${presentationOptions.presentationDate}`;
+        }
+        footer.textContent = footerContent;
+        section.appendChild(footer);
+      }
+    };
 
     // Add title page if enabled
     if (presentationOptions.includeTitlePage) {
@@ -381,320 +627,189 @@ async function generatePresentationPreview() {
       titlePage.style.padding = '20px';
       titlePage.style.marginBottom = '20px';
       titlePage.style.background = '#fff';
+      titlePage.style.height = '1000px';
+      titlePage.style.display = 'flex';
+      titlePage.style.flexDirection = 'column';
+      titlePage.style.alignItems = 'center';
+      titlePage.style.justifyContent = 'center';
       const presentationTitle = titleInput?.value || localStorage.getItem('presentationTitle') || 'Financial Analysis';
       const name = clientNameInput?.value || clientData.client1?.personal?.name || 'No Client Selected';
       let clientInfoText = name;
-      if (!name && clientData.isMarried && clientData.client2?.personal?.name) {
+      if (clientData.isMarried && clientData.client2?.personal?.name && !clientNameInput?.value.trim()) {
         clientInfoText = `${clientData.client1.personal.name} & ${clientData.client2.personal.name}`;
       }
       const address = clientAddressInput?.value || localStorage.getItem('clientAddress') || '';
       const phone = clientPhoneInput?.value || localStorage.getItem('clientPhone') || '';
-      if (address) clientInfoText += `<br>${address}`;
-      if (phone) clientInfoText += `<br>${phone}`;
       titlePage.innerHTML = `
-        ${headerText ? `<p style="text-align: center; font-size: 12px; margin-bottom: 10px;">${headerText}</p>` : ''}
-        <h1 style="text-align: center; font-size: 24px; margin-bottom: 20px;">${presentationTitle}</h1>
-        <h2 style="text-align: center; font-size: 18px;">Prepared for: ${clientInfoText}</h2>
-        <p style="text-align: center; font-size: 14px;">Date: ${presentationOptions.includePresentationDate ? presentationOptions.presentationDate : new Date().toLocaleDateString()}</p>
-        ${footerText ? `<p style="text-align: center; font-size: 12px; margin-top: 10px;">${footerText}</p>` : ''}
+        <h1 style="font-size: 36px; text-align: center;">${presentationTitle}</h1>
+        <p style="font-size: 24px; text-align: center; margin-top: 20px;">Prepared for:</p>
+        <p style="font-size: 20px; text-align: center;">${clientInfoText}</p>
+        ${address ? `<p style="font-size: 16px; text-align: center;">${address}</p>` : ''}
+        ${phone ? `<p style="font-size: 16px; text-align: center;">${phone}</p>` : ''}
+        ${presentationOptions.includePresentationDate ? `<p style="font-size: 16px; text-align: center; margin-top: 20px;">${presentationOptions.presentationDate}</p>` : ''}
       `;
+      addHeaderFooter(titlePage);
       tempContainer.appendChild(titlePage);
     }
 
     // Add table of contents if enabled
-    if (presentationOptions.includeToc && selectedReports.length > 0) {
+    if (presentationOptions.includeToc) {
       const tocPage = document.createElement('div');
       tocPage.classList.add('report-preview');
       tocPage.style.padding = '20px';
       tocPage.style.marginBottom = '20px';
       tocPage.style.background = '#fff';
-      let tocContent = `<h2 style="text-align: center; font-size: 20px;">Table of Contents</h2><ul style="list-style: none; padding: 0;">`;
+      tocPage.innerHTML = '<h2>Table of Contents</h2><ul>';
       selectedReports.forEach((report, index) => {
-        tocContent += `<li style="margin: 10px 0;">${index + 1}. ${report.title}</li>`;
+        tocPage.innerHTML += `<li style="margin: 10px 0;">${index + 1}. ${report.title}</li>`;
       });
-      tocContent += '</ul>';
-      tocPage.innerHTML = `
-        ${headerText ? `<p style="text-align: center; font-size: 12px; margin-bottom: 10px;">${headerText}</p>` : ''}
-        ${tocContent}
-        ${footerText ? `<p style="text-align: center; font-size: 12px; margin-top: 10px;">${footerText}</p>` : ''}
-      `;
+      if (presentationOptions.includePersonalProfile) {
+        tocPage.innerHTML += `<li style="margin: 10px 0;">${selectedReports.length + 1}. Personal Profile</li>`;
+      }
+      if (presentationOptions.includeRecordOfReports) {
+        tocPage.innerHTML += `<li style="margin: 10px 0;">${selectedReports.length + (presentationOptions.includePersonalProfile ? 2 : 1)}. Record of Reports</li>`;
+      }
+      if (presentationOptions.includeDisclaimer && presentationOptions.disclaimerPlacement === 'end') {
+        tocPage.innerHTML += `<li style="margin: 10px 0;">${selectedReports.length + (presentationOptions.includePersonalProfile ? 2 : 1) + (presentationOptions.includeRecordOfReports ? 1 : 0)}. Disclaimer</li>`;
+      }
+      if (presentationOptions.includeDisclosure) {
+        tocPage.innerHTML += `<li style="margin: 10px 0;">${selectedReports.length + (presentationOptions.includePersonalProfile ? 2 : 1) + (presentationOptions.includeRecordOfReports ? 1 : 0) + (presentationOptions.includeDisclaimer && presentationOptions.disclaimerPlacement === 'end' ? 1 : 0)}. Disclosure</li>`;
+      }
+      tocPage.innerHTML += '</ul>';
+      addHeaderFooter(tocPage);
       tempContainer.appendChild(tocPage);
     }
 
-    // Add personal profile page if enabled
-    if (presentationOptions.includePersonalProfile && clientData.client1?.personal) {
+    // Add disclaimer at beginning if enabled
+    if (presentationOptions.includeDisclaimer && presentationOptions.disclaimerPlacement === 'beginning') {
+      const disclaimerPage = document.createElement('div');
+      disclaimerPage.classList.add('report-preview');
+      disclaimerPage.style.padding = '20px';
+      disclaimerPage.style.marginBottom = '20px';
+      disclaimerPage.style.background = '#fff';
+      disclaimerPage.innerHTML = `
+        <h2>Disclaimer</h2>
+        <p>This presentation is for informational purposes only and does not constitute financial advice. Please consult a qualified financial advisor before making any investment decisions.</p>
+      `;
+      addHeaderFooter(disclaimerPage);
+      tempContainer.appendChild(disclaimerPage);
+    }
+
+    // Add personal profile if enabled
+    if (presentationOptions.includePersonalProfile) {
       const profilePage = document.createElement('div');
       profilePage.classList.add('report-preview');
       profilePage.style.padding = '20px';
       profilePage.style.marginBottom = '20px';
       profilePage.style.background = '#fff';
-      let profileContent = `<h2 style="text-align: center; font-size: 20px;">Personal Profile</h2>`;
-      profileContent += `<p>Name: ${clientData.client1.personal.name || 'N/A'}</p>`;
-      if (clientData.isMarried && clientData.client2?.personal?.name) {
-        profileContent += `<p>Spouse: ${clientData.client2.personal.name}</p>`;
-      }
-      profileContent += `<p>Age: ${getAge(clientData.client1.personal.dob) || 'N/A'}</p>`;
-      if (clientAddressInput?.value) profileContent += `<p>Address: ${clientAddressInput.value}</p>`;
-      if (clientPhoneInput?.value) profileContent += `<p>Phone: ${clientPhoneInput.value}</p>`;
-      profilePage.innerHTML = `
-        ${headerText ? `<p style="text-align: center; font-size: 12px; margin-bottom: 10px;">${headerText}</p>` : ''}
-        ${profileContent}
-        ${footerText ? `<p style="text-align: center; font-size: 12px; margin-top: 10px;">${footerText}</p>` : ''}
+      const c1Age = getAge(clientData.client1.personal.dob);
+      const c1RetirementAge = parseInt(clientData.client1.personal.retirementAge) || 67;
+      let profileHtml = `
+        <h2>Personal Profile</h2>
+        <h3>${clientData.client1.personal.name}</h3>
+        <p>Age: ${c1Age}</p>
+        <p>Retirement Age: ${c1RetirementAge}</p>
+        <p>Income Sources:</p>
+        <ul>
+          <li>Employment: ${formatCurrency(clientData.client1.incomeSources.employment)}</li>
+          <li>Social Security: ${formatCurrency(clientData.client1.incomeSources.socialSecurity)}</li>
+          <li>Other: ${formatCurrency(clientData.client1.incomeSources.other)}</li>
+          <li>Interest/Dividends: ${formatCurrency(clientData.client1.incomeSources.interestDividends)}</li>
+        </ul>
       `;
+      if (clientData.isMarried && clientData.client2.personal.name) {
+        const c2Age = getAge(clientData.client2.personal.dob);
+        const c2RetirementAge = parseInt(clientData.client2.personal.retirementAge) || 67;
+        profileHtml += `
+          <h3>${clientData.client2.personal.name}</h3>
+          <p>Age: ${c2Age}</p>
+          <p>Retirement Age: ${c2RetirementAge}</p>
+          <p>Income Sources:</p>
+          <ul>
+            <li>Employment: ${formatCurrency(clientData.client2.incomeSources.employment)}</li>
+            <li>Social Security: ${formatCurrency(clientData.client2.incomeSources.socialSecurity)}</li>
+            <li>Other: ${formatCurrency(clientData.client2.incomeSources.other)}</li>
+            <li>Interest/Dividends: ${formatCurrency(clientData.client2.incomeSources.interestDividends)}</li>
+          </ul>
+        `;
+      }
+      profilePage.innerHTML = profileHtml;
+      addHeaderFooter(profilePage);
       tempContainer.appendChild(profilePage);
     }
 
-    // Add disclaimer and disclosure at beginning if enabled and selected
-    if (presentationOptions.disclaimerPlacement === 'beginning') {
-      if (presentationOptions.includeDisclaimer) {
-        const disclaimerPage = document.createElement('div');
-        disclaimerPage.classList.add('report-preview');
-        disclaimerPage.style.padding = '20px';
-        disclaimerPage.style.marginBottom = '20px';
-        disclaimerPage.style.background = '#fff';
-        disclaimerPage.innerHTML = `
-          ${headerText ? `<p style="text-align: center; font-size: 12px; margin-bottom: 10px;">${headerText}</p>` : ''}
-          <h2 style="text-align: center; font-size: 20px;">Disclaimer</h2>
-          <p>This presentation is for informational purposes only and does not constitute financial advice.</p>
-          ${footerText ? `<p style="text-align: center; font-size: 12px; margin-top: 10px;">${footerText}</p>` : ''}
-        `;
-        tempContainer.appendChild(disclaimerPage);
-      }
-      if (presentationOptions.includeDisclosure) {
-        const disclosurePage = document.createElement('div');
-        disclosurePage.classList.add('report-preview');
-        disclosurePage.style.padding = '20px';
-        disclosurePage.style.marginBottom = '20px';
-        disclosurePage.style.background = '#fff';
-        disclosurePage.innerHTML = `
-          ${headerText ? `<p style="text-align: center; font-size: 12px; margin-bottom: 10px;">${headerText}</p>` : ''}
-          <h2 style="text-align: center; font-size: 20px;">Disclosure</h2>
-          <p>All data presented is based on information provided by the client and is subject to change.</p>
-          ${footerText ? `<p style="text-align: center; font-size: 12px; margin-top: 10px;">${footerText}</p>` : ''}
-        `;
-        tempContainer.appendChild(disclosurePage);
-      }
-    }
-
-    // Render reports
+    // Render selected reports
     for (const report of selectedReports) {
-      if (!report.id || !report.title) {
-        console.warn('Skipping invalid report:', report);
-        continue;
-      }
-
-      const reportDiv = document.createElement('div');
-      reportDiv.classList.add('report-preview');
-      reportDiv.style.padding = '20px';
-      reportDiv.style.marginBottom = '20px';
-      reportDiv.style.background = '#fff';
-
-      const parts = report.id.split('-');
-      let analysisType = parts[0] || '';
-      let outputType = parts.length > 1 ? parts[parts.length - 1] : '';
-
-      if (report.id.startsWith('report-retirement-fact-finder')) {
-        analysisType = 'retirement-accumulation';
-        outputType = 'fact-finder';
-      } else if (report.id.includes('retirement')) {
-        analysisType = 'retirement-accumulation';
+      if (report.id.includes('retirement')) {
+        await renderRetirementReport(tempContainer, report.id);
       } else if (report.id.includes('personal-finance')) {
-        analysisType = 'personal-finance';
+        await renderPersonalFinanceReport(tempContainer, report.id);
       } else if (report.id.includes('summary')) {
-        analysisType = 'summary';
-      }
-
-      if (!analysisType) {
-        reportDiv.innerHTML = `
-          ${headerText ? `<p style="text-align: center; font-size: 12px; margin-bottom: 10px;">${headerText}</p>` : ''}
-          <h3>${report.title}</h3><p>Invalid report ID format: ${report.id}</p>
-          ${footerText ? `<p style="text-align: center; font-size: 12px; margin-top: 10px;">${footerText}</p>` : ''}
-        `;
-        tempContainer.appendChild(reportDiv);
-        continue;
-      }
-
-      if (analysisType === 'retirement-accumulation') {
-        await renderRetirementReport(reportDiv, outputType, report.title);
-      } else if (analysisType === 'personal-finance') {
-        await renderPersonalFinanceReport(reportDiv, outputType, report.title);
-      } else if (analysisType === 'summary') {
-        await renderSummaryReport(reportDiv, outputType, report.title);
+        await renderSummaryReport(tempContainer, report.id);
       } else {
-        reportDiv.innerHTML = `
-          ${headerText ? `<p style="text-align: center; font-size: 12px; margin-bottom: 10px;">${headerText}</p>` : ''}
-          <h3>${report.title}</h3><p>Unsupported report type: ${report.id}</p>
-          ${footerText ? `<p style="text-align: center; font-size: 12px; margin-top: 10px;">${footerText}</p>` : ''}
-        `;
+        const reportDiv = document.createElement('div');
+        reportDiv.classList.add('report-preview');
+        reportDiv.style.padding = '20px';
+        reportDiv.style.marginBottom = '20px';
+        reportDiv.style.background = '#fff';
+        reportDiv.innerHTML = `<h2>${report.title}</h2><p>Content for ${report.title} is not yet implemented.</p>`;
+        addHeaderFooter(reportDiv);
+        tempContainer.appendChild(reportDiv);
       }
-
-      if (headerText) {
-        const headerDiv = document.createElement('p');
-        headerDiv.style.textAlign = 'center';
-        headerDiv.style.fontSize = '12px';
-        headerDiv.style.marginBottom = '10px';
-        headerDiv.textContent = headerText;
-        reportDiv.insertBefore(headerDiv, reportDiv.firstChild);
-      }
-      if (footerText) {
-        const footerDiv = document.createElement('p');
-        footerDiv.style.textAlign = 'center';
-        footerDiv.style.fontSize = '12px';
-        footerDiv.style.marginTop = '10px';
-        footerDiv.textContent = footerText;
-        reportDiv.appendChild(footerDiv);
-      }
-
-      tempContainer.appendChild(reportDiv);
     }
 
     // Add record of reports if enabled
-    if (presentationOptions.includeRecordOfReports && selectedReports.length > 0) {
+    if (presentationOptions.includeRecordOfReports) {
       const recordPage = document.createElement('div');
       recordPage.classList.add('report-preview');
       recordPage.style.padding = '20px';
       recordPage.style.marginBottom = '20px';
       recordPage.style.background = '#fff';
-      let recordContent = `<h2 style="text-align: center; font-size: 20px;">Record of Reports</h2><ul style="list-style: none; padding: 0;">`;
+      recordPage.innerHTML = '<h2>Record of Reports</h2><ul>';
       selectedReports.forEach((report, index) => {
-        recordContent += `<li style="margin: 10px 0;">${index + 1}. ${report.title}</li>`;
+        recordPage.innerHTML += `<li style="margin: 10px 0;">${index + 1}. ${report.title}</li>`;
       });
-      recordContent += '</ul>';
-      recordPage.innerHTML = `
-        ${headerText ? `<p style="text-align: center; font-size: 12px; margin-bottom: 10px;">${headerText}</p>` : ''}
-        ${recordContent}
-        ${footerText ? `<p style="text-align: center; font-size: 12px; margin-top: 10px;">${footerText}</p>` : ''}
-      `;
+      recordPage.innerHTML += '</ul>';
+      addHeaderFooter(recordPage);
       tempContainer.appendChild(recordPage);
     }
 
-    // Add disclaimer and disclosure at end if enabled and selected
-    if (presentationOptions.disclaimerPlacement === 'end') {
-      if (presentationOptions.includeDisclaimer) {
-        const disclaimerPage = document.createElement('div');
-        disclaimerPage.classList.add('report-preview');
-        disclaimerPage.style.padding = '20px';
-        disclaimerPage.style.marginBottom = '20px';
-        disclaimerPage.style.background = '#fff';
-        disclaimerPage.innerHTML = `
-          ${headerText ? `<p style="text-align: center; font-size: 12px; margin-bottom: 10px;">${headerText}</p>` : ''}
-          <h2 style="text-align: center; font-size: 20px;">Disclaimer</h2>
-          <p>This presentation is for informational purposes only and does not constitute financial advice.</p>
-          ${footerText ? `<p style="text-align: center; font-size: 12px; margin-top: 10px;">${footerText}</p>` : ''}
-        `;
-        tempContainer.appendChild(disclaimerPage);
-      }
-      if (presentationOptions.includeDisclosure) {
-        const disclosurePage = document.createElement('div');
-        disclosurePage.classList.add('report-preview');
-        disclosurePage.style.padding = '20px';
-        disclosurePage.style.marginBottom = '20px';
-        disclosurePage.style.background = '#fff';
-        disclosurePage.innerHTML = `
-          ${headerText ? `<p style="text-align: center; font-size: 12px; margin-bottom: 10px;">${headerText}</p>` : ''}
-          <h2 style="text-align: center; font-size: 20px;">Disclosure</h2>
-          <p>All data presented is based on information provided by the client and is subject to change.</p>
-          ${footerText ? `<p style="text-align: center; font-size: 12px; margin-top: 10px;">${footerText}</p>` : ''}
-        `;
-        tempContainer.appendChild(disclosurePage);
-      }
+    // Add disclaimer at end if enabled
+    if (presentationOptions.includeDisclaimer && presentationOptions.disclaimerPlacement === 'end') {
+      const disclaimerPage = document.createElement('div');
+      disclaimerPage.classList.add('report-preview');
+      disclaimerPage.style.padding = '20px';
+      disclaimerPage.style.marginBottom = '20px';
+      disclaimerPage.style.background = '#fff';
+      disclaimerPage.innerHTML = `
+        <h2>Disclaimer</h2>
+        <p>This presentation is for informational purposes only and does not constitute financial advice. Please consult a qualified financial advisor before making any investment decisions.</p>
+      `;
+      addHeaderFooter(disclaimerPage);
+      tempContainer.appendChild(disclaimerPage);
     }
 
-    // Convert canvas to images for preview
-    const canvases = tempContainer.querySelectorAll('canvas');
-    for (const canvas of canvases) {
-      const imgData = canvas.toDataURL('image/png');
-      const img = document.createElement('img');
-      img.src = imgData;
-      img.style.width = canvas.style.width || '800px';
-      img.style.height = canvas.style.height || '400px';
-      canvas.parentNode.replaceChild(img, canvas);
+    // Add disclosure if enabled
+    if (presentationOptions.includeDisclosure) {
+      const disclosurePage = document.createElement('div');
+      disclosurePage.classList.add('report-preview');
+      disclosurePage.style.padding = '20px';
+      disclosurePage.style.marginBottom = '20px';
+      disclosurePage.style.background = '#fff';
+      disclosurePage.innerHTML = `
+        <h2>Disclosure</h2>
+        <p>All data presented is based on the information provided as of ${presentationOptions.presentationDate}. Past performance is not indicative of future results. Investments involve risks, including the possible loss of principal.</p>
+      `;
+      addHeaderFooter(disclosurePage);
+      tempContainer.appendChild(disclosurePage);
     }
 
+    // Append to preview content
     pdfPreviewContent.innerHTML = '';
     pdfPreviewContent.appendChild(tempContainer);
-
-    pdfPreviewContent.style.display = 'block';
-    pdfPreviewContent.style.opacity = '1';
-    pdfPreviewContent.style.visibility = 'visible';
   } catch (error) {
-    console.error('Error generating preview:', error);
-    pdfPreviewContent.innerHTML = '<p class="output-error">Error generating preview. Please check console.</p>';
-  }
-}
-
-// Render Retirement Accumulation report
-async function renderRetirementReport(container, outputType, title) {
-  container.innerHTML = `<h3>${title || 'Untitled Report'}</h3>`;
-  if (!clientData || Object.keys(clientData).length === 0) {
-    container.innerHTML += '<p>No client data available for this report.</p>';
-    return;
-  }
-  if (outputType === 'graph' || outputType === 'timeline') {
-    const canvas = document.createElement('canvas');
-    canvas.id = `temp-chart-${Date.now()}`;
-    canvas.style.width = '800px';
-    canvas.style.height = '400px';
-    container.appendChild(canvas);
-    const chartInstance = await updateRetirementGraph(canvas, clientData, window.Chart, getAge, outputType);
-    if (!chartInstance) {
-      container.innerHTML += '<p>Failed to render chart.</p>';
-    }
-  } else {
-    updateRetirementOutputs(container, clientData, formatCurrency, getAge, selectedReports, window.Chart, outputType);
-    if (!container.innerHTML.includes('output-card') && !container.innerHTML.includes('output-table')) {
-      container.innerHTML += '<p>No retirement data available for this output type.</p>';
-    }
-  }
-}
-
-// Render Personal Finance report
-async function renderPersonalFinanceReport(container, outputType, title) {
-  container.innerHTML = `<h3>${title || 'Untitled Report'}</h3>`;
-  if (!clientData || Object.keys(clientData).length === 0) {
-    container.innerHTML += '<p>No client data available for this report.</p>';
-    return;
-  }
-  if (outputType === 'graph' || outputType === 'timeline') {
-    const canvas = document.createElement('canvas');
-    canvas.id = `temp-chart-${Date.now()}`;
-    canvas.style.width = '800px';
-    canvas.style.height = '400px';
-    container.appendChild(canvas);
-    const chartInstance = await updatePersonalFinanceGraph(canvas, clientData, window.Chart, outputType);
-    if (!chartInstance) {
-      container.innerHTML += '<p>Failed to render chart.</p>';
-    }
-  } else {
-    updatePersonalFinanceOutputs(container, clientData, formatCurrency, selectedReports, window.Chart, outputType);
-    if (!container.innerHTML.includes('output-card') && !container.innerHTML.includes('output-table')) {
-      container.innerHTML += '<p>No personal finance data available for this output type.</p>';
-    }
-  }
-}
-
-// Render Summary report
-async function renderSummaryReport(container, outputType, title) {
-  container.innerHTML = `<h3>${title || 'Untitled Report'}</h3>`;
-  if (!clientData || Object.keys(clientData).length === 0) {
-    container.innerHTML += '<p>No client data available for this report.</p>';
-    return;
-  }
-  if (outputType === 'graph' || outputType === 'timeline') {
-    const canvas = document.createElement('canvas');
-    canvas.id = `temp-chart-${Date.now()}`;
-    canvas.style.width = '800px';
-    canvas.style.height = '400px';
-    container.appendChild(canvas);
-    const chartInstance = await updateSummaryOutputs(container, clientData, formatCurrency, selectedReports, window.Chart, getAge, outputType);
-    if (!chartInstance) {
-      container.innerHTML += '<p>Failed to render chart.</p>';
-    }
-  } else {
-    updateSummaryOutputs(container, clientData, formatCurrency, selectedReports, window.Chart, getAge, outputType);
-    if (!container.innerHTML.includes('output-card') && !container.innerHTML.includes('output-table')) {
-      container.innerHTML += '<p>No summary data available for this output type.</p>';
-    }
+    console.error('Error in generatePresentationPreview:', error);
+    pdfPreviewContent.innerHTML = `<p class="output-error">Error generating preview: ${error.message}</p>`;
   }
 }
 
@@ -702,403 +817,29 @@ async function renderSummaryReport(container, outputType, title) {
 async function downloadPresentationPDF() {
   try {
     const { jsPDF } = window.jspdf;
-    const doc = new jsPDF({ orientation: 'portrait', unit: 'px', format: 'letter' });
-    let yOffset = 20;
-    let pageNumber = 1;
+    const doc = new jsPDF({
+      orientation: 'portrait',
+      unit: 'px',
+      format: 'letter'
+    });
 
-    const headerText = presentationOptions.includeHeader ? presentationOptions.headerText : '';
-    const footerText = presentationOptions.includeFooter ? presentationOptions.footerText : '';
-
-    // Add title page if enabled
-    if (presentationOptions.includeTitlePage) {
-      const titlePage = document.createElement('div');
-      titlePage.style.padding = '20px';
-      titlePage.style.background = '#fff';
-      titlePage.style.width = '800px';
-      titlePage.style.position = 'absolute';
-      titlePage.style.left = '-9999px';
-      const presentationTitle = titleInput?.value || localStorage.getItem('presentationTitle') || 'Financial Analysis';
-      const name = clientNameInput?.value || clientData.client1?.personal?.name || 'No Client Selected';
-      let clientInfoText = name;
-      if (!name && clientData.isMarried && clientData.client2?.personal?.name) {
-        clientInfoText = `${clientData.client1.personal.name} & ${clientData.client2.personal.name}`;
-      }
-      const address = clientAddressInput?.value || localStorage.getItem('clientAddress') || '';
-      const phone = clientPhoneInput?.value || localStorage.getItem('clientPhone') || '';
-      if (address) clientInfoText += `<br>${address}`;
-      if (phone) clientInfoText += `<br>${phone}`;
-      titlePage.innerHTML = `
-        ${headerText ? `<p style="text-align: center; font-size: 12px; margin-bottom: 10px;">${headerText}</p>` : ''}
-        <h1 style="text-align: center; font-size: 24px; margin-bottom: 20px;">${presentationTitle}</h1>
-        <h2 style="text-align: center; font-size: 18px;">Prepared for: ${clientInfoText}</h2>
-        <p style="text-align: center; font-size: 14px;">Date: ${presentationOptions.includePresentationDate ? presentationOptions.presentationDate : new Date().toLocaleDateString()}</p>
-        ${footerText ? `<p style="text-align: center; font-size: 12px; margin-top: 10px;">${footerText}</p>` : ''}
-      `;
-      document.body.appendChild(titlePage);
-
-      const titleCanvas = await html2canvas(titlePage, { scale: 2, useCORS: true });
-      const titleImgData = titleCanvas.toDataURL('image/png');
-      const titleImgWidth = doc.internal.pageSize.getWidth() - 40;
-      const titleImgHeight = (titleCanvas.height * titleImgWidth) / titleCanvas.width;
-      doc.addImage(titleImgData, 'PNG', 20, yOffset, titleImgWidth, titleImgHeight);
-      if (presentationOptions.includePageNumbers) {
-        doc.text(`${pageNumber}`, doc.internal.pageSize.getWidth() - 30, doc.internal.pageSize.getHeight() - 10);
-      }
-      yOffset += titleImgHeight + 20;
-      document.body.removeChild(titlePage);
-      doc.addPage();
-      yOffset = 20;
-      pageNumber++;
+    const tempContainer = pdfPreviewContent.querySelector('div');
+    if (!tempContainer) {
+      throw new Error('No content to export');
     }
 
-    // Add table of contents if enabled
-    if (presentationOptions.includeToc && selectedReports.length > 0) {
-      const tocPage = document.createElement('div');
-      tocPage.classList.add('report-preview');
-      tocPage.style.padding = '20px';
-      tocPage.style.background = '#fff';
-      tocPage.style.width = '800px';
-      tocPage.style.position = 'absolute';
-      tocPage.style.left = '-9999px';
-      let tocContent = `<h2 style="text-align: center; font-size: 20px;">Table of Contents</h2><ul style="list-style: none; padding: 0;">`;
-      selectedReports.forEach((report, index) => {
-        tocContent += `<li style="margin: 10px 0;">${index + 1}. ${report.title}</li>`;
-      });
-      tocContent += '</ul>';
-      tocPage.innerHTML = `
-        ${headerText ? `<p style="text-align: center; font-size: 12px; margin-bottom: 10px;">${headerText}</p>` : ''}
-        ${tocContent}
-        ${footerText ? `<p style="text-align: center; font-size: 12px; margin-top: 10px;">${footerText}</p>` : ''}
-      `;
-      document.body.appendChild(tocPage);
-
-      const tocCanvas = await html2canvas(tocPage, { scale: 2, useCORS: true });
-      const tocImgData = tocCanvas.toDataURL('image/png');
-      const tocImgWidth = doc.internal.pageSize.getWidth() - 40;
-      const tocImgHeight = (tocCanvas.height * tocImgWidth) / tocCanvas.width;
-      doc.addImage(tocImgData, 'PNG', 20, yOffset, tocImgWidth, tocImgHeight);
-      if (presentationOptions.includePageNumbers) {
-        doc.text(`${pageNumber}`, doc.internal.pageSize.getWidth() - 30, doc.internal.pageSize.getHeight() - 10);
-      }
-      yOffset += tocImgHeight + 20;
-      document.body.removeChild(tocPage);
-      doc.addPage();
-      yOffset = 20;
-      pageNumber++;
-    }
-
-    // Add personal profile page if enabled
-    if (presentationOptions.includePersonalProfile && clientData.client1?.personal) {
-      const profilePage = document.createElement('div');
-      profilePage.classList.add('report-preview');
-      profilePage.style.padding = '20px';
-      profilePage.style.background = '#fff';
-      profilePage.style.width = '800px';
-      profilePage.style.position = 'absolute';
-      profilePage.style.left = '-9999px';
-      let profileContent = `<h2 style="text-align: center; font-size: 20px;">Personal Profile</h2>`;
-      profileContent += `<p>Name: ${clientData.client1.personal.name || 'N/A'}</p>`;
-      if (clientData.isMarried && clientData.client2?.personal?.name) {
-        profileContent += `<p>Spouse: ${clientData.client2.personal.name}</p>`;
-      }
-      profileContent += `<p>Age: ${getAge(clientData.client1.personal.dob) || 'N/A'}</p>`;
-      if (clientAddressInput?.value) profileContent += `<p>Address: ${clientAddressInput.value}</p>`;
-      if (clientPhoneInput?.value) profileContent += `<p>Phone: ${clientPhoneInput.value}</p>`;
-      profilePage.innerHTML = `
-        ${headerText ? `<p style="text-align: center; font-size: 12px; margin-bottom: 10px;">${headerText}</p>` : ''}
-        ${profileContent}
-        ${footerText ? `<p style="text-align: center; font-size: 12px; margin-top: 10px;">${footerText}</p>` : ''}
-      `;
-      document.body.appendChild(profilePage);
-
-      const profileCanvas = await html2canvas(profilePage, { scale: 2, useCORS: true });
-      const profileImgData = profileCanvas.toDataURL('image/png');
-      const profileImgWidth = doc.internal.pageSize.getWidth() - 40;
-      const profileImgHeight = (profileCanvas.height * profileImgWidth) / profileCanvas.width;
-      doc.addImage(profileImgData, 'PNG', 20, yOffset, profileImgWidth, profileImgHeight);
-      if (presentationOptions.includePageNumbers) {
-        doc.text(`${pageNumber}`, doc.internal.pageSize.getWidth() - 30, doc.internal.pageSize.getHeight() - 10);
-      }
-      yOffset += profileImgHeight + 20;
-      document.body.removeChild(profilePage);
-      doc.addPage();
-      yOffset = 20;
-      pageNumber++;
-    }
-
-    // Add disclaimer and disclosure at beginning if enabled and selected
-    if (presentationOptions.disclaimerPlacement === 'beginning') {
-      if (presentationOptions.includeDisclaimer) {
-        const disclaimerPage = document.createElement('div');
-        disclaimerPage.classList.add('report-preview');
-        disclaimerPage.style.padding = '20px';
-        disclaimerPage.style.background = '#fff';
-        disclaimerPage.style.width = '800px';
-        disclaimerPage.style.position = 'absolute';
-        disclaimerPage.style.left = '-9999px';
-        disclaimerPage.innerHTML = `
-          ${headerText ? `<p style="text-align: center; font-size: 12px; margin-bottom: 10px;">${headerText}</p>` : ''}
-          <h2 style="text-align: center; font-size: 20px;">Disclaimer</h2>
-          <p>This presentation is for informational purposes only and does not constitute financial advice.</p>
-          ${footerText ? `<p style="text-align: center; font-size: 12px; margin-top: 10px;">${footerText}</p>` : ''}
-        `;
-        document.body.appendChild(disclaimerPage);
-
-        const disclaimerCanvas = await html2canvas(disclaimerPage, { scale: 2, useCORS: true });
-        const disclaimerImgData = disclaimerCanvas.toDataURL('image/png');
-        const disclaimerImgWidth = doc.internal.pageSize.getWidth() - 40;
-        const disclaimerImgHeight = (disclaimerCanvas.height * disclaimerImgWidth) / disclaimerCanvas.width;
-        doc.addImage(disclaimerImgData, 'PNG', 20, yOffset, disclaimerImgWidth, disclaimerImgHeight);
-        if (presentationOptions.includePageNumbers) {
-          doc.text(`${pageNumber}`, doc.internal.pageSize.getWidth() - 30, doc.internal.pageSize.getHeight() - 10);
-        }
-        yOffset += disclaimerImgHeight + 20;
-        document.body.removeChild(disclaimerPage);
-        doc.addPage();
-        yOffset = 20;
-        pageNumber++;
-      }
-      if (presentationOptions.includeDisclosure) {
-        const disclosurePage = document.createElement('div');
-        disclosurePage.classList.add('report-preview');
-        disclosurePage.style.padding = '20px';
-        disclaimerPage.style.background = '#fff';
-        disclosurePage.style.width = '800px';
-        disclosurePage.style.position = 'absolute';
-        disclosurePage.style.left = '-9999px';
-        disclosurePage.innerHTML = `
-          ${headerText ? `<p style="text-align: center; font-size: 12px; margin-bottom: 10px;">${headerText}</p>` : ''}
-          <h2 style="text-align: center; font-size: 20px;">Disclosure</h2>
-          <p>All data presented is based on information provided by the client and is subject to change.</p>
-          ${footerText ? `<p style="text-align: center; font-size: 12px; margin-top: 10px;">${footerText}</p>` : ''}
-        `;
-        document.body.appendChild(disclosurePage);
-
-        const disclosureCanvas = await html2canvas(disclosurePage, { scale: 2, useCORS: true });
-        const disclosureImgData = disclosureCanvas.toDataURL('image/png');
-        const disclosureImgWidth = doc.internal.pageSize.getWidth() - 40;
-        const disclosureImgHeight = (disclosureCanvas.height * disclosureImgWidth) / disclosureCanvas.width;
-        doc.addImage(disclosureImgData, 'PNG', 20, yOffset, disclosureImgWidth, disclosureImgHeight);
-        if (presentationOptions.includePageNumbers) {
-          doc.text(`${pageNumber}`, doc.internal.pageSize.getWidth() - 30, doc.internal.pageSize.getHeight() - 10);
-        }
-        yOffset += disclosureImgHeight + 20;
-        document.body.removeChild(disclosurePage);
-        doc.addPage();
-        yOffset = 20;
-        pageNumber++;
-      }
-    }
-
-    // Render reports
-    for (const report of selectedReports) {
-      if (!report.id || !report.title) {
-        console.warn('Skipping invalid report in PDF generation:', report);
-        continue;
-      }
-
-      const reportDiv = document.createElement('div');
-      reportDiv.classList.add('report-preview');
-      reportDiv.style.padding = '20px';
-      reportDiv.style.background = '#fff';
-      reportDiv.style.width = '800px';
-      reportDiv.style.position = 'absolute';
-      reportDiv.style.left = '-9999px';
-
-      document.body.appendChild(reportDiv);
-
-      const parts = report.id.split('-');
-      let analysisType = parts[0] || '';
-      let outputType = parts.length > 1 ? parts[parts.length - 1] : '';
-
-      if (report.id.startsWith('report-retirement-fact-finder')) {
-        analysisType = 'retirement-accumulation';
-        outputType = 'fact-finder';
-      } else if (report.id.includes('retirement')) {
-        analysisType = 'retirement-accumulation';
-      } else if (report.id.includes('personal-finance')) {
-        analysisType = 'personal-finance';
-      } else if (report.id.includes('summary')) {
-        analysisType = 'summary';
-      }
-
-      if (!analysisType) {
-        reportDiv.innerHTML = `
-          ${headerText ? `<p style="text-align: center; font-size: 12px; margin-bottom: 10px;">${headerText}</p>` : ''}
-          <h3>${report.title}</h3><p>Invalid report ID format: ${report.id}</p>
-          ${footerText ? `<p style="text-align: center; font-size: 12px; margin-top: 10px;">${footerText}</p>` : ''}
-        `;
-      } else if (analysisType === 'retirement-accumulation') {
-        await renderRetirementReport(reportDiv, outputType, report.title);
-      } else if (analysisType === 'personal-finance') {
-        await renderPersonalFinanceReport(reportDiv, outputType, report.title);
-      } else if (analysisType === 'summary') {
-        await renderSummaryReport(reportDiv, outputType, report.title);
-      } else {
-        reportDiv.innerHTML = `
-          ${headerText ? `<p style="text-align: center; font-size: 12px; margin-bottom: 10px;">${headerText}</p>` : ''}
-          <h3>${report.title}</h3><p>Unsupported report type: ${report.id}</p>
-          ${footerText ? `<p style="text-align: center; font-size: 12px; margin-top: 10px;">${footerText}</p>` : ''}
-        `;
-      }
-
-      if (headerText) {
-        const headerDiv = document.createElement('p');
-        headerDiv.style.textAlign = 'center';
-        headerDiv.style.fontSize = '12px';
-        headerDiv.style.marginBottom = '10px';
-        headerDiv.textContent = headerText;
-        reportDiv.insertBefore(headerDiv, reportDiv.firstChild);
-      }
-      if (footerText) {
-        const footerDiv = document.createElement('p');
-        footerDiv.style.textAlign = 'center';
-        footerDiv.style.fontSize = '12px';
-        footerDiv.style.marginTop = '10px';
-        footerDiv.textContent = footerText;
-        reportDiv.appendChild(footerDiv);
-      }
-
-      const canvas = reportDiv.querySelector('canvas');
-      if (canvas) {
-        const canvasParent = canvas.parentNode;
-        document.body.appendChild(canvas);
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        const imgData = canvas.toDataURL('image/png');
-        const img = document.createElement('img');
-        img.src = imgData;
-        img.style.width = canvas.style.width || '800px';
-        img.style.height = canvas.style.height || '400px';
-        canvasParent.replaceChild(img, canvas);
-        if (canvas.parentNode === document.body) {
-          document.body.removeChild(canvas);
-        }
-      }
-
-      await new Promise(resolve => setTimeout(resolve, 100));
-
-      const canvasRender = await html2canvas(reportDiv, { scale: 2, useCORS: true, logging: true });
-      const imgData = canvasRender.toDataURL('image/png');
-      const imgWidth = doc.internal.pageSize.getWidth() - 40;
-      const imgHeight = (canvasRender.height * imgWidth) / canvasRender.width;
-
-      if (yOffset + imgHeight > doc.internal.pageSize.getHeight() - 40) {
-        doc.addPage();
-        yOffset = 20;
-        pageNumber++;
-      }
-
-      doc.addImage(imgData, 'PNG', 20, yOffset, imgWidth, imgHeight);
-      if (presentationOptions.includePageNumbers) {
-        doc.text(`${pageNumber}`, doc.internal.pageSize.getWidth() - 30, doc.internal.pageSize.getHeight() - 10);
-      }
-      yOffset += imgHeight + 20;
-      document.body.removeChild(reportDiv);
-    }
-
-    // Add record of reports if enabled
-    if (presentationOptions.includeRecordOfReports && selectedReports.length > 0) {
-      doc.addPage();
-      yOffset = 20;
-      pageNumber++;
-      const recordPage = document.createElement('div');
-      recordPage.classList.add('report-preview');
-      recordPage.style.padding = '20px';
-      recordPage.style.background = '#fff';
-      recordPage.style.width = '800px';
-      recordPage.style.position = 'absolute';
-      recordPage.style.left = '-9999px';
-      let recordContent = `<h2 style="text-align: center; font-size: 20px;">Record of Reports</h2><ul style="list-style: none; padding: 0;">`;
-      selectedReports.forEach((report, index) => {
-        recordContent += `<li style="margin: 10px 0;">${index + 1}. ${report.title}</li>`;
-      });
-      recordContent += '</ul>';
-      recordPage.innerHTML = `
-        ${headerText ? `<p style="text-align: center; font-size: 12px; margin-bottom: 10px;">${headerText}</p>` : ''}
-        ${recordContent}
-        ${footerText ? `<p style="text-align: center; font-size: 12px; margin-top: 10px;">${footerText}</p>` : ''}
-      `;
-      document.body.appendChild(recordPage);
-
-      const recordCanvas = await html2canvas(recordPage, { scale: 2, useCORS: true });
-      const recordImgData = recordCanvas.toDataURL('image/png');
-      const recordImgWidth = doc.internal.pageSize.getWidth() - 40;
-      const recordImgHeight = (recordCanvas.height * recordImgWidth) / recordCanvas.width;
-      doc.addImage(recordImgData, 'PNG', 20, yOffset, recordImgWidth, recordImgHeight);
-      if (presentationOptions.includePageNumbers) {
-        doc.text(`${pageNumber}`, doc.internal.pageSize.getWidth() - 30, doc.internal.pageSize.getHeight() - 10);
-      }
-      yOffset += recordImgHeight + 20;
-      document.body.removeChild(recordPage);
-    }
-
-    // Add disclaimer and disclosure at end if enabled and selected
-    if (presentationOptions.disclaimerPlacement === 'end') {
-      if (presentationOptions.includeDisclaimer) {
-        doc.addPage();
-        yOffset = 20;
-        pageNumber++;
-        const disclaimerPage = document.createElement('div');
-        disclaimerPage.classList.add('report-preview');
-        disclaimerPage.style.padding = '20px';
-        disclaimerPage.style.background = '#fff';
-        disclaimerPage.style.width = '800px';
-        disclaimerPage.style.position = 'absolute';
-        disclaimerPage.style.left = '-9999px';
-        disclaimerPage.innerHTML = `
-          ${headerText ? `<p style="text-align: center; font-size: 12px; margin-bottom: 10px;">${headerText}</p>` : ''}
-          <h2 style="text-align: center; font-size: 20px;">Disclaimer</h2>
-          <p>This presentation is for informational purposes only and does not constitute financial advice.</p>
-          ${footerText ? `<p style="text-align: center; font-size: 12px; margin-top: 10px;">${footerText}</p>` : ''}
-        `;
-        document.body.appendChild(disclaimerPage);
-
-        const disclaimerCanvas = await html2canvas(disclaimerPage, { scale: 2, useCORS: true });
-        const disclaimerImgData = disclaimerCanvas.toDataURL('image/png');
-        const disclaimerImgWidth = doc.internal.pageSize.getWidth() - 40;
-        const disclaimerImgHeight = (disclaimerCanvas.height * disclaimerImgWidth) / disclaimerCanvas.width;
-        doc.addImage(disclaimerImgData, 'PNG', 20, yOffset, disclaimerImgWidth, disclaimerImgHeight);
-        if (presentationOptions.includePageNumbers) {
-          doc.text(`${pageNumber}`, doc.internal.pageSize.getWidth() - 30, doc.internal.pageSize.getHeight() - 10);
-        }
-        yOffset += disclaimerImgHeight + 20;
-        document.body.removeChild(disclaimerPage);
-      }
-      if (presentationOptions.includeDisclosure) {
-        doc.addPage();
-        yOffset = 20;
-        pageNumber++;
-        const disclosurePage = document.createElement('div');
-        disclosurePage.classList.add('report-preview');
-        disclosurePage.style.padding = '20px';
-        disclosurePage.style.background = '#fff';
-        disclosurePage.style.width = '800px';
-        disclosurePage.style.position = 'absolute';
-        disclosurePage.style.left = '-9999px';
-        disclosurePage.innerHTML = `
-          ${headerText ? `<p style="text-align: center; font-size: 12px; margin-bottom: 10px;">${headerText}</p>` : ''}
-          <h2 style="text-align: center; font-size: 20px;">Disclosure</h2>
-          <p>All data presented is based on information provided by the client and is subject to change.</p>
-          ${footerText ? `<p style="text-align: center; font-size: 12px; margin-top: 10px;">${footerText}</p>` : ''}
-        `;
-        document.body.appendChild(disclosurePage);
-
-        const disclosureCanvas = await html2canvas(disclosurePage, { scale: 2, useCORS: true });
-        const disclosureImgData = disclosureCanvas.toDataURL('image/png');
-        const disclosureImgWidth = doc.internal.pageSize.getWidth() - 40;
-        const disclosureImgHeight = (disclosureCanvas.height * disclosureImgWidth) / disclosureCanvas.width;
-        doc.addImage(disclosureImgData, 'PNG', 20, yOffset, disclosureImgWidth, disclosureImgHeight);
-        if (presentationOptions.includePageNumbers) {
-          doc.text(`${pageNumber}`, doc.internal.pageSize.getWidth() - 30, doc.internal.pageSize.getHeight() - 10);
-        }
-        yOffset += disclosureImgHeight + 20;
-        document.body.removeChild(disclosurePage);
-      }
-    }
-
-    doc.save('Presentation.pdf');
+    // Convert HTML to PDF
+    await doc.html(tempContainer, {
+      callback: function (doc) {
+        doc.save('Financial_Presentation.pdf');
+      },
+      x: 10,
+      y: 10,
+      width: 430, // Letter width in pixels at 72 DPI
+      windowWidth: 800 // Match tempContainer width
+    });
   } catch (error) {
-    console.error('Error downloading PDF:', error);
-    alert('Error generating PDF. Please check console for details.');
+    console.error('Error in downloadPresentationPDF:', error);
+    alert('Failed to download PDF. Please check console for details.');
   }
 }
