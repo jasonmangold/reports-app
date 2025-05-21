@@ -151,25 +151,7 @@
 </head>
 <body>
   <div id="header-placeholder">
-    <!-- Fallback header content -->
-    <header>
-      <nav>
-        <ul>
-          <li><a href="index.html" class="active">Analysis</a></li>
-          <li><a href="reports.html">Reports</a></li>
-          <li><a href="settings.html">Settings</a></li>
-        </ul>
-      </nav>
-      <div id="profile-dropdown">
-        <img id="profile-pic" src="profile-placeholder.png" alt="Profile Picture" width="40" height="40">
-        <span id="client-file-name" aria-label="Select Client">No Client Selected</span>
-        <div id="dropdown-menu" style="display: none;">
-          <a href="#" id="help-link">Help</a>
-          <a href="#" id="settings-link">Settings</a>
-          <a href="#" id="logout-link">Logout</a>
-        </div>
-      </div>
-    </header>
+    <!-- Header loaded dynamically from header.html -->
   </div>
   <div class="analysis-page">
     <div class="analysis-topics-container">
@@ -215,22 +197,58 @@
   </div>
   <script>
     fetch('header.html')
-      .then(response => response.text())
+      .then(response => {
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+        return response.text();
+      })
       .then(data => {
         document.getElementById('header-placeholder').innerHTML = data;
-        // Add active class to current page link
         const currentPage = window.location.pathname.split('/').pop() || 'index.html';
         const navLinks = document.querySelectorAll('nav ul li a');
         navLinks.forEach(link => {
-          const href = link.getAttribute('href');
-          if (href === currentPage) {
+          if (link.getAttribute('href') === currentPage) {
             link.classList.add('active');
           }
         });
+        // Verify critical elements
+        if (!document.getElementById('presentation-count')) {
+          console.error('presentation-count element missing after loading header.html');
+        }
+        if (!document.getElementById('client-file-toggle')) {
+          console.error('client-file-toggle element missing after loading header.html');
+        }
+        if (!document.getElementById('client-file-name')) {
+          console.error('client-file-name element missing after loading header.html');
+        }
+        if (!document.getElementById('profile-pic')) {
+          console.error('profile-pic element missing after loading header.html');
+        }
       })
       .catch(error => {
         console.error('Error loading header:', error);
-        // Fallback header is already in place
+        // Fallback to minimal header
+        document.getElementById('header-placeholder').innerHTML = `
+          <header>
+            <nav>
+              <ul>
+                <li><a href="index.html" class="active">Analysis</a></li>
+                <li><a href="reports.html">Reports</a></li>
+                <li><a href="settings.html">Settings</a></li>
+              </ul>
+            </nav>
+            <div id="profile-dropdown">
+              <button id="client-file-toggle" aria-label="Toggle Client Selection">Select Client</button>
+              <img id="profile-pic" src="/images/profile-placeholder.png" alt="Profile Picture" width="40" height="40">
+              <span id="client-file-name" aria-label="Select Client">No Client Selected</span>
+              <span id="presentation-count" class="presentation-count">0</span>
+              <div id="dropdown-menu" style="display: none;">
+                <a href="#" id="help-link">Help</a>
+                <a href="#" id="settings-link">Settings</a>
+                <a href="#" id="logout-link">Logout</a>
+              </div>
+            </div>
+          </header>
+        `;
       });
   </script>
   <script type="module" src="src/index.js"></script>
