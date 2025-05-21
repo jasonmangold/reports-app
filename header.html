@@ -33,7 +33,6 @@
 </header>
 
 <style>
-  /* Header Layout */
   header {
     display: flex;
     align-items: center;
@@ -66,6 +65,12 @@
   }
   #client-file-name i {
     font-size: 12px;
+  }
+  #client-file-name::after {
+    content: '▼';
+    font-size: 12px;
+    margin-left: 5px;
+    display: inline-block;
   }
   nav { flex-grow: 1; display: flex; justify-content: center; }
   nav ul {
@@ -137,21 +142,3 @@
   .dropdown-menu a:hover { background-color: #f0f0f0; }
   .dropdown-menu a i { margin-right: 8px; }
 </style>
-
-<script>
-  function openClientModal() {
-    document.dispatchEvent(new CustomEvent('openClientModal'));
-  }
-  document.addEventListener('DOMContentLoaded', () => {
-    const clientFileName = document.getElementById('client-file-name');
-    if (clientFileName) {
-      clientFileName.addEventListener('click', openClientModal);
-      clientFileName.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter' || e.key === ' ') {
-          e.preventDefault();
-          openClientModal();
-        }
-      });
-    }
-  });
-</script>
