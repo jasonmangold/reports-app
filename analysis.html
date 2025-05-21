@@ -10,7 +10,6 @@
   <link rel="stylesheet" href="styles.css">
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
   <style>
-    /* Visually hidden class for accessibility */
     .visually-hidden {
       position: absolute;
       width: 1px;
@@ -21,14 +20,10 @@
       clip: rect(0, 0, 0, 0);
       border: 0;
     }
-
-    /* Container for the dropdown */
     .analysis-topics-container {
       margin: 1rem 0;
       max-width: 300px;
     }
-
-    /* Style the select element */
     .analysis-topic-select {
       width: 100%;
       padding: 0.75rem;
@@ -47,29 +42,16 @@
       background-position: right 0.75rem center;
       background-size: 12px;
     }
-
-    /* Hover and focus states */
     .analysis-topic-select:hover,
     .analysis-topic-select:focus {
       border-color: #005ea2;
       box-shadow: 0 0 0 3px rgba(0, 94, 162, 0.1);
       outline: none;
     }
-
-    /* Option groups and options */
-    .analysis-topic-select optgroup,
-    .analysis-topic-select option {
-      font-size: 1rem;
-      color: #333;
-    }
-
-    /* Ensure dropdown is accessible */
     .analysis-topic-select:focus {
       outline: 2px solid #005ea2;
       outline-offset: 2px;
     }
-
-    /* Client modal styles */
     #client-modal {
       display: none;
       position: fixed;
@@ -82,7 +64,6 @@
       align-items: center;
       z-index: 1000;
     }
-
     .modal-content {
       background-color: white;
       border-radius: 8px;
@@ -91,7 +72,6 @@
       padding: 20px;
       position: relative;
     }
-
     .modal-header {
       display: flex;
       justify-content: space-between;
@@ -99,17 +79,14 @@
       padding-bottom: 10px;
       border-bottom: 1px solid #ddd;
     }
-
     .close {
       font-size: 1.5em;
       cursor: pointer;
       color: #555;
     }
-
     .close:hover {
       color: #000;
     }
-
     #client-search {
       width: 100%;
       padding: 8px;
@@ -117,20 +94,17 @@
       border: 1px solid #ccc;
       border-radius: 4px;
     }
-
     #client-list {
       list-style: none;
       padding: 0;
       max-height: 200px;
       overflow-y: auto;
     }
-
     #client-list li {
       padding: 10px;
       cursor: pointer;
       border-bottom: 1px solid #eee;
     }
-
     #client-list li:hover,
     #client-list li.selected {
       background-color: #f0f0f0;
@@ -138,9 +112,7 @@
   </style>
 </head>
 <body>
-  <div id="header-placeholder">
-    <!-- Header loaded dynamically from header.html -->
-  </div>
+  <div id="header-placeholder"></div>
   <div class="analysis-page">
     <div class="analysis-topics-container">
       <label for="analysis-topic-select" class="visually-hidden">Select Analysis Topic</label>
@@ -184,7 +156,6 @@
     </div>
   </div>
   <script>
-    // Load header
     fetch('header.html')
       .then(response => {
         if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
@@ -215,7 +186,6 @@
         `;
       });
 
-    // Modal handling
     function showClientModal() {
       const modal = document.getElementById('client-modal');
       if (modal) {
@@ -228,37 +198,38 @@
     function setupClientModalListeners() {
       const modal = document.getElementById('client-modal');
       const closeModal = document.getElementById('close-modal');
-      const clientSearch = document.getElementById('client-search');
-      const clientList = document.getElementById('client-list');
+      const clientFileName = document.getElementById('client-file-name');
 
-      if (!modal || !closeModal || !clientSearch || !clientList) {
-        console.error('Modal elements missing:', { modal, closeModal, clientSearch, clientList });
+      if (!modal || !closeModal || !clientFileName) {
+        console.error('Modal elements missing:', { modal, closeModal, clientFileName });
         return;
       }
 
-      document.addEventListener('openClientModal', showClientModal);
+      clientFileName.addEventListener('click', () => {
+        showClientModal();
+        clientFileName.setAttribute('aria-expanded', 'true');
+      });
+      clientFileName.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          showClientModal();
+          clientFileName.setAttribute('aria-expanded', 'true');
+        }
+      });
 
       closeModal.addEventListener('click', () => {
         modal.style.display = 'none';
+        clientFileName.setAttribute('aria-expanded', 'false');
       });
 
       modal.addEventListener('click', (e) => {
         if (e.target === modal) {
           modal.style.display = 'none';
+          clientFileName.setAttribute('aria-expanded', 'false');
         }
-      });
-
-      clientSearch.addEventListener('input', () => {
-        const searchTerm = clientSearch.value.toLowerCase();
-        const items = clientList.getElementsByTagName('li');
-        Array.from(items).forEach(item => {
-          const text = item.textContent.toLowerCase();
-          item.style.display = text.includes(searchTerm) ? '' : 'none';
-        });
       });
     }
 
-    // Wait for DOM and header to load
     document.addEventListener('DOMContentLoaded', () => {
       setupClientModalListeners();
     });
