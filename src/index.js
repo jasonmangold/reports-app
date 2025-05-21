@@ -173,13 +173,13 @@ function loadClientData() {
       clientData.assumptions.inflation = parseFloat(clientData.assumptions.inflation) || 3;
       clientData.assumptions.rorRetirement = parseFloat(clientData.assumptions.rorRetirement) || 4;
       clientData.scenarios = clientData.scenarios || { base: null, whatIf: [] };
-      clientData.incomeNeeds = clientData.incomeNeeds || {
-        monthlyincomeinitial: { initial: "5000" },
-        yearsafterretirement1: { yearsafter1: "5" },
-        monthlyincome1: { monthly1: "4500" },
-        yearsafterretirement2: { yearsafter2: "10" },
-        monthlyincome2: { monthly2: "4000" }
-      };
+clientData.incomeNeeds = {
+  monthlyincomeinitial: { initial: clientData.incomeNeeds.initial || "5000" },
+  yearsafterretirement1: { yearsafter1: clientData.incomeNeeds.yearsafter1 || "5" },
+  monthlyincome1: { monthly1: clientData.incomeNeeds.monthly1 || "4500" },
+  yearsafterretirement2: { yearsafter2: clientData.incomeNeeds.yearsafter2 || "10" },
+  monthlyincome2: { monthly2: clientData.incomeNeeds.monthly2 || "4000" }
+};
     } else {
       // Initialize with placeholder values from retirementAccumulationTabs
       clientData = {
@@ -424,11 +424,11 @@ function populateInputFields() {
     setIfExists('c2-dob', clientData.client2.personal.dob, 'Client 2 DOB');
     setIfExists('c1-retirement-age', clientData.client1.personal.retirementAge, 'Client 1 Retirement Age');
     setIfExists('c2-retirement-age', clientData.client2.personal.retirementAge, 'Client 2 Retirement Age');
-    setIfExists('monthly-income-initial', clientData.incomeNeeds.monthlyincomeinitial.initial, 'Monthly Income Initial');
-    setIfExists('years-after-retirement-1', clientData.incomeNeeds.yearsafterretirement1.yearsafter1, 'Years After Retirement 1');
-    setIfExists('monthly-income-1', clientData.incomeNeeds.monthlyincome1.monthly1, 'Monthly Income 1');
-    setIfExists('years-after-retirement-2', clientData.incomeNeeds.yearsafterretirement2.yearsafter2, 'Years After Retirement 2');
-    setIfExists('monthly-income-2', clientData.incomeNeeds.monthlyincome2.monthly2, 'Monthly Income 2');
+    setIfExists('monthly-income-initial', clientData.incomeNeeds.initial, 'Monthly Income Initial');
+    setIfExists('years-after-retirement-1', clientData.incomeNeeds.yearsafter1, 'Years After Retirement 1');
+    setIfExists('monthly-income-1', clientData.incomeNeeds.monthly1, 'Monthly Income 1');
+    setIfExists('years-after-retirement-2', clientData.incomeNeeds.yearsafter2, 'Years After Retirement 2');
+    setIfExists('monthly-income-2', clientData.incomeNeeds.monthly2, 'Monthly Income 2');
     setIfExists('mortality-age', clientData.assumptions.mortalityAge, 'Mortality Age');
     setIfExists('c1-mortality-age', clientData.assumptions.c1MortalityAge, 'Client 1 Mortality Age');
     setIfExists('c2-mortality-age', clientData.assumptions.c2MortalityAge, 'Client 2 Mortality Age');
