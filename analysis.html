@@ -201,7 +201,6 @@
       })
       .catch(error => {
         console.error('Error loading header:', error);
-        // Fallback to minimal header
         document.getElementById('header-placeholder').innerHTML = `
           <header>
             <nav>
@@ -214,6 +213,20 @@
           </header>
         `;
       });
+
+    document.addEventListener('openClientModal', () => {
+      const modal = document.getElementById('client-modal');
+      if (modal) {
+        modal.style.display = 'flex';
+      }
+    });
+
+    document.getElementById('close-modal')?.addEventListener('click', () => {
+      const modal = document.getElementById('client-modal');
+      if (modal) {
+        modal.style.display = 'none';
+      }
+    });
   </script>
   <script type="module" src="src/index.js"></script>
 </body>
