@@ -3,8 +3,10 @@
     <img src="logo.png" alt="Advisys Logo" class="logo-img">
   </div>
   <div class="client-file">
-    <button id="client-file-toggle" aria-label="Toggle Client Selection">Select Client</button>
-    <span id="client-file-name" aria-label="Select Client" role="button" tabindex="0">No Client Selected</span>
+    <span id="client-file-name" aria-label="Select Client" role="button" tabindex="0">
+      No Client Selected
+      <i class="fas fa-chevron-down" style="margin-left: 5px;"></i>
+    </span>
   </div>
   <nav>
     <ul>
@@ -42,30 +44,28 @@
   }
   .logo { flex-shrink: 0; }
   .logo-img { height: 40px; }
-  .client-file { flex-grow: 0; margin: 0 20px; display: flex; align-items: center; gap: 10px; }
-  #client-file-toggle {
-    padding: 8px 12px;
-    font-size: 14px;
-    font-family: 'Inter', sans-serif;
-    color: #333;
-    background-color: #f5f5f5;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    cursor: pointer;
-    transition: background-color 0.3s, border-color 0.3s;
-  }
-  #client-file-toggle:hover {
-    background-color: #e0e0e0;
-    border-color: #007bff;
-  }
+  .client-file { flex-grow: 0; margin: 0 20px; display: flex; align-items: center; }
   #client-file-name {
     cursor: pointer;
     font-size: 16px;
     color: #333;
     font-family: 'Inter', sans-serif;
     transition: color 0.3s;
+    display: flex;
+    align-items: center;
+    padding: 8px 12px;
+    background-color: #f5f5f5;
+    border: 1px solid #ccc;
+    border-radius: 4px;
   }
-  #client-file-name:hover { color: #007bff; }
+  #client-file-name:hover {
+    color: #007bff;
+    border-color: #007bff;
+    background-color: #e0e0e0;
+  }
+  #client-file-name i {
+    font-size: 12px;
+  }
   nav { flex-grow: 1; display: flex; justify-content: center; }
   nav ul {
     display: flex;
@@ -136,3 +136,12 @@
   .dropdown-menu a:hover { background-color: #f0f0f0; }
   .dropdown-menu a i { margin-right: 8px; }
 </style>
+
+<script>
+  document.getElementById('client-file-name').addEventListener('click', () => {
+    const modal = document.getElementById('client-modal');
+    if (modal) {
+      modal.style.display = 'flex';
+    }
+  });
+</script>
