@@ -142,12 +142,16 @@
   function openClientModal() {
     document.dispatchEvent(new CustomEvent('openClientModal'));
   }
-  const clientFileName = document.getElementById('client-file-name');
-  clientFileName.addEventListener('click', openClientModal);
-  clientFileName.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter' || e.key === ' ') {
-      e.preventDefault();
-      openClientModal();
+  document.addEventListener('DOMContentLoaded', () => {
+    const clientFileName = document.getElementById('client-file-name');
+    if (clientFileName) {
+      clientFileName.addEventListener('click', openClientModal);
+      clientFileName.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          openClientModal();
+        }
+      });
     }
   });
 </script>
