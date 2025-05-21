@@ -17,11 +17,11 @@
   <div class="presentation-page">
     <div class="editable-container">
       <h2 class="editable-text" id="presentation-title">Financial Analysis</h2>
-      <i class="fas fa-pencil-alt edit-icon" onclick="editField('presentation-title', 'presentation-title-input')"></i>
-      <div id="presentation-title-input" class="edit-input">
-        <input type="text" id="title-input" value="Financial Analysis">
-        <button onclick="saveTitle()">Save</button>
-      </div>
+      <i class="fas fa-pencil-alt edit-icon" onclick="editField('presentation-title', 'presentation-title-inputs')"></i>
+    </div>
+    <div id="presentation-title-inputs" class="edit-input">
+      <input type="text" id="presentation-title-input" value="Financial Analysis">
+      <button onclick="saveTitle()">Save</button>
     </div>
     <h3 class="prepared-for">Prepared For:</h3>
     <div class="editable-container">
@@ -38,6 +38,19 @@
     <p>Reports in presentation: <span id="presentation-count">0</span></p>
     <button id="presentation-options-btn">Presentation Options</button>
     <button id="preview-presentation-btn" disabled>Preview Presentation</button>
+  </div>
+
+  <div id="client-modal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>Select Client</h2>
+        <span id="close-modal" class="close">×</span>
+      </div>
+      <div class="modal-body">
+        <input type="text" id="client-search" placeholder="Search clients..." aria-label="Search clients">
+        <ul id="client-list"></ul>
+      </div>
+    </div>
   </div>
 
   <div class="modal" id="pdf-preview-modal">
@@ -119,10 +132,10 @@
     }
 
     function saveTitle() {
-      const title = document.getElementById('title-input').value;
+      const title = document.getElementById('presentation-title-input').value;
       document.getElementById('presentation-title').textContent = title || 'Financial Analysis';
       document.getElementById('presentation-title').style.display = 'block';
-      document.getElementById('presentation-title-input').style.display = 'none';
+      document.getElementById('presentation-title-inputs').style.display = 'none';
     }
 
     function saveClientInfo() {
@@ -160,6 +173,7 @@
     }
 
     document.addEventListener('DOMContentLoaded', () => {
+      document.getElementById('presentation-title-input').addEventListener('change', saveTitle);
       document.getElementById('presentation-options-btn').addEventListener('click', () => {
         document.getElementById('presentation-options-modal').style.display = 'flex';
       });
