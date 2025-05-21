@@ -5,18 +5,85 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Presentation - Advisys</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" integrity="sha512-Fo3rlrZj/k7ujTnHg4CGR2D7kSs0v4LLanw2qksYuRlEzO+tcaEPQogQ0KaoGN26/zrn20ImR1DfuLWnOo7aBA==" crossorigin="anonymous" referrerpolicy="no-referrer">
   <link rel="stylesheet" href="header.css">
   <link rel="stylesheet" href="styles.css">
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <style>
+    .visually-hidden {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      border: 0;
+    }
     .editable-container { display: flex; align-items: center; gap: 10px; }
     .editable-text { font-size: 1.2em; }
     .edit-icon { cursor: pointer; }
     .edit-input { display: none; width: 100%; padding: 5px; }
     .input-section { margin: 20px 0; }
+    #client-modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.5);
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+    }
+    .modal-content {
+      background-color: white;
+      border-radius: 8px;
+      width: 90%;
+      max-width: 400px;
+      padding: 20px;
+      position: relative;
+    }
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-bottom: 10px;
+      border-bottom: 1px solid #ddd;
+    }
+    .close {
+      font-size: 1.5em;
+      cursor: pointer;
+      color: #555;
+    }
+    .close:hover {
+      color: #000;
+    }
+    #client-search {
+      width: 100%;
+      padding: 8px;
+      margin-bottom: 10px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+    #client-list {
+      list-style: none;
+      padding: 0;
+      max-height: 200px;
+      overflow-y: auto;
+    }
+    #client-list li {
+      padding: 10px;
+      cursor: pointer;
+      border-bottom: 1px solid #eee;
+    }
+    #client-list li:hover,
+    #client-list li.selected {
+      background-color: #f0f0f0;
+    }
   </style>
 </head>
 <body>
@@ -44,6 +111,19 @@
     <p>Reports in presentation: <span id="presentation-count">0</span></p>
     <button id="presentation-options-btn">Presentation Options</button>
     <button id="preview-presentation-btn" disabled>Preview Presentation</button>
+  </div>
+
+  <div id="client-modal" style="display: none;">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>Select Client</h2>
+        <span id="close-modal" class="close">×</span>
+      </div>
+      <input type="text" id="client-search" placeholder="Search clients..." aria-label="Search clients">
+      <ul id="client-list">
+        <!-- Populated dynamically -->
+      </ul>
+    </div>
   </div>
 
   <div class="modal" id="pdf-preview-modal">
@@ -85,13 +165,43 @@
         <input type="text" id="footer-text" placeholder="Enter footer text" disabled><br>
         <label><input type="checkbox" id="include-page-numbers" checked> Page Numbers</label><br>
         <label><input type="checkbox" id="include-presentation-date" checked> Presentation Date</label>
-        <input type="text" id="presentation-date" placeholder="Enter date (e.g., MM/DD/YYYY)" value="05/20/2025"><br>
+        <input type="text" id="presentation-date" placeholder="Enter date (e.g., MM/DD/YYYY)" value="05/21/2025"><br>
         <button onclick="savePresentationOptions()">Save Options</button>
       </div>
     </div>
   </div>
 
   <script>
+    fetch('header.html')
+      .then(response => {
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+        return response.text();
+      })
+      .then(data => {
+        document.getElementById('header-placeholder').innerHTML = data;
+        const currentPage = window.location.pathname.split('/').pop() || 'presentation.html';
+        const navLinks = document.querySelectorAll('nav ul li a');
+        navLinks.forEach(link => {
+          if (link.getAttribute('href') === currentPage) {
+            link.classList.add('active');
+          }
+        });
+      })
+      .catch(error => {
+        console.error('Error loading header:', error);
+        document.getElementById('header-placeholder').innerHTML = `
+          <header>
+            <nav>
+              <ul>
+                <li><a href="analysis.html">Analysis</a></li>
+                <li><a href="presentation.html" class="active">Presentation</a></li>
+                <li><a href="settings.html">Settings</a></li>
+              </ul>
+            </nav>
+          </header>
+        `;
+      });
+
     function editField(displayId, inputId) {
       document.getElementById(displayId).style.display = 'none';
       document.getElementById(inputId).style.display = 'block';
@@ -107,22 +217,52 @@
       document.getElementById('client-info').innerHTML = clientInfo || 'No Client Selected';
       document.getElementById('client-info').style.display = 'block';
       document.getElementById('client-inputs').style.display = 'none';
+      localStorage.setItem('clientInfo', JSON.stringify({ name, address, phone }));
     }
 
-    document.getElementById('presentation-title-input').addEventListener('change', () => {
-      const title = document.getElementById('presentation-title-input').value;
-      document.getElementById('presentation-title').textContent = title || 'Financial Analysis';
-      document.getElementById('presentation-title').style.display = 'block';
-      document.getElementById('presentation-title-input').style.display = 'none';
-    });
+    function showClientModal() {
+      const modal = document.getElementById('client-modal');
+      if (modal) {
+        modal.style.display = 'flex';
+      } else {
+        console.error('Client modal not found');
+      }
+    }
 
-    document.getElementById('presentation-options-btn').addEventListener('click', () => {
-      document指导.getElementById('presentation-options-modal').style.display = 'flex';
-    });
+    function setupClientModalListeners() {
+      const modal = document.getElementById('client-modal');
+      const closeModal = document.getElementById('close-modal');
+      const clientFileName = document.getElementById('client-file-name');
 
-    document.getElementById('close-options-modal').addEventListener('click', () => {
-      document.getElementById('presentation-options-modal').style.display = 'none';
-    });
+      if (!modal || !closeModal || !clientFileName) {
+        console.error('Modal elements missing:', { modal, closeModal, clientFileName });
+        return;
+      }
+
+      clientFileName.addEventListener('click', () => {
+        showClientModal();
+        clientFileName.setAttribute('aria-expanded', 'true');
+      });
+      clientFileName.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          showClientModal();
+          clientFileName.setAttribute('aria-expanded', 'true');
+        }
+      });
+
+      closeModal.addEventListener('click', () => {
+        modal.style.display = 'none';
+        clientFileName.setAttribute('aria-expanded', 'false');
+      });
+
+      modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+          modal.style.display = 'none';
+          clientFileName.setAttribute('aria-expanded', 'false');
+        }
+      });
+    }
 
     function savePresentationOptions() {
       const options = {
@@ -145,13 +285,26 @@
       document.getElementById('presentation-options-modal').style.display = 'none';
     }
 
-    // Enable/disable header and footer inputs based on checkboxes
-    document.getElementById('include-header').addEventListener('change', (e) => {
-      document.getElementById('header-text').disabled = !e.target.checked;
-    });
-
-    document.getElementById('include-footer').addEventListener('change', (e) => {
-      document.getElementById('footer-text').disabled = !e.target.checked;
+    document.addEventListener('DOMContentLoaded', () => {
+      setupClientModalListeners();
+      document.getElementById('presentation-title-input').addEventListener('change', () => {
+        const title = document.getElementById('presentation-title-input').value;
+        document.getElementById('presentation-title').textContent = title || 'Financial Analysis';
+        document.getElementById('presentation-title').style.display = 'block';
+        document.getElementById('presentation-title-input').style.display = 'none';
+      });
+      document.getElementById('presentation-options-btn').addEventListener('click', () => {
+        document.getElementById('presentation-options-modal').style.display = 'flex';
+      });
+      document.getElementById('close-options-modal').addEventListener('click', () => {
+        document.getElementById('presentation-options-modal').style.display = 'none';
+      });
+      document.getElementById('include-header').addEventListener('change', (e) => {
+        document.getElementById('header-text').disabled = !e.target.checked;
+      });
+      document.getElementById('include-footer').addEventListener('change', (e) => {
+        document.getElementById('footer-text').disabled = !e.target.checked;
+      });
     });
   </script>
   <script type="module" src="src/presentation.js"></script>
