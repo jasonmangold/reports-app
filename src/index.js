@@ -103,7 +103,6 @@ const presentationCount = document.getElementById('presentation-count');
 const analysisOutputs = document.getElementById('analysis-outputs');
 const outputTabsContainer = document.getElementById('output-tabs-container');
 const analysisWorkspace = document.querySelector('.analysis-workspace');
-const clientFileToggle = document.getElementById('client-file-toggle');
 const clientModal = document.getElementById('client-modal');
 const closeModalBtn = document.getElementById('close-modal');
 const clientList = document.getElementById('client-list');
@@ -122,7 +121,6 @@ document.addEventListener('DOMContentLoaded', () => {
     populateClientList();
     updateClientFileName();
     setupEventDelegation();
-    setupClientModalListeners();
     updateOutputs();
     if (currentAnalysis === 'client-profile') {
       analysisWorkspace.classList.add('client-profile-active');
@@ -149,7 +147,6 @@ function loadClientData() {
     const savedData = localStorage.getItem('clientData');
     if (savedData) {
       clientData = JSON.parse(savedData);
-      // Normalize data types as before
       ['client1', 'client2'].forEach(clientKey => {
         clientData[clientKey].insurance = clientData[clientKey].insurance || {
           lifeInsurance: 0,
@@ -159,7 +156,6 @@ function loadClientData() {
         clientData[clientKey].insurance.lifeInsurance = parseFloat(clientData[clientKey].insurance.lifeInsurance) || 0;
         clientData[clientKey].insurance.disabilityInsurance = parseFloat(clientData[clientKey].insurance.disabilityInsurance) || 0;
         clientData[clientKey].insurance.longTermCare = parseFloat(clientData[clientKey].insurance.longTermCare) || 0;
-        // Normalize accounts
         clientData[clientKey].accounts = clientData[clientKey].accounts.map(account => ({
           name: account.name || `Account ${clientData[clientKey].accounts.indexOf(account) + 1}`,
           balance: parseFloat(account.balance) || 0,
@@ -173,60 +169,12 @@ function loadClientData() {
       clientData.assumptions.inflation = parseFloat(clientData.assumptions.inflation) || 3;
       clientData.assumptions.rorRetirement = parseFloat(clientData.assumptions.rorRetirement) || 4;
       clientData.scenarios = clientData.scenarios || { base: null, whatIf: [] };
-clientData.incomeNeeds = {
-  monthlyincomeinitial: { initial: clientData.incomeNeeds.initial || "5000" },
-  yearsafterretirement1: { yearsafter1: clientData.incomeNeeds.yearsafter1 || "5" },
-  monthlyincome1: { monthly1: clientData.incomeNeeds.monthly1 || "4500" },
-  yearsafterretirement2: { yearsafter2: clientData.incomeNeeds.yearsafter2 || "10" },
-  monthlyincome2: { monthly2: clientData.incomeNeeds.monthly2 || "4000" }
-};
-    } else {
-      // Initialize with placeholder values from retirementAccumulationTabs
-      clientData = {
-        isMarried: false,
-        client1: {
-          personal: { name: "Paul Johnson", dob: "", retirementAge: "67" },
-          incomeSources: { employment: "65000", socialSecurity: "2000", other: "500" },
-          accounts: [
-            {
-              name: "401(k)",
-              balance: "100000",
-              contribution: "10000",
-              employerMatch: "3",
-              ror: "6"
-            }
-          ],
-          insurance: { lifeInsurance: "0", disabilityInsurance: "0", longTermCare: "0" }
-        },
-        client2: {
-          personal: { name: "Sally Johnson", dob: "", retirementAge: "67" },
-          incomeSources: { employment: "50000", socialSecurity: "1500", other: "300" },
-          accounts: [
-            {
-              name: "IRA",
-              balance: "80000",
-              contribution: "8000",
-              employerMatch: "0",
-              ror: "6"
-            }
-          ],
-          insurance: { lifeInsurance: "0", disabilityInsurance: "0", longTermCare: "0" }
-        },
-        assumptions: {
-          c1MortalityAge: "90",
-          c2MortalityAge: "90",
-          mortalityAge: "90",
-          inflation: "3",
-          rorRetirement: "4"
-        },
-        scenarios: { base: null, whatIf: [] },
-        incomeNeeds: {
-          monthlyincomeinitial: { initial: "5000" },
-          yearsafterretirement1: { yearsafter1: "5" },
-          monthlyincome1: { monthly1: "4500" },
-          yearsafterretirement2: { yearsafter2: "10" },
-          monthlyincome2: { monthly2: "4000" }
-        }
+      clientData.incomeNeeds = {
+        monthlyincomeinitial: { initial: clientData.incomeNeeds.initial || "5000" },
+        yearsafterretirement1: { yearsafter1: clientData.incomeNeeds.yearsafter1 || "5" },
+        monthlyincome1: { monthly1: clientData.incomeNeeds.monthly1 || "4500" },
+        yearsafterretirement2: { yearsafter2: clientData.incomeNeeds.yearsafter2 || "10" },
+        monthlyincome2: { monthly2: clientData.incomeNeeds.monthly2 || "4000" }
       };
     }
     console.log('Loaded clientData:', clientData);
@@ -284,10 +232,7 @@ function populateAnalysisTopics() {
       console.error('Analysis topic select element not found');
       return;
     }
-
-    select.innerHTML = ''; // Clear existing options
-
-    // Define groups and their order
+    select.innerHTML = '';
     const groups = [
       { name: 'Client Info', topics: [] },
       { name: 'Retirement', topics: [] },
@@ -295,16 +240,10 @@ function populateAnalysisTopics() {
       { name: 'Investments', topics: [] },
       { name: 'Other', topics: [] }
     ];
-
-    // Assign topics to groups
     analysisTopicsList.forEach(topic => {
       const group = groups.find(g => g.name === topic.group);
-      if (group) {
-        group.topics.push(topic);
-      }
+      if (group) group.topics.push(topic);
     });
-
-    // Populate dropdown with optgroups and options
     groups.forEach(group => {
       if (group.topics.length > 0) {
         const optgroup = document.createElement('optgroup');
@@ -313,16 +252,12 @@ function populateAnalysisTopics() {
           const option = document.createElement('option');
           option.value = topic.id;
           option.textContent = topic.label;
-          if (topic.id === currentAnalysis) {
-            option.selected = true;
-          }
+          if (topic.id === currentAnalysis) option.selected = true;
           optgroup.appendChild(option);
         });
         select.appendChild(optgroup);
       }
     });
-
-    // Add change event listener
     select.addEventListener('change', (e) => {
       e.stopPropagation();
       console.log('Analysis topic selected:', e.target.value);
@@ -350,13 +285,11 @@ function updateTabs(analysis) {
     console.log(`Updating tabs for ${analysis}`);
     inputTabs.innerHTML = '';
     inputContent.innerHTML = '';
-
     const config = analysis === 'retirement-accumulation' ? retirementAccumulationTabs :
                   analysis === 'personal-finance' ? personalFinanceTabs :
                   analysis === 'summary' ? summaryTabs :
                   analysis === 'client-profile' ? clientProfileTabs :
                   retirementAccumulationTabs;
-
     config.forEach((tab, index) => {
       const btn = document.createElement('button');
       btn.classList.add('tab-btn');
@@ -364,7 +297,6 @@ function updateTabs(analysis) {
       btn.textContent = tab.label;
       if (index === 0) btn.classList.add('active');
       inputTabs.appendChild(btn);
-
       const contentDiv = document.createElement('div');
       contentDiv.classList.add('tab-content');
       contentDiv.id = tab.id;
@@ -372,7 +304,6 @@ function updateTabs(analysis) {
       contentDiv.innerHTML = tab.content;
       inputContent.appendChild(contentDiv);
     });
-
     populateInputFields();
     updateClientFileName();
     const isMarriedInput = document.getElementById('is-married');
@@ -380,7 +311,6 @@ function updateTabs(analysis) {
       isMarriedInput.checked = clientData.isMarried;
       toggleClient2({ target: isMarriedInput });
     }
-
     setupTabSwitching();
     if (analysis === 'client-profile') {
       setupSubTabSwitching();
@@ -401,7 +331,6 @@ function populateInputFields() {
       return;
     }
     console.log('Populating input fields with clientData:', JSON.stringify(clientData, null, 2));
-
     const setIfExists = (id, value, label, property = 'value') => {
       const input = document.getElementById(id);
       if (input) {
@@ -410,7 +339,6 @@ function populateInputFields() {
         console.log(`Skipping ${label} (#${id}) as it is not present in current tab`);
       }
     };
-
     setIfExists('c1-name', clientData.client1.personal.name, 'Client 1 Name');
     setIfExists('c2-name', clientData.client2.personal.name, 'Client 2 Name');
     setIfExists('c1-employment', clientData.client1.incomeSources.employment, 'Client 1 Employment');
@@ -424,12 +352,11 @@ function populateInputFields() {
     setIfExists('c2-dob', clientData.client2.personal.dob, 'Client 2 DOB');
     setIfExists('c1-retirement-age', clientData.client1.personal.retirementAge, 'Client 1 Retirement Age');
     setIfExists('c2-retirement-age', clientData.client2.personal.retirementAge, 'Client 2 Retirement Age');
-    setIfExists('monthly-income-initial', clientData.incomeNeeds.initial, 'Monthly Income Initial');
-    setIfExists('years-after-retirement-1', clientData.incomeNeeds.yearsafter1, 'Years After Retirement 1');
-    setIfExists('monthly-income-1', clientData.incomeNeeds.monthly1, 'Monthly Income 1');
-    setIfExists('years-after-retirement-2', clientData.incomeNeeds.yearsafter2, 'Years After Retirement 2');
-    setIfExists('monthly-income-2', clientData.incomeNeeds.monthly2, 'Monthly Income 2');
-    setIfExists('mortality-age', clientData.assumptions.mortalityAge, 'Mortality Age');
+    setIfExists('monthly-income-initial', clientData.incomeNeeds.monthlyincomeinitial.initial, 'Monthly Income Initial');
+    setIfExists('years-after-retirement-1', clientData.incomeNeeds.yearsafterretirement1.yearsafter1, 'Years After Retirement 1');
+    setIfExists('monthly-income-1', clientData.incomeNeeds.monthlyincome1.monthly1, 'Monthly Income 1');
+    setIfExists('years-after-retirement-2', clientData.incomeNeeds.yearsafterretirement2.yearsafter2, 'Years After Retirement 2');
+    setIfExists('monthly-income-2', clientData.incomeNeeds.monthlyincome2.monthly2, 'Monthly Income 2');
     setIfExists('c1-mortality-age', clientData.assumptions.c1MortalityAge, 'Client 1 Mortality Age');
     setIfExists('c2-mortality-age', clientData.assumptions.c2MortalityAge, 'Client 2 Mortality Age');
     setIfExists('inflation', clientData.assumptions.inflation, 'Inflation');
@@ -459,10 +386,8 @@ function populateInputFields() {
         console.log(`Container #${client}-accounts not found in current tab`);
         return;
       }
-
       const existingAccounts = container.querySelectorAll('.account');
       existingAccounts.forEach(account => account.remove());
-
       accounts.forEach((account, index) => {
         const newAccount = document.createElement('div');
         newAccount.classList.add('account');
@@ -479,7 +404,6 @@ function populateInputFields() {
         `;
         const addButton = container.querySelector('.add-account-btn');
         container.insertBefore(newAccount, addButton);
-
         setInputValue(`${client}-account-${index}-name`, account.name, `Account ${index} Name`);
         setInputValue(`${client}-account-${index}-balance`, account.balance, `Account ${index} Balance`);
         setInputValue(`${client}-account-${index}-ror`, account.ror, `Account ${index} ROR`);
@@ -500,10 +424,8 @@ function populateInputFields() {
         console.log(`Container #${client}-assets not found in current tab`);
         return;
       }
-
       const existingAssets = container.querySelectorAll('.asset');
       existingAssets.forEach(asset => asset.remove());
-
       assets.forEach((asset, index) => {
         const newAsset = document.createElement('div');
         newAsset.classList.add('asset');
@@ -515,7 +437,6 @@ function populateInputFields() {
         `;
         const addButton = container.querySelector('.add-asset-btn');
         container.insertBefore(newAsset, addButton);
-
         setInputValue(`${client}-asset-${index}-name`, asset.name, `Asset ${index} Name`);
         setInputValue(`${client}-asset-${index}-balance`, asset.balance, `Asset ${index} Balance`);
         setInputValue(`${client}-asset-${index}-ror`, asset.ror, `Asset ${index} ROR`);
@@ -531,34 +452,13 @@ function populateInputFields() {
 // === Event Listeners ===
 function setupClientModalListeners() {
   try {
-    clientFileToggle.addEventListener('click', (e) => {
-      e.stopPropagation();
-      const isOpen = clientModal.style.display === 'block';
-      clientModal.style.display = isOpen ? 'none' : 'block';
-      clientFileToggle.setAttribute('aria-expanded', !isOpen);
-    });
-
-    closeModalBtn.addEventListener('click', () => {
-      clientModal.style.display = 'none';
-      clientFileToggle.setAttribute('aria-expanded', 'false');
-    });
-
-    document.addEventListener('click', (e) => {
-      if (!clientFileToggle.contains(e.target) && !clientModal.contains(e.target)) {
-        clientModal.style.display = 'none';
-        clientFileToggle.setAttribute('aria-expanded', 'false');
-      }
-    });
-
     clientList.addEventListener('click', (e) => {
       const li = e.target.closest('li');
       if (!li) return;
-
       selectedClientId = parseInt(li.dataset.clientId);
       clientList.querySelectorAll('li').forEach(item => item.classList.remove('selected'));
       li.classList.add('selected');
       clientFileName.textContent = li.textContent;
-
       const selectedClient = clients.find(client => client.id === selectedClientId);
       if (selectedClient) {
         clientData.client1 = selectedClient.data;
@@ -574,11 +474,9 @@ function setupClientModalListeners() {
           setTimeout(updateGraph, 100);
         }
       }
-
       clientModal.style.display = 'none';
-      clientFileToggle.setAttribute('aria-expanded', 'false');
+      clientFileName.setAttribute('aria-expanded', 'false');
     });
-
     clientSearch.addEventListener('input', (e) => {
       const searchTerm = e.target.value.toLowerCase();
       const clientItems = clientList.querySelectorAll('li');
@@ -595,9 +493,7 @@ function setupClientModalListeners() {
 function setupProfileDropdown() {
   try {
     const profilePic = document.getElementById('profile-pic');
-    const profileDropdown = document.getElementById('profile-dropdown');
     const dropdownMenu = document.getElementById('dropdown-menu');
-
     if (profilePic && dropdownMenu) {
       profilePic.addEventListener('click', (e) => {
         e.stopPropagation();
@@ -605,35 +501,24 @@ function setupProfileDropdown() {
         dropdownMenu.style.display = isOpen ? 'none' : 'block';
         profilePic.setAttribute('aria-expanded', !isOpen);
       });
-
-      profileDropdown.addEventListener('click', (e) => {
-        e.stopPropagation();
-        const isOpen = dropdownMenu.style.display === 'block';
-        dropdownMenu.style.display = isOpen ? 'none' : 'block';
-        profilePic.setAttribute('aria-expanded', !isOpen);
-      });
-
       document.addEventListener('click', (e) => {
-        if (!profilePic.contains(e.target) && !profileDropdown.contains(e.target) && !dropdownMenu.contains(e.target)) {
+        if (!profilePic.contains(e.target) && !dropdownMenu.contains(e.target)) {
           dropdownMenu.style.display = 'none';
           profilePic.setAttribute('aria-expanded', 'false');
         }
       });
-
       document.getElementById('help-link').addEventListener('click', (e) => {
         e.preventDefault();
         alert('Help: Please visit our support page for assistance.');
         dropdownMenu.style.display = 'none';
         profilePic.setAttribute('aria-expanded', 'false');
       });
-
       document.getElementById('settings-link').addEventListener('click', (e) => {
         e.preventDefault();
         alert('Settings: User settings are not yet implemented.');
         dropdownMenu.style.display = 'none';
         profilePic.setAttribute('aria-expanded', 'false');
       });
-
       document.getElementById('logout-link').addEventListener('click', (e) => {
         e.preventDefault();
         if (confirm('Are you sure you want to logout?')) {
@@ -673,7 +558,6 @@ function setupEventDelegation() {
         }, 500);
       }
     });
-
     document.addEventListener('change', (e) => {
       if (e.target.id === 'is-married') {
         toggleClient2(e);
@@ -688,7 +572,6 @@ function setupEventDelegation() {
         }
       }
     });
-
     document.addEventListener('addToPresentationToggle', (e) => {
       const { reportId, reportTitle } = e.detail;
       toggleReportSelection(reportId, reportTitle);
@@ -787,7 +670,6 @@ function setupAddButtons() {
       btn.removeEventListener('click', addAccountHandler);
       btn.addEventListener('click', addAccountHandler);
     });
-
     document.querySelectorAll('.add-asset-btn').forEach(btn => {
       btn.removeEventListener('click', addAssetHandler);
       btn.addEventListener('click', addAssetHandler);
@@ -869,10 +751,8 @@ function updateClientData(e) {
   try {
     const input = e.target;
     if (input.id === 'is-married') return;
-
     const value = input.type === 'number' ? (input.value === '' ? '' : parseFloat(input.value)) : input.value;
     console.log(`Updating ${input.id} with value: ${value}`);
-
     const clientKey = input.id.startsWith('c1-') ? 'client1' : input.id.startsWith('c2-') ? 'client2' : null;
     if (clientKey) {
       const prefix = clientKey === 'client1' ? 'c1' : 'c2';
@@ -917,7 +797,6 @@ function updateClientData(e) {
       else if (input.id === 'monthly-income-1') clientData.incomeNeeds.monthlyincome1.monthly1 = value;
       else if (input.id === 'years-after-retirement-2') clientData.incomeNeeds.yearsafterretirement2.yearsafter2 = value;
       else if (input.id === 'monthly-income-2') clientData.incomeNeeds.monthlyincome2.monthly2 = value;
-      else if (input.id === 'mortality-age') clientData.assumptions.mortalityAge = value;
       else if (input.id === 'inflation') clientData.assumptions.inflation = value;
       else if (input.id === 'ror-retirement') clientData.assumptions.rorRetirement = value;
       else if (input.id === 'household-expenses') clientData.savingsExpenses.householdExpenses = value;
@@ -929,7 +808,6 @@ function updateClientData(e) {
       else if (input.id === 'residence-mortgage') clientData.other.residenceMortgage = value;
       else if (input.id === 'other-debt') clientData.other.otherDebt = value;
     }
-
     if (input.id === 'c1-name' || input.id === 'c2-name') updateClientFileName();
   } catch (error) {
     console.error('Error in updateClientData:', error);
@@ -942,53 +820,43 @@ function updateGraph(previewData = null) {
     console.log('Chart.js available:', typeof Chart !== 'undefined');
     const chartCanvas = document.getElementById('analysis-chart');
     console.log('chartCanvas:', chartCanvas);
-
-    // Check if output-graph is the selected view
     const select = document.getElementById('output-select');
     const isGraphTabActive = select ? select.value === 'output-graph' : false;
     console.log('isGraphTabActive:', isGraphTabActive, 'output-select value:', select?.value);
-    
     if (!isGraphTabActive) {
       console.log('Skipping graph update: output-graph is not selected');
       if (chartCanvas) chartCanvas.style.display = 'none';
       return;
     }
-
     if (typeof Chart === 'undefined') {
       console.error('Chart.js is not loaded.');
       analysisOutputs.innerHTML = '<p class="output-error">Chart.js is not loaded. Please check your network connection.</p>';
       return;
     }
-
     if (!chartCanvas) {
       console.error('Chart canvas #analysis-chart not found.');
       return;
     }
-
     if (chartInstance) {
       console.log('Destroying existing chartInstance');
       chartInstance.destroy();
       chartInstance = null;
     }
-
     if (Chart.getChart(chartCanvas)) {
       console.log('Destroying orphaned chart on canvas');
       Chart.getChart(chartCanvas).destroy();
     }
-
     if (!clientData) {
       console.error('clientData is undefined');
       analysisOutputs.innerHTML = '<p class="output-error">Client data is undefined. Please check your inputs.</p>';
       return;
     }
-
     const validationError = validateClientData();
     if (validationError) {
       console.error('Validation failed:', validationError);
       analysisOutputs.innerHTML = `<p class="output-error">${validationError}</p>`;
       return;
     }
-
     if (currentAnalysis === 'retirement-accumulation') {
       console.log('Calling updateRetirementGraph');
       const graphType = document.getElementById('graph-type')?.value || 'income';
@@ -1002,7 +870,6 @@ function updateGraph(previewData = null) {
       console.warn(`No graph rendering for analysis type: ${currentAnalysis}`);
       chartCanvas.style.display = 'none';
     }
-
     if (!chartInstance) {
       console.warn('No chart instance created');
       chartCanvas.style.display = 'none';
@@ -1025,10 +892,8 @@ function updateOutputs() {
       if (outputTabsContainer) outputTabsContainer.innerHTML = '';
       return;
     }
-
     analysisOutputs.innerHTML = '';
     if (outputTabsContainer) outputTabsContainer.innerHTML = '';
-
     if (currentAnalysis === 'retirement-accumulation') {
       updateRetirementOutputs(analysisOutputs, clientData, formatCurrency, getAge, selectedReports, Chart);
     } else if (currentAnalysis === 'personal-finance') {
@@ -1104,12 +969,10 @@ function updateClientFileName() {
 function validateClientData() {
   try {
     const errors = [];
-
     if (!clientData || !clientData.incomeNeeds) {
       errors.push("Income needs data is missing or incomplete.");
       return errors.join('<br>');
     }
-
     if (!clientData.client1.personal.name) errors.push("Client 1 name is required.");
     if (!clientData.client1.personal.dob || new Date(clientData.client1.personal.dob) > new Date()) {
       errors.push("Client 1 date of birth is invalid.");
@@ -1117,7 +980,6 @@ function validateClientData() {
     if (!clientData.client1.personal.retirementAge || clientData.client1.personal.retirementAge < getAge(clientData.client1.personal.dob)) {
       errors.push("Client 1 retirement age must be greater than current age.");
     }
-
     if (clientData.isMarried) {
       if (!clientData.client2.personal.name) errors.push("Client 2 name is required when married.");
       if (!clientData.client2.personal.dob || new Date(clientData.client2.personal.dob) > new Date()) {
@@ -1127,15 +989,11 @@ function validateClientData() {
         errors.push("Client 2 retirement age must be greater than current age.");
       }
     }
-
     const incomeNeeds = clientData.incomeNeeds;
-
-    // Helper function to convert and validate a value
     const isPositiveNumber = (value) => {
       const num = parseFloat(value);
       return !isNaN(num) && num > 0;
     };
-
     if (!clientData.assumptions.c1MortalityAge || clientData.assumptions.c1MortalityAge < 0) {
       errors.push("Client 1 mortality age must be a positive number.");
     }
@@ -1148,7 +1006,6 @@ function validateClientData() {
     if (clientData.assumptions.rorRetirement == null || clientData.assumptions.rorRetirement < 0) {
       errors.push("Rate of return in retirement must be a non-negative number.");
     }
-
     ['client1', 'client2'].forEach((clientKey, idx) => {
       const client = clientData[clientKey].accounts;
       client.forEach((account, i) => {
@@ -1161,13 +1018,11 @@ function validateClientData() {
         }
       });
     });
-
     if (currentAnalysis === 'summary') {
       if (!clientData.summary?.topics || clientData.summary.topics.length === 0) {
         errors.push("At least one topic must be selected for Financial Fitness Score.");
       }
     }
-
     return errors.length ? errors.join('<br>') : null;
   } catch (error) {
     console.error('Error in validateClientData:', error);
