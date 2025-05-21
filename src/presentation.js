@@ -69,9 +69,12 @@ const clientSearch = document.getElementById('client-search');
 document.addEventListener('DOMContentLoaded', () => {
   try {
     console.log('Initializing presentation page...');
+    console.log('Loaded selectedReports:', selectedReports);
+    selectedReports = JSON.parse(localStorage.getItem('selectedReports')) || [];
     selectedReports = selectedReports.filter(report => 
       report && typeof report === 'object' && report.id && typeof report.title === 'string'
     );
+    console.log('Filtered selectedReports:', selectedReports);
     reportCount = selectedReports.length;
     localStorage.setItem('selectedReports', JSON.stringify(selectedReports));
     updateClientFileName();
@@ -93,6 +96,11 @@ document.addEventListener('DOMContentLoaded', () => {
 // Update client file name in header
 function updateClientFileName() {
   try {
+    const clientFileName = document.getElementById('client-file-name');
+    if (!clientFileName) {
+      console.error('clientFileName element not found');
+      return;
+    }
     let name = clientData.client1.personal.name || 'No Client Selected';
     if (clientData.isMarried && clientData.client2.personal.name) {
       name = `${clientData.client1.personal.name} & ${clientData.client2.personal.name}`;
@@ -124,6 +132,11 @@ function updateClientInfo() {
 // Populate client list in modal
 function populateClientList() {
   try {
+    const clientList = document.getElementById('client-list');
+    if (!clientList) {
+      console.error('clientList element not found');
+      return;
+    }
     clientList.innerHTML = '';
     clients.forEach(client => {
       const li = document.createElement('li');
@@ -140,8 +153,9 @@ function populateClientList() {
         updateClientInfo();
         clientList.querySelectorAll('li').forEach(item => item.classList.remove('selected'));
         li.classList.add('selected');
-        document.getElementById('client-modal').style.display = 'none';
-        clientFileName.setAttribute('aria-expanded', 'false');
+        const clientModal = document.getElementById('client-modal');
+        if (clientModal) clientModal.style.display = 'none';
+        if (clientFileName) clientFileName.setAttribute('aria-expanded', 'false');
       });
       clientList.appendChild(li);
     });
