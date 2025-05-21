@@ -214,17 +214,28 @@
         `;
       });
 
-    document.addEventListener('openClientModal', () => {
+    function showClientModal() {
       const modal = document.getElementById('client-modal');
       if (modal) {
         modal.style.display = 'flex';
+      } else {
+        console.error('Client modal not found');
       }
-    });
+    }
+
+    document.addEventListener('openClientModal', showClientModal);
 
     document.getElementById('close-modal')?.addEventListener('click', () => {
       const modal = document.getElementById('client-modal');
       if (modal) {
         modal.style.display = 'none';
+      }
+    });
+
+    // Ensure modal closes on outside click
+    document.getElementById('client-modal')?.addEventListener('click', (e) => {
+      if (e.target === e.currentTarget) {
+        e.currentTarget.style.display = 'none';
       }
     });
   </script>
