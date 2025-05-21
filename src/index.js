@@ -206,6 +206,34 @@ function saveClientData() {
   }
 }
 
+// Save chart configuration to localStorage
+function saveChartConfig(analysisType, chartInstance) {
+  try {
+    if (chartInstance) {
+      const chartConfig = {
+        type: chartInstance.config.type,
+        data: chartInstance.data,
+        options: chartInstance.options
+      };
+      localStorage.setItem(`chartConfig_${analysisType}`, JSON.stringify(chartConfig));
+      console.log(`Saved chart config for ${analysisType}:`, chartConfig);
+    }
+  } catch (error) {
+    console.error('Error in saveChartConfig:', error);
+  }
+}
+
+// Load chart configuration from localStorage
+function loadChartConfig(analysisType) {
+  try {
+    const savedConfig = localStorage.getItem(`chartConfig_${analysisType}`);
+    return savedConfig ? JSON.parse(savedConfig) : null;
+  } catch (error) {
+    console.error('Error in loadChartConfig:', error);
+    return null;
+  }
+}
+
 // === UI Population Functions ===
 function populateClientList() {
   try {
@@ -857,18 +885,31 @@ function updateGraph(previewData = null) {
       analysisOutputs.innerHTML = `<p class="output-error">${validationError}</p>`;
       return;
     }
-    if (currentAnalysis === 'retirement-accumulation') {
-      console.log('Calling updateRetirementGraph');
-      const graphType = document.getElementById('graph-type')?.value || 'income';
-      chartInstance = updateRetirementGraph(chartCanvas, clientData, Chart, getAge, graphType, previewData);
-      console.log('updateRetirementGraph returned chartInstance:', chartInstance);
-    } else if (currentAnalysis === 'personal-finance') {
-      console.log('Calling updatePersonalFinanceGraph');
-      chartInstance = updatePersonalFinanceGraph(chartCanvas, clientData, Chart);
-      console.log('updatePersonalFinanceGraph returned chartInstance:', chartInstance);
+    // Try to load saved chart config
+    const savedConfig = loadChartConfig(currentAnalysis);
+    if (savedConfig && !previewData) {
+      console.log('Using saved chart config for', currentAnalysis);
+      chartInstance = new Chart(chartCanvas, savedConfig);
+      chartCanvas.style.display = 'block';
     } else {
-      console.warn(`No graph rendering for analysis type: ${currentAnalysis}`);
-      chartCanvas.style.display = 'none';
+      if (currentAnalysis === 'retirement-accumulation') {
+        console.log('Calling updateRetirementGraph');
+        const graphType = document.getElementById('graph-type')?.value || 'income';
+        chartInstance = updateRetirementGraph(chartCanvas, clientData, Chart, getAge, graphType, previewData);
+        console.log('updateRetirementGraph returned chartInstance:', chartInstance);
+      } else if (currentAnalysis === 'personal-finance') {
+        console.log('Calling updatePersonalFinanceGraph');
+        chartInstance = updatePersonalFinanceGraph(chartCanvas, clientData, Chart);
+        console.log('updatePersonalFinanceGraph returned chartInstance:', chartInstance);
+      } else {
+        console.warn(`No graph rendering for analysis type: ${currentAnalysis}`);
+        chartCanvas.style.display = 'none';
+        return;
+      }
+      // Save the new chart config
+      if (chartInstance) {
+        saveChartConfig(currentAnalysis, chartInstance);
+      }
     }
     if (!chartInstance) {
       console.warn('No chart instance created');
@@ -881,6 +922,7 @@ function updateGraph(previewData = null) {
     analysisOutputs.innerHTML = '<p class="output-error">Error rendering graph. Please check console for details.</p>';
   }
 }
+
 function updateOutputs() {
   try {
     const activeTabBefore = document.querySelector('.output-tab-content.active')?.id || 'none';
@@ -918,7 +960,6 @@ function updateOutputs() {
     if (outputTabsContainer) outputTabsContainer.innerHTML = '';
   }
 }
-
 
 // === Helper Functions ===
 function setInputValue(id, value, label, property = 'value') {
