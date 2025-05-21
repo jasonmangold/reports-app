@@ -881,7 +881,6 @@ function updateGraph(previewData = null) {
     analysisOutputs.innerHTML = '<p class="output-error">Error rendering graph. Please check console for details.</p>';
   }
 }
-
 function updateOutputs() {
   try {
     const activeTabBefore = document.querySelector('.output-tab-content.active')?.id || 'none';
@@ -905,6 +904,12 @@ function updateOutputs() {
     } else {
       analysisOutputs.innerHTML = `<p class="output-card">Outputs not available for ${currentAnalysis}.</p>`;
     }
+    // Sync checkbox states
+    const checkboxes = document.querySelectorAll('input[type="checkbox"][data-report-id]');
+    checkboxes.forEach(checkbox => {
+      const reportId = checkbox.dataset.reportId;
+      checkbox.checked = selectedReports.some(report => report.id === reportId);
+    });
     const activeTabAfter = document.querySelector('.output-tab-content.active')?.id || 'none';
     console.log('updateOutputs completed, activeTabAfter:', activeTabAfter);
   } catch (error) {
@@ -913,6 +918,7 @@ function updateOutputs() {
     if (outputTabsContainer) outputTabsContainer.innerHTML = '';
   }
 }
+
 
 // === Helper Functions ===
 function setInputValue(id, value, label, property = 'value') {
@@ -1064,17 +1070,12 @@ function toggleReportSelection(reportId, reportTitle) {
       selectedReports.push({ id: reportId, title: reportTitle, order: selectedReports.length });
       reportCount++;
     }
-    selectedReports = [
-  { id: 'report-retirement-graph', title: 'Retirement Graph' },
-  { id: 'report-personal-finance-table', title: 'Personal Finance Table' }
-];
     localStorage.setItem('selectedReports', JSON.stringify(selectedReports));
     presentationCount.textContent = reportCount;
     presentationCount.classList.toggle('active', reportCount > 0);
     console.log('Selected reports:', selectedReports);
   } catch (error) {
     console.error('Error in toggleReportSelection:', error);
-    console.log('Toggling report:', reportId, reportTitle);
   }
 }
 
