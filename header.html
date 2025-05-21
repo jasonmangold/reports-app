@@ -58,10 +58,11 @@
     border: 1px solid #ccc;
     border-radius: 4px;
   }
-  #client-file-name:hover {
+  #client-file-name:hover, #client-file-name:focus {
     color: #007bff;
     border-color: #007bff;
     background-color: #e0e0e0;
+    outline: none;
   }
   #client-file-name i {
     font-size: 12px;
@@ -138,7 +139,15 @@
 </style>
 
 <script>
-  document.getElementById('client-file-name').addEventListener('click', () => {
-    document.dispatchEvent(new Event('openClientModal'));
+  function openClientModal() {
+    document.dispatchEvent(new CustomEvent('openClientModal'));
+  }
+  const clientFileName = document.getElementById('client-file-name');
+  clientFileName.addEventListener('click', openClientModal);
+  clientFileName.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      openClientModal();
+    }
   });
 </script>
