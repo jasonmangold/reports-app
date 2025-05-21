@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Analysis - Advisys</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" integrity="sha512-Fo3rlrZj/k7ujTnHg4CGR2D7kSs0v4LLanw2qksYuRlEzO+tcaEPQogQ0KaoGN26/zrn20ImR1DfuLWnOo7aBA==" crossorigin="anonymous" referrerpolicy="no-referrer">
   <link rel="stylesheet" href="header.css">
   <link rel="stylesheet" href="styles.css">
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
@@ -184,6 +184,7 @@
     </div>
   </div>
   <script>
+    // Load header
     fetch('header.html')
       .then(response => {
         if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
@@ -214,6 +215,7 @@
         `;
       });
 
+    // Modal handling
     function showClientModal() {
       const modal = document.getElementById('client-modal');
       if (modal) {
@@ -223,20 +225,42 @@
       }
     }
 
-    document.addEventListener('openClientModal', showClientModal);
-
-    document.getElementById('close-modal')?.addEventListener('click', () => {
+    function setupClientModalListeners() {
       const modal = document.getElementById('client-modal');
-      if (modal) {
-        modal.style.display = 'none';
-      }
-    });
+      const closeModal = document.getElementById('close-modal');
+      const clientSearch = document.getElementById('client-search');
+      const clientList = document.getElementById('client-list');
 
-    // Ensure modal closes on outside click
-    document.getElementById('client-modal')?.addEventListener('click', (e) => {
-      if (e.target === e.currentTarget) {
-        e.currentTarget.style.display = 'none';
+      if (!modal || !closeModal || !clientSearch || !clientList) {
+        console.error('Modal elements missing:', { modal, closeModal, clientSearch, clientList });
+        return;
       }
+
+      document.addEventListener('openClientModal', showClientModal);
+
+      closeModal.addEventListener('click', () => {
+        modal.style.display = 'none';
+      });
+
+      modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+          modal.style.display = 'none';
+        }
+      });
+
+      clientSearch.addEventListener('input', () => {
+        const searchTerm = clientSearch.value.toLowerCase();
+        const items = clientList.getElementsByTagName('li');
+        Array.from(items).forEach(item => {
+          const text = item.textContent.toLowerCase();
+          item.style.display = text.includes(searchTerm) ? '' : 'none';
+        });
+      });
+    }
+
+    // Wait for DOM and header to load
+    document.addEventListener('DOMContentLoaded', () => {
+      setupClientModalListeners();
     });
   </script>
   <script type="module" src="src/index.js"></script>
