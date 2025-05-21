@@ -139,9 +139,6 @@
 
 <script>
   document.getElementById('client-file-name').addEventListener('click', () => {
-    const modal = document.getElementById('client-modal');
-    if (modal) {
-      modal.style.display = 'flex';
-    }
+    document.dispatchEvent(new Event('openClientModal'));
   });
 </script>
