@@ -1064,6 +1064,10 @@ function toggleReportSelection(reportId, reportTitle) {
       selectedReports.push({ id: reportId, title: reportTitle, order: selectedReports.length });
       reportCount++;
     }
+    selectedReports = [
+  { id: 'report-retirement-graph', title: 'Retirement Graph' },
+  { id: 'report-personal-finance-table', title: 'Personal Finance Table' }
+];
     localStorage.setItem('selectedReports', JSON.stringify(selectedReports));
     presentationCount.textContent = reportCount;
     presentationCount.classList.toggle('active', reportCount > 0);
