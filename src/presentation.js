@@ -61,7 +61,6 @@ const clientNameInput = document.getElementById('client-name-input');
 const clientAddressInput = document.getElementById('client-address-input');
 const clientPhoneInput = document.getElementById('client-phone-input');
 const clientInfo = document.getElementById('client-info');
-const clientFileName = document.getElementById('client-file-name');
 const clientList = document.getElementById('client-list');
 const clientSearch = document.getElementById('client-search');
 
@@ -77,7 +76,6 @@ document.addEventListener('DOMContentLoaded', () => {
     console.log('Filtered selectedReports:', selectedReports);
     reportCount = selectedReports.length;
     localStorage.setItem('selectedReports', JSON.stringify(selectedReports));
-    updateClientFileName();
     updateClientInfo();
     populateClientList();
     populateReportList();
@@ -92,24 +90,6 @@ document.addEventListener('DOMContentLoaded', () => {
     reportList.innerHTML = '<p class="output-error">Error initializing page. Please check console for details.</p>';
   }
 });
-
-// Update client file name in header
-function updateClientFileName() {
-  try {
-    const clientFileName = document.getElementById('client-file-name');
-    if (!clientFileName) {
-      console.error('clientFileName element not found');
-      return;
-    }
-    let name = clientData.client1.personal.name || 'No Client Selected';
-    if (clientData.isMarried && clientData.client2.personal.name) {
-      name = `${clientData.client1.personal.name} & ${clientData.client2.personal.name}`;
-    }
-    clientFileName.textContent = name;
-  } catch (error) {
-    console.error('Error in updateClientFileName:', error);
-  }
-}
 
 // Update client information
 function updateClientInfo() {
@@ -132,7 +112,6 @@ function updateClientInfo() {
 // Populate client list in modal
 function populateClientList() {
   try {
-    const clientList = document.getElementById('client-list');
     if (!clientList) {
       console.error('clientList element not found');
       return;
@@ -149,13 +128,11 @@ function populateClientList() {
         selectedClientId = client.id;
         clientData.client1 = client.data;
         localStorage.setItem('clientData', JSON.stringify(clientData));
-        updateClientFileName();
         updateClientInfo();
         clientList.querySelectorAll('li').forEach(item => item.classList.remove('selected'));
         li.classList.add('selected');
         const clientModal = document.getElementById('client-modal');
         if (clientModal) clientModal.style.display = 'none';
-        if (clientFileName) clientFileName.setAttribute('aria-expanded', 'false');
       });
       clientList.appendChild(li);
     });
@@ -182,12 +159,10 @@ function setupClientSearch() {
           selectedClientId = client.id;
           clientData.client1 = client.data;
           localStorage.setItem('clientData', JSON.stringify(clientData));
-          updateClientFileName();
           updateClientInfo();
           clientList.querySelectorAll('li').forEach(item => item.classList.remove('selected'));
           li.classList.add('selected');
           document.getElementById('client-modal').style.display = 'none';
-          clientFileName.setAttribute('aria-expanded', 'false');
         });
         clientList.appendChild(li);
       });
@@ -392,7 +367,7 @@ async function generatePresentationPreview() {
     pdfPreviewModal.style.display = 'flex';
 
     const tempContainer = document.createElement('div');
-    tempContainer.style.width = '600px';
+    tempContainer.style.width = '800px';
     tempContainer.style.background = '#fff';
 
     // Add header and footer if enabled
@@ -570,22 +545,6 @@ async function generatePresentationPreview() {
         reportDiv.appendChild(footerDiv);
       }
 
-      const canvas = reportDiv.querySelector('canvas');
-      if (canvas) {
-        const canvasParent = canvas.parentNode;
-        document.body.appendChild(canvas);
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        const imgData = canvas.toDataURL('image/png');
-        const img = document.createElement('img');
-        img.src = imgData;
-        img.style.width = canvas.style.width || '600px';
-        img.style.height = canvas.style.height || '400px';
-        canvasParent.replaceChild(img, canvas);
-        if (canvas.parentNode === document.body) {
-          document.body.removeChild(canvas);
-        }
-      }
-
       tempContainer.appendChild(reportDiv);
     }
 
@@ -641,6 +600,17 @@ async function generatePresentationPreview() {
       }
     }
 
+    // Convert canvas to images for preview
+    const canvases = tempContainer.querySelectorAll('canvas');
+    for (const canvas of canvases) {
+      const imgData = canvas.toDataURL('image/png');
+      const img = document.createElement('img');
+      img.src = imgData;
+      img.style.width = canvas.style.width || '800px';
+      img.style.height = canvas.style.height || '400px';
+      canvas.parentNode.replaceChild(img, canvas);
+    }
+
     pdfPreviewContent.innerHTML = '';
     pdfPreviewContent.appendChild(tempContainer);
 
@@ -660,18 +630,16 @@ async function renderRetirementReport(container, outputType, title) {
     container.innerHTML += '<p>No client data available for this report.</p>';
     return;
   }
-  if (outputType === 'graph') {
+  if (outputType === 'graph' || outputType === 'timeline') {
     const canvas = document.createElement('canvas');
     canvas.id = `temp-chart-${Date.now()}`;
-    canvas.style.width = '600px';
+    canvas.style.width = '800px';
     canvas.style.height = '400px';
     container.appendChild(canvas);
-    const chartInstance = await updateRetirementGraph(canvas, clientData, window.Chart, getAge);
+    const chartInstance = await updateRetirementGraph(canvas, clientData, window.Chart, getAge, outputType);
     if (!chartInstance) {
       container.innerHTML += '<p>Failed to render chart.</p>';
     }
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    return chartInstance;
   } else {
     updateRetirementOutputs(container, clientData, formatCurrency, getAge, selectedReports, window.Chart, outputType);
     if (!container.innerHTML.includes('output-card') && !container.innerHTML.includes('output-table')) {
@@ -687,18 +655,16 @@ async function renderPersonalFinanceReport(container, outputType, title) {
     container.innerHTML += '<p>No client data available for this report.</p>';
     return;
   }
-  if (outputType === 'graph') {
+  if (outputType === 'graph' || outputType === 'timeline') {
     const canvas = document.createElement('canvas');
     canvas.id = `temp-chart-${Date.now()}`;
-    canvas.style.width = '600px';
+    canvas.style.width = '800px';
     canvas.style.height = '400px';
     container.appendChild(canvas);
-    const chartInstance = await updatePersonalFinanceGraph(canvas, clientData, window.Chart);
+    const chartInstance = await updatePersonalFinanceGraph(canvas, clientData, window.Chart, outputType);
     if (!chartInstance) {
       container.innerHTML += '<p>Failed to render chart.</p>';
     }
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    return chartInstance;
   } else {
     updatePersonalFinanceOutputs(container, clientData, formatCurrency, selectedReports, window.Chart, outputType);
     if (!container.innerHTML.includes('output-card') && !container.innerHTML.includes('output-table')) {
@@ -714,9 +680,21 @@ async function renderSummaryReport(container, outputType, title) {
     container.innerHTML += '<p>No client data available for this report.</p>';
     return;
   }
-  updateSummaryOutputs(container, clientData, formatCurrency, selectedReports, window.Chart, getAge, outputType);
-  if (!container.innerHTML.includes('output-card') && !container.innerHTML.includes('output-table')) {
-    container.innerHTML += '<p>No summary data available for this output type.</p>';
+  if (outputType === 'graph' || outputType === 'timeline') {
+    const canvas = document.createElement('canvas');
+    canvas.id = `temp-chart-${Date.now()}`;
+    canvas.style.width = '800px';
+    canvas.style.height = '400px';
+    container.appendChild(canvas);
+    const chartInstance = await updateSummaryOutputs(container, clientData, formatCurrency, selectedReports, window.Chart, getAge, outputType);
+    if (!chartInstance) {
+      container.innerHTML += '<p>Failed to render chart.</p>';
+    }
+  } else {
+    updateSummaryOutputs(container, clientData, formatCurrency, selectedReports, window.Chart, getAge, outputType);
+    if (!container.innerHTML.includes('output-card') && !container.innerHTML.includes('output-table')) {
+      container.innerHTML += '<p>No summary data available for this output type.</p>';
+    }
   }
 }
 
@@ -736,7 +714,7 @@ async function downloadPresentationPDF() {
       const titlePage = document.createElement('div');
       titlePage.style.padding = '20px';
       titlePage.style.background = '#fff';
-      titlePage.style.width = '600px';
+      titlePage.style.width = '800px';
       titlePage.style.position = 'absolute';
       titlePage.style.left = '-9999px';
       const presentationTitle = titleInput?.value || localStorage.getItem('presentationTitle') || 'Financial Analysis';
@@ -779,7 +757,7 @@ async function downloadPresentationPDF() {
       tocPage.classList.add('report-preview');
       tocPage.style.padding = '20px';
       tocPage.style.background = '#fff';
-      tocPage.style.width = '600px';
+      tocPage.style.width = '800px';
       tocPage.style.position = 'absolute';
       tocPage.style.left = '-9999px';
       let tocContent = `<h2 style="text-align: center; font-size: 20px;">Table of Contents</h2><ul style="list-style: none; padding: 0;">`;
@@ -815,7 +793,7 @@ async function downloadPresentationPDF() {
       profilePage.classList.add('report-preview');
       profilePage.style.padding = '20px';
       profilePage.style.background = '#fff';
-      profilePage.style.width = '600px';
+      profilePage.style.width = '800px';
       profilePage.style.position = 'absolute';
       profilePage.style.left = '-9999px';
       let profileContent = `<h2 style="text-align: center; font-size: 20px;">Personal Profile</h2>`;
@@ -855,7 +833,7 @@ async function downloadPresentationPDF() {
         disclaimerPage.classList.add('report-preview');
         disclaimerPage.style.padding = '20px';
         disclaimerPage.style.background = '#fff';
-        disclaimerPage.style.width = '600px';
+        disclaimerPage.style.width = '800px';
         disclaimerPage.style.position = 'absolute';
         disclaimerPage.style.left = '-9999px';
         disclaimerPage.innerHTML = `
@@ -884,8 +862,8 @@ async function downloadPresentationPDF() {
         const disclosurePage = document.createElement('div');
         disclosurePage.classList.add('report-preview');
         disclosurePage.style.padding = '20px';
-        disclosurePage.style.background = '#fff';
-        disclosurePage.style.width = '600px';
+        disclaimerPage.style.background = '#fff';
+        disclosurePage.style.width = '800px';
         disclosurePage.style.position = 'absolute';
         disclosurePage.style.left = '-9999px';
         disclosurePage.innerHTML = `
@@ -899,7 +877,7 @@ async function downloadPresentationPDF() {
         const disclosureCanvas = await html2canvas(disclosurePage, { scale: 2, useCORS: true });
         const disclosureImgData = disclosureCanvas.toDataURL('image/png');
         const disclosureImgWidth = doc.internal.pageSize.getWidth() - 40;
-        const disclosureImgHeight = (disclaimerCanvas.height * disclosureImgWidth) / disclosureCanvas.width;
+        const disclosureImgHeight = (disclosureCanvas.height * disclosureImgWidth) / disclosureCanvas.width;
         doc.addImage(disclosureImgData, 'PNG', 20, yOffset, disclosureImgWidth, disclosureImgHeight);
         if (presentationOptions.includePageNumbers) {
           doc.text(`${pageNumber}`, doc.internal.pageSize.getWidth() - 30, doc.internal.pageSize.getHeight() - 10);
@@ -923,7 +901,7 @@ async function downloadPresentationPDF() {
       reportDiv.classList.add('report-preview');
       reportDiv.style.padding = '20px';
       reportDiv.style.background = '#fff';
-      reportDiv.style.width = '600px';
+      reportDiv.style.width = '800px';
       reportDiv.style.position = 'absolute';
       reportDiv.style.left = '-9999px';
 
@@ -989,7 +967,7 @@ async function downloadPresentationPDF() {
         const imgData = canvas.toDataURL('image/png');
         const img = document.createElement('img');
         img.src = imgData;
-        img.style.width = canvas.style.width || '600px';
+        img.style.width = canvas.style.width || '800px';
         img.style.height = canvas.style.height || '400px';
         canvasParent.replaceChild(img, canvas);
         if (canvas.parentNode === document.body) {
@@ -1027,7 +1005,7 @@ async function downloadPresentationPDF() {
       recordPage.classList.add('report-preview');
       recordPage.style.padding = '20px';
       recordPage.style.background = '#fff';
-      recordPage.style.width = '600px';
+      recordPage.style.width = '800px';
       recordPage.style.position = 'absolute';
       recordPage.style.left = '-9999px';
       let recordContent = `<h2 style="text-align: center; font-size: 20px;">Record of Reports</h2><ul style="list-style: none; padding: 0;">`;
@@ -1064,7 +1042,7 @@ async function downloadPresentationPDF() {
         disclaimerPage.classList.add('report-preview');
         disclaimerPage.style.padding = '20px';
         disclaimerPage.style.background = '#fff';
-        disclaimerPage.style.width = '600px';
+        disclaimerPage.style.width = '800px';
         disclaimerPage.style.position = 'absolute';
         disclaimerPage.style.left = '-9999px';
         disclaimerPage.innerHTML = `
@@ -1094,7 +1072,7 @@ async function downloadPresentationPDF() {
         disclosurePage.classList.add('report-preview');
         disclosurePage.style.padding = '20px';
         disclosurePage.style.background = '#fff';
-        disclosurePage.style.width = '600px';
+        disclosurePage.style.width = '800px';
         disclosurePage.style.position = 'absolute';
         disclosurePage.style.left = '-9999px';
         disclosurePage.innerHTML = `
