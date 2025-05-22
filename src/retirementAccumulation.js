@@ -413,130 +413,71 @@ function calculateRetirementIncome(clientData, getAge) {
 /**
  * Updates the retirement income bar graph using Chart.js.
  */
-export function updateRetirementGraph(chartCanvas, clientData, Chart, getAge, graphType = 'income', previewData = null) {
+export function updateRetirementGraph(canvas, clientData, Chart, getAge, graphType = 'income', previewData = null) {
   try {
-    // Check if output-graph is the active tab
-    const activeTab = document.querySelector('.output-tab-content[style*="display: block"]') ||
-                      document.querySelector('.output-tab-content.active');
-    if (!activeTab || activeTab.id !== 'output-graph') {
-      console.log('Skipping updateRetirementGraph: output-graph is not active, activeTab:', activeTab?.id);
-      return null;
-    }
-
-    if (!chartCanvas) {
-      console.error('Chart canvas #analysis-chart not found');
-      return null;
-    }
-    if (typeof Chart === 'undefined') {
-      console.error('Chart.js not loaded');
-      return null;
-    }
-
-    const ctx = chartCanvas.getContext('2d');
-    if (chartCanvas.chartInstance) {
-      console.log('Destroying existing chartInstance in updateRetirementGraph');
-      chartCanvas.chartInstance.destroy();
-      chartCanvas.chartInstance = null;
-    }
-
-    const incomeData = previewData || calculateRetirementIncome(clientData, getAge);
-    if (!incomeData.labels.length) {
-      const chartInstance = new Chart(ctx, {
-        type: 'bar',
-        data: {
-          labels: ['Error'],
-          datasets: [{
-            label: 'Error',
-            data: [0],
-            backgroundColor: '#ef4444'
-          }]
-        },
-        options: {
-          responsive: true,
-          plugins: {
-            title: { display: true, text: 'Please enter valid DOB and retirement age' }
-          }
-        }
-      });
-      chartCanvas.chartInstance = chartInstance;
-      return chartInstance;
-    }
-
-    const chartInstance = new Chart(ctx, {
-      type: 'bar',
+    const data = previewData || clientData;
+    const c1Age = getAge(data.client1.personal.dob);
+    const c1RetirementAge = parseFloat(data.client1.personal.retirementAge) || 65;
+    const config = {
+      type: 'line',
       data: {
-        labels: incomeData.labels.slice(1),
-        datasets: [
-          {
-            label: 'Social Security',
-            data: incomeData.socialSecurityData.slice(1).map(Math.round),
-            backgroundColor: '#22c55e',
-            stack: 'Stack0'
-          },
-          {
-            label: 'Income',
-            data: incomeData.incomeData.slice(1).map(Math.round),
-            backgroundColor: '#3b82f6',
-            stack: 'Stack0'
-          },
-          {
-            label: 'Withdrawal',
-            data: incomeData.withdrawalData.slice(1).map(Math.round),
-            backgroundColor: '#f97316',
-            stack: 'Stack0'
-          },
-          {
-            label: 'Shortfall',
-            data: incomeData.shortfallData.slice(1).map(Math.round),
-            backgroundColor: '#ef4444',
-            stack: 'Stack0'
-          },
-          {
-            label: 'Income Need',
-            type: 'line',
-            data: incomeData.needData.slice(1).map(Math.round),
-            borderColor: '#000000',
-            borderWidth: 2,
-            fill: false,
-            pointRadius: 0,
-            yAxisID: 'y'
-          }
-        ]
+        labels: [],
+        datasets: []
       },
       options: {
         responsive: true,
         plugins: {
-          legend: { display: true, position: 'top' },
-          title: { display: true, text: 'Retirement Income Sources by Age' }
+          title: { display: true, text: graphType === 'timeline' ? 'Retirement Income Timeline' : 'Retirement Income Accumulation' }
         },
         scales: {
-          x: { title: { display: true, text: clientData.isMarried ? 'Client 1/Client 2 Age' : 'Client 1 Age' }, stacked: true },
-          y: { title: { display: true, text: 'Annual Income ($)' }, stacked: true, beginAtZero: true }
+          y: {
+            beginAtZero: true,
+            title: { display: true, text: graphType === 'timeline' ? 'Monthly Income ($)' : 'Accumulated Value ($)' }
+          },
+          x: {
+            title: { display: true, text: 'Time' }
+          }
         }
       }
-    });
-    chartCanvas.chartInstance = chartInstance;
+    };
+
+    if (graphType === 'timeline') {
+      // Timeline graph based on income needs
+      const years = [
+        0,
+        parseFloat(data.incomeNeeds.yearsafterretirement1.yearsafter1) || 5,
+        parseFloat(data.incomeNeeds.yearsafterretirement2.yearsafter2) || 10
+      ];
+      config.data.labels = ['Retirement', `+${years[1]} Years`, `+${years[2]} Years`];
+      config.data.datasets = [{
+        label: 'Monthly Income',
+        data: [
+          parseFloat(data.incomeNeeds.monthlyincomeinitial.initial) || 5000,
+          parseFloat(data.incomeNeeds.monthlyincome1.monthly1) || 4500,
+          parseFloat(data.incomeNeeds.monthlyincome2.monthly2) || 4000
+        ],
+        borderColor: '#007bff',
+        backgroundColor: 'rgba(0, 123, 255, 0.1)',
+        fill: false
+      }];
+    } else {
+      // Accumulation graph (existing logic, placeholder)
+      const yearsToRetirement = c1RetirementAge - c1Age;
+      config.data.labels = Array.from({ length: yearsToRetirement }, (_, i) => `Year ${i + 1}`);
+      config.data.datasets = [{
+        label: 'Accumulated Value',
+        data: Array.from({ length: yearsToRetirement }, (_, i) => 100000 * Math.pow(1.06, i + 1)), // Example 6% ROR
+        borderColor: '#28a745',
+        backgroundColor: 'rgba(40, 167, 69, 0.1)',
+        fill: false
+      }];
+    }
+
+    const chartInstance = new Chart(canvas, config);
     return chartInstance;
   } catch (error) {
     console.error('Error in updateRetirementGraph:', error);
-    const ctx = chartCanvas.getContext('2d');
-    const chartInstance = new Chart(ctx, {
-      type: 'bar',
-      data: {
-        labels: ['Error'],
-        datasets: [{
-          label: 'Error',
-          data: [0],
-          backgroundColor: '#ef4444'
-        }]
-      },
-      options: {
-        responsive: true,
-        plugins: { title: { display: true, text: 'Error rendering graph' } }
-      }
-    });
-    chartCanvas.chartInstance = chartInstance;
-    return chartInstance;
+    return null;
   }
 }
 
