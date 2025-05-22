@@ -1644,3 +1644,6 @@ p .active {
 #edit-report-inputs-btn:hover {
   background-color: #218838;
 }
+.input-tabs, .input-content {
+  display: block !important;
+}
