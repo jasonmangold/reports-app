@@ -1591,3 +1591,56 @@ p .active {
 .report-preview {
   page-break-after: always;
 }
+.report-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px;
+  border: 1px solid #ccc;
+  margin-bottom: 10px;
+}
+
+.report-title {
+  flex: 1;
+  cursor: pointer;
+  color: #007bff;
+}
+
+.report-title:hover {
+  text-decoration: underline;
+}
+
+.remove-report-btn, .edit-report-btn {
+  padding: 5px 10px;
+  cursor: pointer;
+}
+
+.edit-report-btn {
+  background-color: #28a745;
+  color: white;
+  border: none;
+  border-radius: 3px;
+}
+
+.edit-report-btn:hover {
+  background-color: #218838;
+}
+
+#report-preview-modal .modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  padding: 10px;
+}
+
+#edit-report-inputs-btn {
+  padding: 10px 20px;
+  background-color: #28a745;
+  color: white;
+  border: none;
+  border-radius: 3px;
+  cursor: pointer;
+}
+
+#edit-report-inputs-btn:hover {
+  background-color: #218838;
+}
