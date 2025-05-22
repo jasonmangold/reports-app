@@ -535,6 +535,21 @@ function populateInputFields() {
 // === Event Listeners ===
 function setupClientModalListeners() {
   try {
+    const clientModal = document.getElementById('client-modal');
+    const clientList = document.getElementById('client-list');
+    const clientSearch = document.getElementById('client-search');
+    const clientFileName = document.getElementById('client-file-name');
+
+    if (!clientModal || !clientList || !clientSearch || !clientFileName) {
+      console.warn('Modal elements missing:', {
+        clientModal: clientModal,
+        clientList: clientList,
+        clientSearch: clientSearch,
+        clientFileName: clientFileName
+      });
+      return;
+    }
+
     clientList.addEventListener('click', (e) => {
       const li = e.target.closest('li');
       if (!li) return;
@@ -560,6 +575,7 @@ function setupClientModalListeners() {
       clientModal.style.display = 'none';
       clientFileName.setAttribute('aria-expanded', 'false');
     });
+
     clientSearch.addEventListener('input', (e) => {
       const searchTerm = e.target.value.toLowerCase();
       const clientItems = clientList.querySelectorAll('li');
