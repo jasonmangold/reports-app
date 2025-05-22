@@ -59,6 +59,10 @@
     background-color: #f5f5f5;
     border: 1px solid #ccc;
     border-radius: 4px;
+    max-width: 150px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
   #client-file-name:hover, #client-file-name:focus {
     color: #007bff;
@@ -68,12 +72,14 @@
   }
   #client-file-name i {
     font-size: 12px;
+    flex-shrink: 0;
   }
   #client-file-name::after {
     content: '▼';
     font-size: 12px;
     margin-left: 5px;
     display: inline-block;
+    flex-shrink: 0;
   }
   nav { flex-grow: 1; display: flex; justify-content: center; }
   nav ul {
