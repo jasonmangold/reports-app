@@ -95,7 +95,18 @@
       </div>
     </div>
   </div>
-
+<div id="report-preview-modal" class="modal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h2>Report Preview</h2>
+      <span class="close" id="close-report-modal">×</span>
+    </div>
+    <div class="modal-body" id="report-preview-content"></div>
+    <div class="modal-footer">
+      <button id="edit-report-inputs-btn">Edit Inputs</button>
+    </div>
+  </div>
+</div>
   <script>
     fetch('header.html')
       .then(response => {
