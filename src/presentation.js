@@ -211,6 +211,17 @@ function populateReportList() {
         <button class="remove-report-btn" data-report-id="${report.id}">Remove</button>
         <button class="edit-report-btn" data-report-id="${report.id}">Edit Inputs</button>
       `;
+      // Determine report type
+      let reportType = '';
+      if (report.id.includes('retirement')) {
+        reportType = report.id.includes('timeline') ? 'retirement-timeline' : 'retirement-accumulation';
+      } else if (report.id.includes('personal-finance')) {
+        reportType = 'personal-finance';
+      } else if (report.id.includes('summary')) {
+        reportType = 'summary';
+      } else {
+        reportType = 'generic';
+      }
       // Add click event for preview
       reportItem.querySelector('.report-title').addEventListener('click', async () => {
         const modal = document.getElementById('report-preview-modal');
@@ -234,7 +245,10 @@ function populateReportList() {
         // Set up Edit Inputs button in modal
         const editBtn = document.getElementById('edit-report-inputs-btn');
         editBtn.dataset.reportId = report.id;
+        editBtn.dataset.reportType = reportType;
       });
+      // Add click event for edit button
+      reportItem.querySelector('.edit-report-btn').dataset.reportType = reportType;
       reportList.appendChild(reportItem);
     });
 
@@ -299,7 +313,9 @@ function setupDragAndDrop() {
         updatePreviewButton();
       } else if (e.target.classList.contains('edit-report-btn')) {
         const reportId = e.target.dataset.reportId;
+        const reportType = e.target.dataset.reportType;
         localStorage.setItem('editReportId', reportId);
+        localStorage.setItem('editReportType', reportType);
         window.location.href = 'analysis.html';
       }
     });
@@ -443,7 +459,7 @@ function setupModalEvents() {
   });
   downloadPdfBtn.addEventListener('click', downloadPresentationPDF);
 
-  // New report preview modal events
+  // Report preview modal events
   const closeReportModal = document.getElementById('close-report-modal');
   if (closeReportModal) {
     closeReportModal.addEventListener('click', () => {
@@ -454,7 +470,9 @@ function setupModalEvents() {
   if (editReportInputsBtn) {
     editReportInputsBtn.addEventListener('click', () => {
       const reportId = editReportInputsBtn.dataset.reportId;
+      const reportType = editReportInputsBtn.dataset.reportType;
       localStorage.setItem('editReportId', reportId);
+      localStorage.setItem('editReportType', reportType);
       window.location.href = 'analysis.html';
     });
   }
