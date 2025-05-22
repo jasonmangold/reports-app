@@ -116,11 +116,50 @@ document.addEventListener('DOMContentLoaded', () => {
     loadSelectedReports();
     console.log('Chart.js available:', typeof Chart !== 'undefined');
     console.log('chartCanvas:', document.getElementById('analysis-chart'));
+
+    // Check for editReportId and editReportType
+    const editReportId = localStorage.getItem('editReportId');
+    const editReportType = localStorage.getItem('editReportType');
+    if (editReportId && editReportType) {
+      // Map editReportType to analysis topic and output
+      if (editReportType === 'retirement-accumulation') {
+        currentAnalysis = 'retirement-accumulation';
+      } else if (editReportType === 'retirement-timeline') {
+        currentAnalysis = 'retirement-accumulation'; // Timeline is an output under accumulation
+      } else if (editReportType === 'personal-finance') {
+        currentAnalysis = 'personal-finance';
+      } else if (editReportType === 'summary') {
+        currentAnalysis = 'summary';
+      }
+      const select = document.getElementById('analysis-topic-select');
+      if (select) {
+        select.value = currentAnalysis;
+      }
+    }
+
     populateAnalysisTopics();
     updateTabs(currentAnalysis);
     populateClientList();
     updateClientFileName();
     setupEventDelegation();
+    
+    // Set output-select for editReportType
+    const outputSelect = document.getElementById('output-select');
+    if (editReportId && editReportType && outputSelect) {
+      if (editReportType === 'retirement-timeline') {
+        outputSelect.value = 'output-retirement-timeline'; // Adjust to match your option value
+      } else if (editReportType === 'retirement-accumulation') {
+        outputSelect.value = 'output-graph';
+      } else if (editReportType === 'personal-finance') {
+        outputSelect.value = 'output-graph';
+      } else if (editReportType === 'summary') {
+        outputSelect.value = 'output-summary';
+      }
+      // Trigger change event
+      const event = new Event('change');
+      outputSelect.dispatchEvent(event);
+    }
+
     updateOutputs();
     if (currentAnalysis === 'client-profile') {
       analysisWorkspace.classList.add('client-profile-active');
@@ -135,6 +174,10 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     }, 100);
     setupProfileDropdown();
+
+    // Clear editReportId and editReportType
+    localStorage.removeItem('editReportId');
+    localStorage.removeItem('editReportType');
   } catch (error) {
     console.error('Initialization error:', error);
     analysisOutputs.innerHTML = '<p class="output-error">Error initializing page. Please check console for details.</p>';
@@ -215,11 +258,23 @@ function saveChartConfig(analysisType, chartInstance) {
         data: chartInstance.data,
         options: chartInstance.options
       };
-      localStorage.setItem(`chartConfig_${analysisType}`, JSON.stringify(chartConfig));
-      console.log(`Saved chart config for ${analysisType}:`, chartConfig);
+      const key = analysisType === 'retirement-timeline' ? 'retirement-accumulation-timeline' : analysisType;
+      localStorage.setItem(`chartConfig_${key}`, JSON.stringify(chartConfig));
+      console.log(`Saved chart config for ${key}:`, chartConfig);
     }
   } catch (error) {
     console.error('Error in saveChartConfig:', error);
+  }
+}
+
+function loadChartConfig(analysisType) {
+  try {
+    const key = analysisType === 'retirement-timeline' ? 'retirement-accumulation-timeline' : analysisType;
+    const savedConfig = localStorage.getItem(`chartConfig_${key}`);
+    return savedConfig ? JSON.parse(savedConfig) : null;
+  } catch (error) {
+    console.error('Error in loadChartConfig:', error);
+    return null;
   }
 }
 
@@ -849,10 +904,12 @@ function updateGraph(previewData = null) {
     const chartCanvas = document.getElementById('analysis-chart');
     console.log('chartCanvas:', chartCanvas);
     const select = document.getElementById('output-select');
-    const isGraphTabActive = select ? select.value === 'output-graph' : false;
+    const outputType = select ? select.value : 'output-graph';
+    console.log('outputType:', outputType);
+    const isGraphTabActive = outputType === 'output-graph' || outputType === 'output-retirement-timeline';
     console.log('isGraphTabActive:', isGraphTabActive, 'output-select value:', select?.value);
     if (!isGraphTabActive) {
-      console.log('Skipping graph update: output-graph is not selected');
+      console.log('Skipping graph update: graph output is not selected');
       if (chartCanvas) chartCanvas.style.display = 'none';
       return;
     }
@@ -886,15 +943,16 @@ function updateGraph(previewData = null) {
       return;
     }
     // Try to load saved chart config
-    const savedConfig = loadChartConfig(currentAnalysis);
+    const configKey = outputType === 'output-retirement-timeline' ? 'retirement-accumulation-timeline' : currentAnalysis;
+    const savedConfig = loadChartConfig(configKey);
     if (savedConfig && !previewData) {
-      console.log('Using saved chart config for', currentAnalysis);
+      console.log('Using saved chart config for', configKey);
       chartInstance = new Chart(chartCanvas, savedConfig);
       chartCanvas.style.display = 'block';
     } else {
       if (currentAnalysis === 'retirement-accumulation') {
         console.log('Calling updateRetirementGraph');
-        const graphType = document.getElementById('graph-type')?.value || 'income';
+        const graphType = outputType === 'output-retirement-timeline' ? 'timeline' : 'income';
         chartInstance = updateRetirementGraph(chartCanvas, clientData, Chart, getAge, graphType, previewData);
         console.log('updateRetirementGraph returned chartInstance:', chartInstance);
       } else if (currentAnalysis === 'personal-finance') {
@@ -908,7 +966,7 @@ function updateGraph(previewData = null) {
       }
       // Save the new chart config
       if (chartInstance) {
-        saveChartConfig(currentAnalysis, chartInstance);
+        saveChartConfig(configKey, chartInstance);
       }
     }
     if (!chartInstance) {
@@ -935,8 +993,16 @@ function updateOutputs() {
     }
     analysisOutputs.innerHTML = '';
     if (outputTabsContainer) outputTabsContainer.innerHTML = '';
+    const outputSelect = document.getElementById('output-select');
+    const outputType = outputSelect ? outputSelect.value : 'output-graph';
+    
     if (currentAnalysis === 'retirement-accumulation') {
-      updateRetirementOutputs(analysisOutputs, clientData, formatCurrency, getAge, selectedReports, Chart);
+      if (outputType === 'output-retirement-timeline') {
+        // Render timeline-specific outputs
+        updateRetirementOutputs(analysisOutputs, clientData, formatCurrency, getAge, selectedReports, Chart, 'timeline');
+      } else {
+        updateRetirementOutputs(analysisOutputs, clientData, formatCurrency, getAge, selectedReports, Chart);
+      }
     } else if (currentAnalysis === 'personal-finance') {
       updatePersonalFinanceOutputs(analysisOutputs, clientData, formatCurrency, selectedReports, Chart);
     } else if (currentAnalysis === 'summary') {
@@ -952,6 +1018,9 @@ function updateOutputs() {
       const reportId = checkbox.dataset.reportId;
       checkbox.checked = selectedReports.some(report => report.id === reportId);
     });
+    // Ensure input tabs are visible
+    inputTabs.style.display = 'block';
+    inputContent.style.display = 'block';
     const activeTabAfter = document.querySelector('.output-tab-content.active')?.id || 'none';
     console.log('updateOutputs completed, activeTabAfter:', activeTabAfter);
   } catch (error) {
