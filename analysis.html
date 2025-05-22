@@ -155,28 +155,14 @@
       </div>
     </div>
   </div>
-  <script type="module">
-    import {
-      setupClientModalListeners,
-      populateAnalysisTopics,
-      updateTabs,
-      populateClientList,
-      updateClientFileName,
-      setupEventDelegation,
-      updateOutputs,
-      setupProfileDropdown,
-      loadClientData,
-      loadSelectedReports,
-      updateGraph
-    } from './src/index.js';
-
-    async function initializePage() {
-      try {
-        const response = await fetch('header.html');
+  <script>
+    fetch('header.html')
+      .then(response => {
         if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-        const data = await response.text();
+        return response.text();
+      })
+      .then(data => {
         document.getElementById('header-placeholder').innerHTML = data;
-
         const currentPage = window.location.pathname.split('/').pop() || 'index.html';
         const navLinks = document.querySelectorAll('nav ul li a');
         navLinks.forEach(link => {
@@ -184,74 +170,9 @@
             link.classList.add('active');
           }
         });
-
-        // Initialize page after header is loaded
-        loadClientData();
-        loadSelectedReports();
-        console.log('Chart.js available:', typeof Chart !== 'undefined');
-        console.log('chartCanvas:', document.getElementById('analysis-chart'));
-
-        const editReportId = localStorage.getItem('editReportId');
-        const editReportType = localStorage.getItem('editReportType');
-        let currentAnalysis = 'retirement-accumulation'; // Default
-        if (editReportId && editReportType) {
-          if (editReportType === 'retirement-accumulation') {
-            currentAnalysis = 'retirement-accumulation';
-          } else if (editReportType === 'retirement-timeline') {
-            currentAnalysis = 'retirement-accumulation';
-          } else if (editReportType === 'personal-finance') {
-            currentAnalysis = 'personal-finance';
-          } else if (editReportType === 'summary') {
-            currentAnalysis = 'summary';
-          }
-          const select = document.getElementById('analysis-topic-select');
-          if (select) {
-            select.value = currentAnalysis;
-          }
-        }
-
-        populateAnalysisTopics();
-        updateTabs(currentAnalysis);
-        populateClientList();
-        updateClientFileName();
-        setupEventDelegation();
-
-        const outputSelect = document.getElementById('output-select');
-        if (editReportId && editReportType && outputSelect) {
-          if (editReportType === 'retirement-timeline') {
-            outputSelect.value = 'output-timeline';
-          } else if (editReportType === 'retirement-accumulation') {
-            outputSelect.value = 'output-graph';
-          } else if (editReportType === 'personal-finance') {
-            outputSelect.value = 'output-graph';
-          } else if (editReportType === 'summary') {
-            outputSelect.value = 'output-summary';
-          }
-          const event = new Event('change');
-          outputSelect.dispatchEvent(event);
-        }
-
-        updateOutputs();
-        const analysisWorkspace = document.querySelector('.analysis-workspace');
-        if (currentAnalysis === 'client-profile') {
-          analysisWorkspace.classList.add('client-profile-active');
-          console.log('Added client-profile-active to analysisWorkspace');
-        } else {
-          analysisWorkspace.classList.remove('client-profile-active');
-          console.log('Removed client-profile-active to analysisWorkspace');
-        }
-        setTimeout(() => {
-          if (currentAnalysis !== 'client-profile') {
-            updateGraph();
-          }
-        }, 100);
-        setupClientModalListeners();
-        setupProfileDropdown();
-
-        localStorage.removeItem('editReportId');
-        localStorage.removeItem('editReportType');
-      } catch (error) {
-        console.error('Error loading header or initializing page:', error);
+      })
+      .catch(error => {
+        console.error('Error loading header:', error);
         document.getElementById('header-placeholder').innerHTML = `
           <header>
             <nav>
@@ -263,21 +184,56 @@
             </nav>
           </header>
         `;
-        // Still attempt to initialize
-        loadClientData();
-        loadSelectedReports();
-        populateAnalysisTopics();
-        updateTabs('retirement-accumulation');
-        populateClientList();
-        updateClientFileName();
-        setupEventDelegation();
-        updateOutputs();
-        setupClientModalListeners();
-        setupProfileDropdown();
+      });
+
+    function showClientModal() {
+      const modal = document.getElementById('client-modal');
+      if (modal) {
+        modal.style.display = 'flex';
+      } else {
+        console.error('Client modal not found');
       }
     }
 
-    document.addEventListener('DOMContentLoaded', initializePage);
+    function setupClientModalListeners() {
+      const modal = document.getElementById('client-modal');
+      const closeModal = document.getElementById('close-modal');
+      const clientFileName = document.getElementById('client-file-name');
+
+      if (!modal || !closeModal || !clientFileName) {
+        console.error('Modal elements missing:', { modal, closeModal, clientFileName });
+        return;
+      }
+
+      clientFileName.addEventListener('click', () => {
+        showClientModal();
+        clientFileName.setAttribute('aria-expanded', 'true');
+      });
+      clientFileName.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          showClientModal();
+          clientFileName.setAttribute('aria-expanded', 'true');
+        }
+      });
+
+      closeModal.addEventListener('click', () => {
+        modal.style.display = 'none';
+        clientFileName.setAttribute('aria-expanded', 'false');
+      });
+
+      modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+          modal.style.display = 'none';
+          clientFileName.setAttribute('aria-expanded', 'false');
+        }
+      });
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      setupClientModalListeners();
+    });
   </script>
+  <script type="module" src="src/index.js"></script>
 </body>
 </html>
