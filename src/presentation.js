@@ -183,7 +183,7 @@ function setupClientSearch() {
   }
 }
 
-// Populate report list
+// Update populateReportList to include Edit button and title click handler
 function populateReportList() {
   try {
     reportList.innerHTML = '';
@@ -207,9 +207,34 @@ function populateReportList() {
       reportItem.dataset.reportId = report.id;
       reportItem.draggable = true;
       reportItem.innerHTML = `
-        <span class="report-title">${report.title}</span>
+        <span class="report-title" style="cursor: pointer;">${report.title}</span>
         <button class="remove-report-btn" data-report-id="${report.id}">Remove</button>
+        <button class="edit-report-btn" data-report-id="${report.id}">Edit Inputs</button>
       `;
+      // Add click event for preview
+      reportItem.querySelector('.report-title').addEventListener('click', async () => {
+        const modal = document.getElementById('report-preview-modal');
+        const content = document.getElementById('report-preview-content');
+        content.innerHTML = '<p>Loading preview...</p>';
+        modal.style.display = 'flex';
+        const tempContainer = document.createElement('div');
+        tempContainer.style.width = '800px';
+        tempContainer.style.background = '#fff';
+        if (report.id.includes('retirement')) {
+          await renderRetirementReport(tempContainer, report.id);
+        } else if (report.id.includes('personal-finance')) {
+          await renderPersonalFinanceReport(tempContainer, report.id);
+        } else if (report.id.includes('summary')) {
+          await renderSummaryReport(tempContainer, report.id);
+        } else {
+          tempContainer.innerHTML = `<h2>${report.title}</h2><p>Data not available for preview.</p>`;
+        }
+        content.innerHTML = '';
+        content.appendChild(tempContainer);
+        // Set up Edit Inputs button in modal
+        const editBtn = document.getElementById('edit-report-inputs-btn');
+        editBtn.dataset.reportId = report.id;
+      });
       reportList.appendChild(reportItem);
     });
 
@@ -224,7 +249,8 @@ function populateReportList() {
   }
 }
 
-// Setup drag-and-drop functionality
+
+// Update setupDragAndDrop to handle Edit button clicks
 function setupDragAndDrop() {
   try {
     reportList.addEventListener('dragstart', (e) => {
@@ -271,6 +297,10 @@ function setupDragAndDrop() {
         saveSelectedReports();
         populateReportList();
         updatePreviewButton();
+      } else if (e.target.classList.contains('edit-report-btn')) {
+        const reportId = e.target.dataset.reportId;
+        localStorage.setItem('editReportId', reportId);
+        window.location.href = 'analysis.html';
       }
     });
   } catch (error) {
@@ -405,15 +435,31 @@ function setupPresentationOptions() {
   }
 }
 
-// Setup modal events
+// Update setupModalEvents to include report preview modal
 function setupModalEvents() {
   previewBtn.addEventListener('click', generatePresentationPreview);
   closePdfModal.addEventListener('click', () => {
     pdfPreviewModal.style.display = 'none';
   });
   downloadPdfBtn.addEventListener('click', downloadPresentationPDF);
-}
 
+  // New report preview modal events
+  const closeReportModal = document.getElementById('close-report-modal');
+  if (closeReportModal) {
+    closeReportModal.addEventListener('click', () => {
+      document.getElementById('report-preview-modal').style.display = 'none';
+    });
+  }
+  const editReportInputsBtn = document.getElementById('edit-report-inputs-btn');
+  if (editReportInputsBtn) {
+    editReportInputsBtn.addEventListener('click', () => {
+      const reportId = editReportInputsBtn.dataset.reportId;
+      localStorage.setItem('editReportId', reportId);
+      window.location.href = 'analysis.html';
+    });
+  }
+}
+  
 // Render report functions
 async function renderRetirementReport(container, reportId) {
   try {
