@@ -7,6 +7,10 @@
       No Client Selected
       <i class="fas fa-chevron-down" style="margin-left: 5px;"></i>
     </span>
+    <i class="fas fa-save save-icon" aria-label="Save Client" role="button" tabindex="0"></i>
+    <div class="client-dropdown" id="client-dropdown" style="display: none;">
+      <a href="#" id="new-client-link"><i class="fas fa-plus"></i> New Client</a>
+    </div>
   </div>
   <nav>
     <ul>
@@ -46,7 +50,13 @@
   }
   .logo { flex-shrink: 0; }
   .logo-img { height: 40px; }
-  .client-file { flex-grow: 0; margin: 0 20px; display: flex; align-items: center; }
+  .client-file { 
+    flex-grow: 0; 
+    margin: 0 20px; 
+    display: flex; 
+    align-items: center; 
+    position: relative;
+  }
   #client-file-name {
     cursor: pointer;
     font-size: 16px;
@@ -82,6 +92,36 @@
     display: inline-block;
     flex-shrink: 0;
   }
+  .save-icon {
+    cursor: pointer;
+    font-size: 16px;
+    color: #333;
+    margin-left: 10px;
+    transition: color 0.3s;
+  }
+  .save-icon:hover { color: #007bff; }
+  .client-dropdown {
+    display: none;
+    position: absolute;
+    top: 40px;
+    left: 0;
+    background-color: #fff;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    z-index: 1000;
+    min-width: 150px;
+  }
+  .client-dropdown a {
+    display: block;
+    padding: 10px 15px;
+    text-decoration: none;
+    color: #333;
+    font-size: 14px;
+    font-family: 'Inter', sans-serif;
+  }
+  .client-dropdown a:hover { background-color: #f0f0f0; }
+  .client-dropdown a i { margin-right: 8px; }
   nav { flex-grow: 1; display: flex; justify-content: center; }
   nav ul {
     display: flex;
