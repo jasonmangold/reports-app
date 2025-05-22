@@ -267,6 +267,7 @@ function saveChartConfig(analysisType, chartInstance) {
   }
 }
 
+// Load chart configuration from localStorage
 function loadChartConfig(analysisType) {
   try {
     const key = analysisType === 'retirement-timeline' ? 'retirement-accumulation-timeline' : analysisType;
