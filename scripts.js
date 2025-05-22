@@ -99,7 +99,7 @@ const reports = [
       </ul>
       <h3>Seek Professional Guidance</h3>
       <p>Developing a successful retirement plan involves carefully considering a wide range of issues and potential problems. Finding solutions to these questions often requires both personal education and the guidance of knowledgeable individuals, from many professional disciplines. The key is to begin planning as early as possible.</p>
-      <p><em>Presented by Jason Mangold</em></p>
+      
     `,
     tags: ["retirement", "beginner", "30-45", "46-60", "over-60", "individual", "general", "topic-retirement"]
   },
