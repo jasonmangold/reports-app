@@ -279,16 +279,6 @@ function loadChartConfig(analysisType) {
   }
 }
 
-// Load chart configuration from localStorage
-function loadChartConfig(analysisType) {
-  try {
-    const savedConfig = localStorage.getItem(`chartConfig_${analysisType}`);
-    return savedConfig ? JSON.parse(savedConfig) : null;
-  } catch (error) {
-    console.error('Error in loadChartConfig:', error);
-    return null;
-  }
-}
 
 // === UI Population Functions ===
 function populateClientList() {
