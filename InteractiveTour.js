@@ -50,6 +50,11 @@ function startTour() {
     }
   ].filter(step => step.page === currentPage && step.element);
 
+  if (steps.length === 0) {
+    console.error('No valid tour steps for this page.');
+    return;
+  }
+
   tour.setOptions({
     steps,
     showProgress: true,
@@ -68,4 +73,12 @@ function startTour() {
   tour.start();
 }
 
-document.getElementById('start-tour-btn').addEventListener('click', startTour);
+// Ensure button exists before adding event listener
+document.addEventListener('DOMContentLoaded', () => {
+  const tourButton = document.getElementById('start-tour-btn');
+  if (tourButton) {
+    tourButton.addEventListener('click', startTour);
+  } else {
+    console.error('Start Tour button not found.');
+  }
+});
