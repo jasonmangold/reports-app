@@ -1,21 +1,30 @@
 import introJs from 'https://cdn.jsdelivr.net/npm/intro.js@7.0.1/intro.min.js';
 
 function startTour() {
-  // Wait for header and button to load
+  // Wait for header, button, and page elements to load
   let attempts = 0;
-  const maxAttempts = 50; // 5 seconds (50 * 100ms)
+  const maxAttempts = 100; // 10 seconds (100 * 100ms)
   const checkElements = setInterval(() => {
-    const headerLoaded = document.querySelector('#analysis-link');
-    const button = document.getElementById('start-tour-btn');
+    const headerLink = document.querySelector('#analysis-link');
+    const clientFile = document.querySelector('#client-file-name');
+    const workspace = document.querySelector('#analysis-workspace');
+    const recalculateBtn = document.querySelector('#recalculate-btn');
+    const presentationTab = document.querySelector('#presentation-tab');
+    const tourButton = document.getElementById('start-tour-btn');
     attempts++;
-    if (headerLoaded && button) {
+    if (headerLink && clientFile && workspace && recalculateBtn && presentationTab && tourButton) {
       clearInterval(checkElements);
       runTour();
     } else if (attempts >= maxAttempts) {
       clearInterval(checkElements);
-      console.error('Tour failed to start: Header or button not found after 5s', {
-        headerLoaded: !!headerLoaded,
-        button: !!button
+      console.error('Tour failed to start: Required elements not found after 10s', {
+        headerLink: !!headerLink,
+        clientFile: !!clientFile,
+        workspace: !!workspace,
+        recalculateBtn: !!recalculateBtn,
+        presentationTab: !!presentationTab,
+        tourButton: !!tourButton,
+        attempts
       });
     }
   }, 100);
@@ -45,7 +54,7 @@ function startTour() {
       },
       {
         element: document.querySelector('#client-file-name'),
-        intro: 'Click here to input client data.',
+        intro: 'Click here to select a client.',
         position: 'right',
         page: 'analysis'
       },
@@ -71,7 +80,7 @@ function startTour() {
     ].filter(step => step.page === currentPage && step.element);
 
     if (steps.length === 0) {
-      console.error('No valid tour steps for this page:', currentPage);
+      console.error('No valid tour steps for this page:', currentPage, steps);
       return;
     }
 
@@ -94,12 +103,24 @@ function startTour() {
   }
 }
 
+// Ensure button listener is set up only once
 document.addEventListener('DOMContentLoaded', () => {
-  const tourButton = document.getElementById('start-tour-btn');
-  if (tourButton) {
-    tourButton.removeEventListener('click', startTour); // Prevent duplicate listeners
-    tourButton.addEventListener('click', startTour);
-  } else {
-    console.error('Start Tour button not found on DOMContentLoaded.');
-  }
+  const setupButton = () => {
+    const tourButton = document.getElementById('start-tour-btn');
+    if (tourButton) {
+      tourButton.removeEventListener('click', startTour);
+      tourButton.addEventListener('click', startTour);
+      console.log('Start Tour button listener attached');
+    } else {
+      console.error('Start Tour button not found on DOMContentLoaded');
+    }
+  };
+
+  // Run immediately and after header fetch
+  setupButton();
+  const headerObserver = new MutationObserver(() => {
+    setupButton();
+    headerObserver.disconnect();
+  });
+  headerObserver.observe(document.getElementById('header-placeholder'), { childList: true });
 });
