@@ -1,11 +1,22 @@
 import introJs from 'https://cdn.jsdelivr.net/npm/intro.js@7.0.1/intro.min.js';
 
 function startTour() {
-  // Wait for header to load
-  const checkHeader = setInterval(() => {
-    if (document.querySelector('#analysis-link')) {
-      clearInterval(checkHeader);
+  // Wait for header and button to load
+  let attempts = 0;
+  const maxAttempts = 50; // 5 seconds (50 * 100ms)
+  const checkElements = setInterval(() => {
+    const headerLoaded = document.querySelector('#analysis-link');
+    const button = document.getElementById('start-tour-btn');
+    attempts++;
+    if (headerLoaded && button) {
+      clearInterval(checkElements);
       runTour();
+    } else if (attempts >= maxAttempts) {
+      clearInterval(checkElements);
+      console.error('Tour failed to start: Header or button not found after 5s', {
+        headerLoaded: !!headerLoaded,
+        button: !!button
+      });
     }
   }, 100);
 
@@ -52,7 +63,7 @@ function startTour() {
         action: () => window.location.href = 'presentation.html'
       },
       {
-        element: document.querySelector('#presentation-content'), // Adjust ID for presentation.html
+        element: document.querySelector('#presentation-content'), // Adjust for presentation.html
         intro: 'Explore the Presentation section.',
         position: 'top',
         page: 'presentation'
@@ -86,8 +97,9 @@ function startTour() {
 document.addEventListener('DOMContentLoaded', () => {
   const tourButton = document.getElementById('start-tour-btn');
   if (tourButton) {
+    tourButton.removeEventListener('click', startTour); // Prevent duplicate listeners
     tourButton.addEventListener('click', startTour);
   } else {
-    console.error('Start Tour button not found.');
+    console.error('Start Tour button not found on DOMContentLoaded.');
   }
 });
