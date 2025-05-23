@@ -6,6 +6,7 @@
   <title>Analysis - Advisys</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" integrity="sha512-Fo3rlrZj/k7ujTnHg4CGR2D7kSs0v4LLanw2qksYuRlEzO+tcaEPQogQ0KaoGN26/zrn20ImR1DfuLWnOo7aBA==" crossorigin="anonymous" referrerpolicy="no-referrer">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/intro.js@7.0.1/introjs.min.css">
   <link rel="stylesheet" href="header.css">
   <link rel="stylesheet" href="styles.css">
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
@@ -109,9 +110,26 @@
     #client-list li.selected {
       background-color: #f0f0f0;
     }
+    #start-tour-btn {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      padding: 10px 20px;
+      background: #005ea2;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-family: 'Inter', sans-serif;
+      font-size: 16px;
+      z-index: 1001;
+    }
+    #start-tour-btn:hover {
+      background: #003d6b;
+    }
   </style>
 </head>
-<body>
+<body data-page="analysis">
   <div id="header-placeholder"></div>
   <div class="analysis-page">
     <div class="analysis-topics-container">
@@ -163,7 +181,7 @@
       })
       .then(data => {
         document.getElementById('header-placeholder').innerHTML = data;
-        const currentPage = window.location.pathname.split('/').pop() || 'index.html';
+        const currentPage = window.location.pathname.split('/').pop() || 'analysis.html';
         const navLinks = document.querySelectorAll('nav ul li a');
         navLinks.forEach(link => {
           if (link.getAttribute('href') === currentPage) {
@@ -177,9 +195,9 @@
           <header>
             <nav>
               <ul>
-                <li><a href="index.html" class="active">Analysis</a></li>
-                <li><a href="reports.html">Reports</a></li>
-                <li><a href="settings.html">Settings</a></li>
+                <li><a href="home.html">Home</a></li>
+                <li><a href="analysis.html" class="active">Analysis</a></li>
+                <li><a href="presentation.html">Presentation</a></li>
               </ul>
             </nav>
           </header>
@@ -235,7 +253,7 @@
     });
   </script>
   <script type="module" src="src/index.js"></script>
-    <button id="start-tour-btn">Start Tour</button>
+  <button id="start-tour-btn">Start Tour</button>
   <script src="InteractiveTour.js" type="module"></script>
 </body>
 </html>
