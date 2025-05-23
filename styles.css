@@ -1647,3 +1647,20 @@ p .active {
 .input-tabs, .input-content {
   display: block !important;
 }
+
+  #start-tour-btn {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    padding: 10px 20px;
+    background: #007bff;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+    z-index: 1000;
+  }
+  #start-tour-btn:hover {
+    background: #0056b3;
+  }
