@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -144,6 +143,7 @@
       padding: 8px 12px;
       border-radius: 4px;
       transition: background 0.2s, color 0.2s;
+      text-align: left;
     }
 
     .group-toggle:hover {
@@ -184,6 +184,7 @@
       padding: 6px 12px;
       border-radius: 4px;
       transition: background 0.2s, color 0.2s;
+      text-align: left;
     }
 
     .sub-categories a:hover,
@@ -196,17 +197,6 @@
       font-size: 12px;
       color: #64748b;
       margin-left: 8px;
-    }
-
-    .sidebar a i {
-      margin-right: 8px;
-      font-size: 14px;
-      color: #64748b;
-    }
-
-    .sidebar a:hover i,
-    .sidebar a.active i {
-      color: #3b82f6;
     }
 
     body.dark-mode .sidebar {
@@ -238,15 +228,6 @@
 
     body.dark-mode .report-count {
       color: #94a3b8;
-    }
-
-    body.dark-mode .sidebar a i {
-      color: #94a3b8;
-    }
-
-    body.dark-mode .sidebar a:hover i,
-    body.dark-mode .sidebar a.active i {
-      color: #60a5fa;
     }
 
     .group-toggle:focus,
@@ -1723,12 +1704,12 @@
       <ul id="category-filter" role="navigation" aria-label="Report categories">
         <li>
           <a href="#" data-category="all" class="active" aria-current="true">
-            <i class="fas fa-th"></i> All <span class="report-count"></span>
+            All <span class="report-count"></span>
           </a>
         </li>
         <li class="category-group" aria-expanded="false">
           <a href="#" class="group-toggle" role="button" aria-controls="personal-finance-group">
-            <i class="fas fa-dollar-sign"></i> Personal Finance
+            Personal Finance
             <i class="fas fa-chevron-down toggle-icon"></i>
           </a>
           <ul class="sub-categories" id="personal-finance-group">
@@ -1739,7 +1720,7 @@
         </li>
         <li class="category-group" aria-expanded="false">
           <a href="#" class="group-toggle" role="button" aria-controls="income-taxes-group">
-            <i class="fas fa-file-invoice-dollar"></i> Income Taxes
+            Income Taxes
             <i class="fas fa-chevron-down toggle-icon"></i>
           </a>
           <ul class="sub-categories" id="income-taxes-group">
@@ -1750,7 +1731,7 @@
         </li>
         <li class="category-group" aria-expanded="false">
           <a href="#" class="group-toggle" role="button" aria-controls="investments-group">
-            <i class="fas fa-chart-line"></i> Investments
+            Investments
             <i class="fas fa-chevron-down toggle-icon"></i>
           </a>
           <ul class="sub-categories" id="investments-group">
@@ -1762,7 +1743,7 @@
         </li>
         <li class="category-group" aria-expanded="false">
           <a href="#" class="group-toggle" role="button" aria-controls="retirement-planning-group">
-            <i class="fas fa-umbrella-beach"></i> Retirement Planning
+            Retirement Planning
             <i class="fas fa-chevron-down toggle-icon"></i>
           </a>
           <ul class="sub-categories" id="retirement-planning-group">
@@ -1779,7 +1760,7 @@
         </li>
         <li class="category-group" aria-expanded="false">
           <a href="#" class="group-toggle" role="button" aria-controls="insurance-group">
-            <i class="fas fa-shield-alt"></i> Insurance
+            Insurance
             <i class="fas fa-chevron-down toggle-icon"></i>
           </a>
           <ul class="sub-categories" id="insurance-group">
@@ -1793,7 +1774,7 @@
         </li>
         <li class="category-group" aria-expanded="false">
           <a href="#" class="group-toggle" role="button" aria-controls="home-ownership-group">
-            <i class="fas fa-home"></i> Home Ownership
+            Home Ownership
             <i class="fas fa-chevron-down toggle-icon"></i>
           </a>
           <ul class="sub-categories" id="home-ownership-group">
@@ -1804,7 +1785,7 @@
         </li>
         <li class="category-group" aria-expanded="false">
           <a href="#" class="group-toggle" role="button" aria-controls="education-funding-group">
-            <i class="fas fa-graduation-cap"></i> Education Funding
+            Education Funding
             <i class="fas fa-chevron-down toggle-icon"></i>
           </a>
           <ul class="sub-categories" id="education-funding-group">
@@ -1814,7 +1795,7 @@
         </li>
         <li class="category-group" aria-expanded="false">
           <a href="#" class="group-toggle" role="button" aria-controls="estate-planning-group">
-            <i class="fas fa-gavel"></i> Estate Planning
+            Estate Planning
             <i class="fas fa-chevron-down toggle-icon"></i>
           </a>
           <ul class="sub-categories" id="estate-planning-group">
@@ -1828,7 +1809,7 @@
         </li>
         <li class="category-group" aria-expanded="false">
           <a href="#" class="group-toggle" role="button" aria-controls="business-planning-group">
-            <i class="fas fa-briefcase"></i> Business Planning
+            Business Planning
             <i class="fas fa-chevron-down toggle-icon"></i>
           </a>
           <ul class="sub-categories" id="business-planning-group">
@@ -1840,7 +1821,7 @@
         </li>
         <li class="category-group" aria-expanded="false">
           <a href="#" class="group-toggle" role="button" aria-controls="charitable-planning-group">
-            <i class="fas fa-hand-holding-heart"></i> Charitable Planning
+            Charitable Planning
             <i class="fas fa-chevron-down toggle-icon"></i>
           </a>
           <ul class="sub-categories" id="charitable-planning-group">
@@ -1851,7 +1832,7 @@
         </li>
         <li class="category-group" aria-expanded="false">
           <a href="#" class="group-toggle" role="button" aria-controls="social-security-group">
-            <i class="fas fa-landmark"></i> Social Security and Government Programs
+            Social Security and Government Programs
             <i class="fas fa-chevron-down toggle-icon"></i>
           </a>
           <ul class="sub-categories" id="social-security-group">
@@ -1861,7 +1842,7 @@
         </li>
         <li class="category-group" aria-expanded="false">
           <a href="#" class="group-toggle" role="button" aria-controls="advisys-support-group">
-            <i class="fas fa-tools"></i> Advisys Support
+            Advisys Support
             <i class="fas fa-chevron-down toggle-icon"></i>
           </a>
           <ul class="sub-categories" id="advisys-support-group">
